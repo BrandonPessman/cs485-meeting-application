@@ -23,7 +23,7 @@ export default function SimplePaper () {
 
   return (
     <div className={classes.root}>
-      <h1 style={{ marginBottom: '0' }}>Meeting Creator</h1>
+      <h1 style={{ marginBottom: '0' }}>New Meeting</h1>
       <h2 style={{ marginBottom: '0', marginTop: '0' }}>People</h2>
       <Paper elevation={3} style={{ padding: '10px 30px' }}>
         <Grid container spacing={3}>

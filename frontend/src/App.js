@@ -71,7 +71,7 @@ export default function ClippedDrawer () {
               <ListItemIcon>
                 <MeetingCreatorIcon />
               </ListItemIcon>
-              <ListItemText primary='Meeting Creator' />
+              <ListItemText primary='New Meeting' />
             </ListItem>
             <ListItem button key='nav-upcoming-schedule'>
               <ListItemIcon>
