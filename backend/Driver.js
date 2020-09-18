@@ -38,6 +38,21 @@ class Driver {
       console.log(results)
     })
   }
+  updateuser({id, list}){
+    var start = "UPDATE user ";
+    var rest;
+    if (list.length>2) {
+      for (var j = 0; j<list.length-4; j++) {
+        rest = rest + list[j] + "=" + list[j+1] + ","
+      }
+      rest = rest + list[list.length-2] + "=" + list[j-1]
+    }
+    var query = start+rest;
+    return this.connection.query(query, function (err, results) {
+      if (err) throw err
+      console.log(results)
+    })
+  }
   insertMeeting (meeting) {
     var query =
       'INSERT INTO Meeting (meeting_id, location_id, users, start_date_time, end_date_time, meeting_length, meeting_status) VALUES (' +
@@ -51,6 +66,13 @@ class Driver {
       ',' +
       meeting.end_date_time +
       ')'
+      return this.connection.query(query, function (err, results) {
+        if (err) throw err;
+        console.log(results)
+      })
+  }
+  updateMeeting (id, list) {
+
   }
   insertFeedback (feedback) {
     var query =
@@ -63,6 +85,18 @@ class Driver {
       ',' +
       feedback.date_time_created +
       ')'
+      return this.connection.query(query, function (err, results) {
+        if (err) throw err;
+        console.log(results)
+      })
+  }
+  updateFeedback(id, new_content) {
+    var d = new Date();
+    var query = 'UPDATE Feedback SET content = ' + new_content + ', date_time_created = ' + d + 'WHERE id = ' + id;
+    return this.connection.query(query, function (err, results) {
+      if (err) throw err;
+      console.log(results);
+    })
   }
 }
 class User {
@@ -106,13 +140,4 @@ class Location {
   }
 }
 var newdriver = new Driver()
-fakeUser = {
-  id: '3',
-  email: 'firstUser@gmail.com',
-  password: '12345',
-  phone: '555-5555',
-  name: 'Axel Rose',
-  type: '1'
-}
-newdriver.insertUser(fakeUser)
 newdriver.quit()
