@@ -1,0 +1,16 @@
+.secondary-li a {
+  padding: 26px 0px;
+  margin: 0;
+  margin-right: 20px;
+  color: rgb(126, 126, 126) !important;
+}
+
+.secondary-li:hover:not(.secondary-li-active) a {
+  color: black !important;
+  border-bottom: solid 4px rgb(77, 77, 77);
+}
+
+.secondary-li-active a {
+  color: black !important;
+  border-bottom: solid 4px #f50057;
+}
