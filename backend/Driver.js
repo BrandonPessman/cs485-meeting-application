@@ -20,25 +20,25 @@ class Driver {
   }
   insertUser ({ id, email, password, phone, name, type }) {
     var query =
-      "INSERT INTO user (u_id, email, u_password, phone_number, name, type) VALUES ('" +
+      "INSERT INTO user (u_id, email, u_password, phone_number, name, type) VALUES (" +
       id +
-      "','" +
+      "," +
       email +
-      "','" +
+      "," +
       password +
-      "','" +
+      "," +
       phone +
-      "','" +
+      "," +
       name +
-      "','" +
+      "," +
       type +
-      "')"
+      ")"
     return this.connection.query(query, function (err, results) {
       if (err) throw err
       console.log(results)
     })
   }
-  updateuser({id, list}){
+  updateUser({id, list}){
     var start = "UPDATE user ";
     var rest;
     if (list.length>2) {
@@ -53,26 +53,34 @@ class Driver {
       console.log(results)
     })
   }
-  insertMeeting (meeting) {
+  getUser(id) {
+    var query = 'SELECT * FROM user WHERE u_id = ' + id
+    this.connection.query(query, function (err, results) {
+      if (err) throw err;
+      console.log(JSON.parse(JSON.stringify(results)));
+      var jsObj = JSON.parse(JSON.stringify(results));
+    })
+  }
+  insertMeeting (id, location, users, start_time, end_time) {
+    var length = getMinutes(start_time, end_time);
     var query =
-      'INSERT INTO Meeting (meeting_id, location_id, users, start_date_time, end_date_time, meeting_length, meeting_status) VALUES (' +
-      meeting.id +
+      'INSERT INTO Meeting (meeting_id, location_id, users, start_date_time, end_date_time, meeting_length) VALUES (' +
+      id +
       ',' +
-      meeting.location_id +
+      location +
       ',' +
-      meeting.users +
+      users +
       ',' +
-      meeting.start_date_time +
+      start_time +
       ',' +
-      meeting.end_date_time +
+      end_time +
+      ',' +
+      length
       ')'
       return this.connection.query(query, function (err, results) {
         if (err) throw err;
         console.log(results)
       })
-  }
-  updateMeeting (id, list) {
-
   }
   insertFeedback (feedback) {
     var query =
@@ -98,6 +106,12 @@ class Driver {
       console.log(results);
     })
   }
+  getMinutes(x,y){
+    var diff = y-x;
+    var sec = (1000*60);
+    var mins = diff/sec;
+    return mins;
+  }
 }
 class User {
   constructor (id, email, password, phone, name, type) {
@@ -110,12 +124,13 @@ class User {
   }
 }
 class Meeting {
-  constructor (id, location_id, users, start_date_time, end_date_time) {
+  constructor (id, location_id, users, start_date_time, end_date_time, meeting_length) {
     this.id = id
     this.location_id = location_id
     this.users = users
     this.start_date_time = start_date_time
     this.end_date_time = end_date_time
+    this.meeting_length = meeting_length;
   }
 }
 class Feedback {
@@ -140,4 +155,5 @@ class Location {
   }
 }
 var newdriver = new Driver()
+newdriver.getUser(1)
 newdriver.quit()
