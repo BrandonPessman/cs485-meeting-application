@@ -20,8 +20,20 @@ export default function ClippedDrawer () {
             width: '100%'
           }}
         >
-          Meeting Scheduler Center{' '}
+          Scheduling Center{' '}
           <span
+            style={{
+              float: 'right',
+              color: 'rgb(100,100,100)',
+              fontWeight: '200',
+              fontSize: '14px',
+              color: 'rgb(27, 14, 83)',
+              fontWeight: '600'
+            }}
+          >
+            <span style={{ fontWeight: '100' }}>Welcome,</span> Brandon Pessman
+          </span>
+          {/* <span
             style={{
               float: 'right',
               color: 'rgb(100,100,100)',
@@ -38,10 +50,10 @@ export default function ClippedDrawer () {
               Role:
             </span>{' '}
             Administrator
-          </span>
+          </span> */}
         </h2>
         <li className='secondary-li secondary-li-active'>
-          <a href='#home'>Meeting Scheduler</a>
+          <a href='#home'>Management</a>
         </li>
         <li className='secondary-li'>
           <a href='#news'>Upcoming Meetings</a>

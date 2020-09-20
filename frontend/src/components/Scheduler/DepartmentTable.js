@@ -239,7 +239,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function EnhancedTable () {
+export default function EnhancedTable ({ setShowNextStep }) {
   const classes = useStyles()
   const [order, setOrder] = React.useState('asc')
   const [orderBy, setOrderBy] = React.useState('department')
@@ -255,32 +255,38 @@ export default function EnhancedTable () {
   }
 
   const handleSelectAllClick = event => {
-    if (event.target.checked) {
-      const newSelecteds = rows.map(n => n.department)
-      setSelected(newSelecteds)
-      return
-    }
+    // if (event.target.checked) {
+    //   const newSelecteds = rows.map(n => n.department)
+    //   setSelected(newSelecteds)
+    //   return
+    // }
     setSelected([])
+    setShowNextStep(false)
   }
 
   const handleClick = (event, name) => {
     const selectedIndex = selected.indexOf(name)
-    let newSelected = []
 
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name)
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1))
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1))
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      )
+    if (selected === name) {
+      setSelected([])
+      setShowNextStep(false)
+    } else {
+      setSelected(name)
+      setShowNextStep(true)
     }
 
-    setSelected(newSelected)
+    // if (selectedIndex === -1) {
+    //   newSelected = newSelected.concat(selected, name)
+    // } else if (selectedIndex === 0) {
+    //   newSelected = newSelected.concat(selected.slice(1))
+    // } else if (selectedIndex === selected.length - 1) {
+    //   newSelected = newSelected.concat(selected.slice(0, -1))
+    // } else if (selectedIndex > 0) {
+    //   newSelected = newSelected.concat(
+    //     selected.slice(0, selectedIndex),
+    //     selected.slice(selectedIndex + 1)
+    //   )
+    // }
   }
 
   const handleChangePage = (event, newPage) => {
@@ -304,7 +310,7 @@ export default function EnhancedTable () {
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar numSelected={selected.length} />
+        <EnhancedTableToolbar numSelected={selected.length > 0 ? 1 : 0} />
         <TableContainer>
           <Table
             className={classes.table}
@@ -391,9 +397,17 @@ export default function EnhancedTable () {
         variant='contained'
         color='default'
         disabled={selected.length > 0 ? false : true}
+        style={{ marginLeft: '20px' }}
+      >
+        Edit Department
+      </Button>
+      <Button
+        variant='contained'
+        color='default'
+        disabled={selected.length > 0 ? false : true}
         style={{ marginLeft: '20px', float: 'right' }}
       >
-        Delete Selected Departments
+        Delete Department
       </Button>
     </div>
   )

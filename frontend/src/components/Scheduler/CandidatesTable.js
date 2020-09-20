@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import clsx from 'clsx'
-import { makeStyles } from '@material-ui/core/styles' // light, withTheme
+import { makeStyles } from '@material-ui/core/styles' // lighten, withTheme
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
@@ -22,29 +22,13 @@ import Button from '@material-ui/core/Button'
 // import DeleteIcon from '@material-ui/icons/Delete'
 // import FilterListIcon from '@material-ui/icons/FilterList'
 
-function createData (
-  positionId,
-  positionTitle,
-  department,
-  totalCandidates,
-  totalMeetings
-) {
-  return {
-    positionId,
-    positionTitle,
-    department,
-    totalCandidates,
-    totalMeetings
-  }
+function createData (name, email, positionId, documentsId, scheduleId) {
+  return { name, email, positionId, documentsId, scheduleId }
 }
 
 const rows = [
-  createData('39285', 'Associate Professor', 'Computer Science', 5, 10),
-  createData('29395', 'Associate Professor', 'Computer Science', 3, 10),
-  createData('84824', 'Associate Professor', 'Computer Science', 5, 10),
-  createData('95021', 'Associate Professor', 'Computer Science', 3, 10),
-  createData('52947', 'Associate Professor', 'Physics', 5, 10),
-  createData('21052', 'Associate Professor', 'Physics', 3, 10)
+  createData('Steve Stevenson', 'steve@gmail.com', 48289, 14134, 29593),
+  createData('Sarah Sally', 'sarah@gmail.com', 48489, 12134, 21593)
 ]
 
 function descendingComparator (a, b, orderBy) {
@@ -75,34 +59,34 @@ function stableSort (array, comparator) {
 
 const headCells = [
   {
-    id: 'positionId',
+    id: 'name',
     numeric: false,
     disablePadding: true,
-    label: 'Job ID'
+    label: 'Full Name'
   },
   {
-    id: 'positionTitle',
+    id: 'email',
     numeric: true,
     disablePadding: false,
-    label: 'Position'
+    label: 'Email Address'
   },
   {
-    id: 'department',
+    id: 'positionId',
     numeric: true,
     disablePadding: false,
-    label: 'Department'
+    label: 'Upcoming Meeting Total'
   },
   {
-    id: 'totalCandidates',
+    id: 'documentsId',
     numeric: true,
     disablePadding: false,
-    label: 'Total Candidates'
+    label: 'Documents'
   },
   {
-    id: 'totalMeetings',
+    id: 'scheduleId',
     numeric: true,
     disablePadding: false,
-    label: 'Total Meetings'
+    label: 'Schedule'
   }
 ]
 
@@ -128,7 +112,7 @@ function EnhancedTableHead (props) {
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
-            inputProps={{ 'aria-label': 'select all positions' }}
+            inputProps={{ 'aria-label': 'select all departments' }}
           />
         </TableCell>
         {headCells.map(headCell => (
@@ -207,7 +191,7 @@ const EnhancedTableToolbar = props => {
           id='tableTitle'
           component='div'
         >
-          Select a Position
+          Select a Candidate
         </Typography>
       )}
 
@@ -256,10 +240,10 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function EnhancedTable ({ setShowNextStep }) {
+export default function EnhancedTable () {
   const classes = useStyles()
   const [order, setOrder] = React.useState('asc')
-  const [orderBy, setOrderBy] = React.useState('positionId')
+  const [orderBy, setOrderBy] = React.useState('name')
   const [selected, setSelected] = React.useState([])
   const [page, setPage] = React.useState(0)
   const [dense] = React.useState(true)
@@ -273,12 +257,11 @@ export default function EnhancedTable ({ setShowNextStep }) {
 
   const handleSelectAllClick = event => {
     // if (event.target.checked) {
-    //   const newSelecteds = rows.map(n => n.positionId)
+    //   const newSelecteds = rows.map(n => n.name)
     //   setSelected(newSelecteds)
     //   return
     // }
     setSelected([])
-    setShowNextStep(false)
   }
 
   const handleClick = (event, name) => {
@@ -286,10 +269,8 @@ export default function EnhancedTable ({ setShowNextStep }) {
 
     if (selected === name) {
       setSelected([])
-      setShowNextStep(false)
     } else {
       setSelected(name)
-      setShowNextStep(true)
     }
 
     // if (selectedIndex === -1) {
@@ -348,17 +329,17 @@ export default function EnhancedTable ({ setShowNextStep }) {
               {stableSort(rows, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
-                  const isItemSelected = isSelected(row.positionId)
+                  const isItemSelected = isSelected(row.name)
                   const labelId = `enhanced-table-checkbox-${index}`
 
                   return (
                     <TableRow
                       hover
-                      onClick={event => handleClick(event, row.positionId)}
+                      onClick={event => handleClick(event, row.name)}
                       role='checkbox'
                       aria-checked={isItemSelected}
                       tabIndex={-1}
-                      key={row.positionId}
+                      key={row.name}
                       selected={isItemSelected}
                     >
                       <TableCell padding='checkbox'>
@@ -373,12 +354,12 @@ export default function EnhancedTable ({ setShowNextStep }) {
                         scope='row'
                         padding='none'
                       >
-                        {row.positionId}
+                        {row.name}
                       </TableCell>
-                      <TableCell align='right'>{row.positionTitle}</TableCell>
-                      <TableCell align='right'>{row.department}</TableCell>
-                      <TableCell align='right'>{row.totalCandidates}</TableCell>
-                      <TableCell align='right'>{row.totalMeetings}</TableCell>
+                      <TableCell align='right'>{row.email}</TableCell>
+                      <TableCell align='right'>{row.positionId}</TableCell>
+                      <TableCell align='right'>{row.documentsId}</TableCell>
+                      <TableCell align='right'>{row.scheduleId}</TableCell>
                     </TableRow>
                   )
                 })}
@@ -405,23 +386,23 @@ export default function EnhancedTable ({ setShowNextStep }) {
         label='Dense padding'
       /> */}
       <Button variant='contained' color='secondary'>
-        Create a Position
+        Add a Candidate
       </Button>
       <Button
         variant='contained'
         color='default'
+        disabled={selected.length > 0 ? false : true}
         style={{ marginLeft: '20px' }}
-        disabled={selected.length > 0 ? false : true}
       >
-        Edit Position
+        Edit Candidate
       </Button>
       <Button
         variant='contained'
         color='default'
-        style={{ marginLeft: '20px', float: 'right' }}
         disabled={selected.length > 0 ? false : true}
+        style={{ marginLeft: '20px', float: 'right' }}
       >
-        Delete Position
+        Delete Candidate
       </Button>
     </div>
   )

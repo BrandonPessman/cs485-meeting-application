@@ -13,7 +13,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function PaperComp ({ Comp, Title, noPaper }) {
+export default function PaperComp ({ Comp, Title, noPaper, setShowNextStep }) {
   const classes = useStyles()
 
   return (
@@ -23,7 +23,7 @@ export default function PaperComp ({ Comp, Title, noPaper }) {
       </h2>
 
       {noPaper ? (
-        <Comp />
+        <Comp setShowNextStep={setShowNextStep} />
       ) : (
         <Paper elevation={3} style={{ padding: '10px 30px' }}>
           <Comp />
