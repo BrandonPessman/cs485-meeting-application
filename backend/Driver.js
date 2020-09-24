@@ -1,6 +1,6 @@
 'user strict'
 var MySQL = require('mysql')
-//ttest tst
+
 class Driver {
   constructor () {
     this.connection = MySQL.createConnection({
@@ -38,16 +38,8 @@ class Driver {
       console.log(results)
     })
   }
-  updateUser({id, list}){
-    var start = "UPDATE user ";
-    var rest;
-    if (list.length>2) {
-      for (var j = 0; j<list.length-4; j++) {
-        rest = rest + list[j] + "=" + list[j+1] + ","
-      }
-      rest = rest + list[list.length-2] + "=" + list[j-1]
-    }
-    var query = start+rest;
+  updateUser({id, password, phone, name, type}){
+    var query = 'UPDATE SET password = ' + password + ', phone = ' + phone + ', name = ' + name + ', type = ' + type + 'WHERE u_id = ' + id
     return this.connection.query(query, function (err, results) {
       if (err) throw err
       console.log(results)
@@ -58,7 +50,15 @@ class Driver {
     this.connection.query(query, function (err, results) {
       if (err) throw err;
       console.log(JSON.parse(JSON.stringify(results)));
-      var jsObj = JSON.parse(JSON.stringify(results));
+      var resultObj = JSON.parse(JSON.stringify(results));
+    })
+  }
+  getAllUsers() {
+    var query = 'SELECT * FROM user'
+    this.connection.query(query, function (err, results) {
+      if (err) throw err;
+      console.log(JSON.parse(JSON.stringify(results)));
+      var resultObj = JSON.parse(JSON.stringify(results))
     })
   }
   insertMeeting (id, location, users, start_time, end_time) {
@@ -82,25 +82,45 @@ class Driver {
         console.log(results)
       })
   }
-  insertFeedback (feedback) {
+  updateMeeting(id, location, users, start_time, end_time) {
+    var length = getMinutes(start_time, end_time);
+    var currentUser = this.getUser(id)
+    var list = [location, users, start_time, end_time]
+    var objectList = [location_id, users, start_time, end_time]
+    for (var i = 0; i<list.length; i++) {
+      if (currentUser.objectList[i] != list[i]) {
+        if (list[i] == start_time || list[i] == end_time) {
+          this.connection.query("UPDATE SET meeting_length = " + length + " WHERE meeting_id = " + id), function (err, results)) {
+            if (err) throw err;
+            console.log(results)
+          }}
+        this.connection.query("UPDATE SET " + currentUser.currentValue + ' = ' + objectList[i] + ' WHERE meeting_id = ' + id, function (err, results) {
+          if (err) throw err;
+          console.log(results)
+        })
+      }
+    }
+
+  }
+  insertFeedback (id, content, author, date_time_created) {
     var query =
       'INSERT INTO Feedback (feedback_Id, content, author, date_time_created) VALUES (' +
-      feedback.id +
+      id +
       ',' +
-      feedback.content +
+      content +
       ',' +
-      feedback.author +
+      author +
       ',' +
-      feedback.date_time_created +
+      date_time_created +
       ')'
       return this.connection.query(query, function (err, results) {
         if (err) throw err;
         console.log(results)
       })
   }
-  updateFeedback(id, new_content) {
-    var d = new Date();
-    var query = 'UPDATE Feedback SET content = ' + new_content + ', date_time_created = ' + d + 'WHERE id = ' + id;
+  updateFeedback(id, content) {
+    var query = 
+    'UPDATE SET content = ' + content + 'WHERE feedback_id = ' + id
     return this.connection.query(query, function (err, results) {
       if (err) throw err;
       console.log(results);
