@@ -39,26 +39,37 @@ class Driver {
     })
   }
   updateUser({id, password, phone, name, type}){
-    var query = 'UPDATE SET password = ' + password + ', phone = ' + phone + ', name = ' + name + ', type = ' + type + 'WHERE u_id = ' + id
-    return this.connection.query(query, function (err, results) {
-      if (err) throw err
-      console.log(results)
-    })
+    var currentUser = getUser(id)
+    var update = [password, phone, name, type]
+    var original = ['u_password', 'phone_number', 'name', 'type']
+    for (var i = 0; i<update.length; i++) {
+      if (currentUser.original[i] === update[i]) {
+        var query = 'UPDATE SET ' + original[i] + ' = ' + update[i] + 'WHERE u_id = ' + id
+        return this.connection.query(query, function (err, results) {
+        if (err) throw err
+        console.log(results)
+        })
+      }
+    }
   }
   getUser(id) {
     var query = 'SELECT * FROM user WHERE u_id = ' + id
-    this.connection.query(query, function (err, results) {
+    return this.connection.query(query, function (err, results) {
       if (err) throw err;
-      console.log(JSON.parse(JSON.stringify(results)));
-      var resultObj = JSON.parse(JSON.stringify(results));
+      results = JSON.stringify(results)
+      results = results.substr(2, results.length-4)
+      results = results.split(",")
+      for (var i = 0; i<results.length; i++) {
+        results[i] = results[i].split(":")
+        }
+      console.log(results)
     })
   }
   getAllUsers() {
     var query = 'SELECT * FROM user'
-    this.connection.query(query, function (err, results) {
+    return this.connection.query(query, function (err, results) {
       if (err) throw err;
-      console.log(JSON.parse(JSON.stringify(results)));
-      var resultObj = JSON.parse(JSON.stringify(results))
+      console.log(results)
     })
   }
   insertMeeting (id, location, users, start_time, end_time) {
@@ -82,19 +93,33 @@ class Driver {
         console.log(results)
       })
   }
+  getMeeting(id) {
+    var query = 'SELECT * FROM Meeting WHERE meeting_id = ' + id
+    return this.connection.query(query, function (err, results) {
+      if (err) throw err;
+      results = JSON.stringify(results)
+      results = results.substr(2, results.length-4)
+      results = results.split(",")
+      for (var i = 0; i<results.length; i++) {
+        results[i] = results[i].split(":")
+      }
+      console.log(results)
+    })
+  }
   updateMeeting(id, location, users, start_time, end_time) {
     var length = getMinutes(start_time, end_time);
-    var currentUser = this.getUser(id)
+    var currentMeeting = this.getMeeting(id)
     var list = [location, users, start_time, end_time]
-    var objectList = [location_id, users, start_time, end_time]
+    var objectList = ['location_id', 'users', 'start_time', 'end_time']
     for (var i = 0; i<list.length; i++) {
-      if (currentUser.objectList[i] != list[i]) {
+      if (currentMeeting.objectList[i] != list[i]) {
         if (list[i] == start_time || list[i] == end_time) {
-          this.connection.query("UPDATE SET meeting_length = " + length + " WHERE meeting_id = " + id), function (err, results)) {
+          this.connection.query("UPDATE SET meeting_length = " + length + " WHERE meeting_id = " + id, function (err, results) {
             if (err) throw err;
             console.log(results)
-          }}
-        this.connection.query("UPDATE SET " + currentUser.currentValue + ' = ' + objectList[i] + ' WHERE meeting_id = ' + id, function (err, results) {
+          })
+        }
+        this.connection.query("UPDATE SET " + currentMeeting.objectList[i] + ' = ' + list[i] + ' WHERE meeting_id = ' + id, function (err, results) {
           if (err) throw err;
           console.log(results)
         })
@@ -118,6 +143,17 @@ class Driver {
         console.log(results)
       })
   }
+  getFeedbackMeeting(meetingId) {
+    var query = 'SELECT * FROM Feedback WHERE meeting_id = ' + meetingId
+    return this.connection.query(query, function (err, results) {
+      if (err) throw err
+      console.log(results)
+    })
+  }
+  getAllFeedback() {
+    var query = 'SELECT * FROM Feedback'
+  }
+  /**The only thing the user can change is content */
   updateFeedback(id, content) {
     var query = 
     'UPDATE SET content = ' + content + 'WHERE feedback_id = ' + id
@@ -131,6 +167,12 @@ class Driver {
     var sec = (1000*60);
     var mins = diff/sec;
     return mins;
+  }
+  runQuery(query) {
+    return this.connection.query(query, function (err, results) {
+      if (err) throw err
+      console.log(results)
+    })
   }
 }
 class User {
@@ -176,4 +218,5 @@ class Location {
 }
 var newdriver = new Driver()
 newdriver.getUser(1)
+newdriver.getMeeting(1)
 newdriver.quit()
