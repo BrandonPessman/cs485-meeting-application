@@ -15,8 +15,14 @@ class Driver {
       console.log('Connection to InterviewTracker succeeded')
     })
   }
-  quit () {
+  quit() {
     this.connection.end()
+  }
+  getMinutes(x,y){
+    var diff = y-x;
+    var sec = (1000*60);
+    var mins = diff/sec;
+    return mins;
   }
   insertUser ({ id, email, password, phone, name, type }) {
     var query =
@@ -98,7 +104,8 @@ class Driver {
     return this.connection.query(query, function (err, results) {
       if (err) throw err;
       results = JSON.stringify(results)
-      results = results.substr(2, results.length-4)
+      results = results.substr(2,results.length-4)
+      console.log(results)
       results = results.split(",")
       for (var i = 0; i<results.length; i++) {
         results[i] = results[i].split(":")
@@ -147,7 +154,13 @@ class Driver {
     var query = 'SELECT * FROM Feedback WHERE meeting_id = ' + meetingId
     return this.connection.query(query, function (err, results) {
       if (err) throw err
-      console.log(results)
+      results = toArray(results)
+      results = JSON.stringify(results)
+      results = results.split(",")
+      for (var i = 0; i<results.length; i++) {
+        results[i] = results[i].split(",")
+      }
+      console.log(results)      
     })
   }
   getAllFeedback() {
@@ -162,18 +175,7 @@ class Driver {
       console.log(results);
     })
   }
-  getMinutes(x,y){
-    var diff = y-x;
-    var sec = (1000*60);
-    var mins = diff/sec;
-    return mins;
-  }
-  runQuery(query) {
-    return this.connection.query(query, function (err, results) {
-      if (err) throw err
-      console.log(results)
-    })
-  }
+
 }
 class User {
   constructor (id, email, password, phone, name, type) {
