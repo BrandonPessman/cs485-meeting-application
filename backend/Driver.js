@@ -26,6 +26,21 @@ class Driver {
     console.log(results);
     return(results);
   }
+
+  getAllMeetings(request, response){
+    const query='SELECT * FROM Meeting';
+    this.connection.query(query,(error,rows)=>{
+        if(error){
+            console.log(error.message);
+        }
+        else{
+            response.send({
+            meetings:rows.map(mapMeetings),
+          });
+        }
+    });
+}
+
   insertUser (id, email, password, phone, name, type) {
     var query =
       "INSERT INTO user (u_id, email, u_password, phone_number, name, type) VALUES (" +
@@ -221,6 +236,19 @@ class Driver {
   }
 
 }
+
+function mapMeetings(row){
+  return{
+    meeting_id : row.meeting_id,
+    location_id : row.location_id,
+    users : row.users,
+    start_date_time : row.start_date_time,
+    end_date_time : row.end_date_time,
+    meeting_length:row.meeting_length,
+    meeting_status:row.meeting_status,
+  };
+}
+
 class User {
   constructor (id, email, password, phone, name, type) {
     this.id = id
@@ -263,5 +291,4 @@ class Location {
   }
 }
 var newdriver = new Driver();
-newdriver.getMeeting(1);
-newdriver.quit();
+exports.newdriver=newdriver;
