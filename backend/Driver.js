@@ -20,7 +20,11 @@ class Driver {
   quit() {
     this.connection.end()
   }
-  getMinutes = function(x,y){
+  stringResults(results) {
+    results = JSON.stringify(results);
+    results = JSON.parse(results);
+    console.log(results);
+    return(results);
   }
   insertUser (id, email, password, phone, name, type) {
     var query =
@@ -42,6 +46,7 @@ class Driver {
       console.log(results)
     })
   }
+  
   updateUser({id, password, phone, name, type}){
     var currentUser = getUser(id)
     var update = [password, phone, name, type]
@@ -70,8 +75,49 @@ class Driver {
       console.log(results)
     })
   }
+  getMeeetingUsers(meeting_id) {
+    var query = 'SELECT * FROM user WHERE email IN (SELECT email FROM meetingUser WHERE meeting_id = ' + meeting_id + ')'
+    return this.connection.query(query, function (err, results) {
+      if (err) throw err;
+      console.log(results)
+    })
+  }
+  getUserType(id) {
+    var query = 'SELECT type_descr FROM userTypes WHERE type_id IN (SELECT type FROM user where u_id = ' + id + ')'
+    return this.connection.query(query, function(err, results) {
+      if (err) throw err;
+      console.log(results)
+    })
+  }
+  /**THIS DOES NOT WORK YET */
+  meetingCombo(users, meeting_id) {
+    var users = users.split(",");
+    console.log(users);
+    var email;
+    var type;
+    for (var i = 0; i<users.length; i++) {
+      var query = "SELECT * FROM user WHERE u_id = " + users[i]
+      var user = this.connection.query(query, function (err, results) { 
+        if (err) throw err; 
+        var JSONObj = JSON.parse(JSON.stringify(user)); 
+        console.log('>> obj: ', JSONOBj); 
+        email = JSONObj[0].email; 
+        type = JSONOBJ[0].type;
+      })
+      var query = "INSERT INTO meetingUser (meeting_id, email, user_type) VALUES (" +
+      meeting_id +
+      ", " +
+      email + 
+      ", " +
+      type +
+      ")"
+      this.connection.query(query, function (err, results) {
+        if (err) throw err;
+        console.log(results);
+      })
+    }
+  }
   insertMeeting (id, location, users, start_time, end_time) {
-    
     var query =
       "INSERT INTO Meeting (meeting_id, location_id, users, start_date_time, end_date_time) VALUES (" +
       id +
@@ -79,15 +125,16 @@ class Driver {
       location +
       ", '" +
       users +
-      "', " +
+      "', '" +
       start_time +
-      "," +
+      "', '" +
       end_time +
-      ")"
+      "')"
       return this.connection.query(query, function (err, results) {
         if (err) throw err;
         console.log(results)
       })
+    this.meetingCombo(users, id);
   }
   getMeeting(id) {
     var query = 'SELECT * FROM Meeting WHERE meeting_id = ' + id
@@ -97,25 +144,24 @@ class Driver {
     })
   }
   updateMeeting(id, location, users, start_time, end_time) {
-    var length = getMinutes(start_time, end_time);
-    var currentMeeting = this.getMeeting(id)
+    var currentMeeting = this.getMeeting(id);
+    console.log(currentMeeting.location_id);
     var list = [location, users, start_time, end_time]
-    var objectList = ['location_id', 'users', 'start_time', 'end_time']
+    var objectList = [currentMeeting.location_id, currentMeeting.users, currentMeeting.start_time, currentMeeting.end_time]
     for (var i = 0; i<list.length; i++) {
-      if (currentMeeting.objectList[i] != list[i]) {
-        if (list[i] == start_time || list[i] == end_time) {
-          this.connection.query("UPDATE SET meeting_length = " + length + " WHERE meeting_id = " + id, function (err, results) {
-            if (err) throw err;
-            console.log(results)
-          })
-        }
-        this.connection.query("UPDATE SET " + currentMeeting.objectList[i] + ' = ' + list[i] + ' WHERE meeting_id = ' + id, function (err, results) {
+      if (objectList[i] != list[i]) {
+        this.connection.query("UPDATE Meeting SET " + objectList[i] + ' = ' + list[i] + ' WHERE meeting_id = ' + id, function (err, results) {
           if (err) throw err;
           console.log(results)
         })
       }
     }
-
+  }
+  insertFeedbackCombo(query) {
+    return this.connection.query(query, function (err, results) {
+      if (err) throw err;
+      console.log(results)
+    })
   }
   insertFeedback (id, content, author, meeting_id) {
     let now = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -124,16 +170,24 @@ class Driver {
       id +
       ", '" +
       content +
-      "'," +
+      "', '" +
       author +
-      ", '" +
+      "', '" +
       now +
       "'," +
       meeting_id +
       ")"
-      return this.connection.query(query, function (err, results) {
-        if (err) throw err;
-        console.log(results)
+    var comboQuery = 'INSERT INTO feedbackCombo (feedback_id, meeting_id, author_email) VALUES ('+
+        id +
+        ", " +
+        meeting_id + 
+        ", '" +
+        author + 
+        "')"
+    this.insertFeedbackCombo(comboQuery)
+    return this.connection.query(query, function (err, results) {
+      if (err) throw err;
+      console.log(results)
       })
   }
   getFeedbackMeeting(meetingId) {
@@ -150,10 +204,16 @@ class Driver {
       console.log(results)
     })
   }
+  getFeedbackCombo(feedback_id, meeting_id) {
+    var query = "SELECT * FROM Feedback WHERE feedback_Id = " + feedback_id + " and meeting_id = " + meeting_id
+    return this.connection.query(query, function (err, results) {
+      if (err) throw err
+      console.log(results)
+    })
+  }
   /**The only thing the user can change is content */
   updateFeedback(id, content) {
-    var query = 
-    'UPDATE SET content = ' + content + 'WHERE feedback_id = ' + id
+    var query = 'UPDATE SET content = ' + content + 'WHERE feedback_id = ' + id
     return this.connection.query(query, function (err, results) {
       if (err) throw err;
       console.log(results);
@@ -202,9 +262,6 @@ class Location {
     this.name = name
   }
 }
-var newdriver = new Driver()
-newdriver.getUser(1)
-newdriver.insertFeedback(1,"Initial Feedback", 1, 1)
-newdriver.getAllFeedback()
-newdriver.getFeedbackMeeting(1)
-newdriver.quit()
+var newdriver = new Driver();
+newdriver.getMeeting(1);
+newdriver.quit();
