@@ -1,8 +1,9 @@
 'user strict'
 var MySQL = require('mysql')
 const moment = require('moment');
-
-//test test-tong
+const { response } = require('express');
+var email;
+var type;
 class Driver {
   constructor () {
     this.connection = MySQL.createConnection({
@@ -20,13 +21,6 @@ class Driver {
   quit() {
     this.connection.end()
   }
-  stringResults(results) {
-    results = JSON.stringify(results);
-    results = JSON.parse(results);
-    console.log(results);
-    return(results);
-  }
-
   getAllMeetings(request, response){
     const query='SELECT * FROM Meeting';
     this.connection.query(query,(error,rows)=>{
@@ -84,11 +78,17 @@ class Driver {
     })
   }
   getAllUsers() {
-    var query = 'SELECT * FROM user'
-    return this.connection.query(query, function (err, results) {
-      if (err) throw err;
-      console.log(results)
-    })
+    const query='SELECT * FROM user';
+    this.connection.query(query,(error,rows)=>{
+        if(error){
+            console.log(error.message);
+        }
+        else{
+            response.send({
+            meetings:rows.map(mapUsers)
+          });
+        }
+    });
   }
   getMeeetingUsers(meeting_id) {
     var query = 'SELECT * FROM user WHERE email IN (SELECT email FROM meetingUser WHERE meeting_id = ' + meeting_id + ')'
@@ -104,33 +104,12 @@ class Driver {
       console.log(results)
     })
   }
-  /**THIS DOES NOT WORK YET */
-  meetingCombo(users, meeting_id) {
-    var users = users.split(",");
-    console.log(users);
-    var email;
-    var type;
-    for (var i = 0; i<users.length; i++) {
-      var query = "SELECT * FROM user WHERE u_id = " + users[i]
-      var user = this.connection.query(query, function (err, results) { 
-        if (err) throw err; 
-        var JSONObj = JSON.parse(JSON.stringify(user)); 
-        console.log('>> obj: ', JSONOBj); 
-        email = JSONObj[0].email; 
-        type = JSONOBJ[0].type;
-      })
-      var query = "INSERT INTO meetingUser (meeting_id, email, user_type) VALUES (" +
-      meeting_id +
-      ", " +
-      email + 
-      ", " +
-      type +
-      ")"
-      this.connection.query(query, function (err, results) {
+  meetingCombo(user_id, meeting_id) {
+    var query = 'Insert into meetingUser (meeting_id, u_id) VALUES(' + meeting_id + ', ' + user_id + ')'
+      this.connection.query(query, function (err, results) { 
         if (err) throw err;
         console.log(results);
-      })
-    }
+        })
   }
   insertMeeting (id, location, users, start_time, end_time) {
     var query =
@@ -145,11 +124,15 @@ class Driver {
       "', '" +
       end_time +
       "')"
-      return this.connection.query(query, function (err, results) {
+      this.connection.query(query, function (err, results) {
         if (err) throw err;
         console.log(results)
       })
-    this.meetingCombo(users, id);
+    var users = users.split(",");
+    for (var i = 0; i<users.length; i++) {
+      var user_id = parseInt(users[i]);
+      this.meetingCombo(user_id, id);
+    }
   }
   getMeeting(id) {
     var query = 'SELECT * FROM Meeting WHERE meeting_id = ' + id
@@ -214,9 +197,13 @@ class Driver {
   }
   getAllFeedback() {
     var query = 'SELECT * FROM Feedback'
-    return this.connection.query(query, function (err, results) {
-      if (err) throw err
-      console.log(results)
+    return this.connection.query(query, (err, rows)=> {
+      if (err){
+        console.log(err)
+      }
+      response.send({
+        feedback:rows.map(mapFeedback)
+      })
     })
   }
   getFeedbackCombo(feedback_id, meeting_id) {
@@ -234,9 +221,50 @@ class Driver {
       console.log(results);
     })
   }
-
+  getPositions() {
+    var query = 'SELECT * FROM EmployeePosition';
+    this.connection.query(query, (err, rows) =>{
+      if (err) {
+        console.log(err)
+      }
+      else{
+        response.send({
+          positions:rows.map(mapPosition)
+        })
+      }
+    })
+  }
+  getLocations() {
+    var query = 'SELECT * FROM Location';
+    this.connection.query(query, (err, rows)=>{
+      if (err) {
+       console.log(err)
+      }
+      else{response.send({
+        locations:rows.map(mapLocation)
+      })}
+    })
+  }
+  getUserTypes() {
+    var query = 'SELECT * FROM userTypes';
+    this.connection.query(query, (err, rows) => {
+      if (err) {
+        console.log(err)
+      }
+      else{response.send({
+        types:rows.map(mapTypes)
+        })
+        console.log(rows)
+      }
+    })
+  }
+  toDate(date) {
+    date = date.toISOString();
+    date = date.substr(1, 19);
+    date = date.replace('T', ' ');
+    return(date);
+  }
 }
-
 function mapMeetings(row){
   return{
     meeting_id : row.meeting_id,
@@ -248,47 +276,38 @@ function mapMeetings(row){
     meeting_status:row.meeting_status,
   };
 }
-
-class User {
-  constructor (id, email, password, phone, name, type) {
-    this.id = id
-    this.email = email
-    this.password = password
-    this.phone = phone
-    this.name = name
-    this.type = type
-  }
+function mapUsers(row) {
+return{
+    u_id : row.u_id,
+    email : row.email,
+    u_password : row.u_password,
+    phone_number : row.phone_number,
+    name : row.name,
+    type : row.type
+  };
 }
-class Meeting {
-  constructor (id, location_id, users, start_date_time, end_date_time, meeting_length) {
-    this.id = id
-    this.location_id = location_id
-    this.users = users
-    this.start_date_time = start_date_time
-    this.end_date_time = end_date_time
-    this.meeting_length = meeting_length;
-  }
+function mapFeedback(row) {
+  return{
+    feedback_Id : row.feedback_Id,
+    content : row.content,
+    author : row.author,
+    date_time_created : row.date_time_created,
+    meeting_id : row.meeting_id
+  };
 }
-class Feedback {
-  constructor (id, content, author, date_time_created, meeting_id) {
-    this.id = id
-    this.content = content
-    this.author = author
-    this.date_time_created = date_time_created
-  }
+function mapLocation(row) {
+  return{
+  location_id : row.location_id,
+  name : row.name,
+  available : row.available
+  };
 }
-class EmployeePosition {
-  constructor (id, title, currentEmployee) {
-    this.id = id
-    this.title = title
-    this.currentEmployee = currentEmployee
-  }
-}
-class Location {
-  constructor (id, name) {
-    this.id = id
-    this.name = name
-  }
+function mapPosition(row) {
+  return{
+  position_id : row.position_id,
+  title : row.title,
+  currentEmployee : row.currentEmployee
+  };
 }
 var newdriver = new Driver();
 exports.newdriver=newdriver;
