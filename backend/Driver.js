@@ -119,10 +119,14 @@ class Driver {
   }
   /*Inserts a new meeting to 'Meeting' table
     calls meetingCombo to add users to meetingCombo table*/
-  insertMeeting(id, location, users, start_time, end_time) {
+  insertMeeting(id, title, description, location, users, start_time, end_time, position_id) {
     var query =
-      "INSERT INTO Meeting (meeting_id, location_id, users, start_date_time, end_date_time) VALUES (" +
+      "INSERT INTO Meeting (meeting_id, meeting_title, meeting_descr, location_id, users, start_date_time, end_date_time, position_id) VALUES (" +
       id +
+      "," +
+      title + 
+      "," + 
+      description +
       "," +
       location +
       ", '" +
@@ -131,7 +135,9 @@ class Driver {
       start_time +
       "', '" +
       end_time +
-      "')"
+      "'," +
+      position_id +
+      ")"
     this.connection.query(query, function (err, results) {
       if (err) throw err;
       console.log(results)
@@ -143,6 +149,7 @@ class Driver {
       var user_id = parseInt(users[i]);
       this.meetingCombo(user_id, id);
     }
+    this.incrementNum(position_id)
   }
   /*gets meeting from 'Meeting' table using meeting_id*/
   getMeeting(id) {
@@ -227,7 +234,7 @@ class Driver {
   }
   /**Updates feedback instance in 'Feedback' table - The only thing the user can change is content */
   updateFeedback(id, content) {
-    var query = 'UPDATE SET content = ' + content + 'WHERE feedback_id = ' + id
+    var query = 'UPDATE feedback SET content = ' + content + 'WHERE feedback_id = ' + id
     return this.connection.query(query, function (err, results) {
       if (err) throw err;
       console.log(results);
@@ -245,6 +252,16 @@ class Driver {
           positions: rows.map(mapPosition)
         })
       }
+    })
+  }
+  
+  incrementNum(position_id) {
+    var num = this.getNumMeetings(position_id);
+    num = num+1;
+    var query = 'UPDATE EmployeePosition SET num_meetings = ' +num;
+    this.connection.query(query, function (err, results) {
+      if (err) throw err;
+      return results;
     })
   }
   /*Returns all locations from 'Location' table*/
@@ -274,6 +291,27 @@ class Driver {
         })
         console.log(rows)
       }
+    })
+  }
+  getDepartments(){
+    var query = 'SELECT * FROM Department';
+    this.connection.query(query, (err, rows) => {
+      if (err) {
+        console.log(err)
+      }
+      else {
+        response.send({
+          types: rows.map(mapDepartment)
+        })
+        console.log(rows)
+      }
+      })
+  }
+  insertDepartment(dept_id, dept_title, dept_short) {
+    var query = "INSERT INTO Department (dept_id, dept_title, dept_short) VALUES (" + dept_id + ", '" + dept_title + "', '" + dept_short + "')"
+    this.connection.query(query, function (err, results) {
+      if (err) throw err;
+      console.log(results);
     })
   }
   /*Purely for dev use - will not be used in after linked to frontend*/
@@ -338,6 +376,13 @@ function mapTypes(row) {
   return {
     type_id: row.type_id,
     type_descr: row.type_descr
+  };
+}
+function mapDepartment(row) {
+  return {
+    dept_id : row.dept_id,
+    dept_title : row.dept_title,
+    dept_short : row.dept_short
   };
 }
 var newdriver = new Driver();

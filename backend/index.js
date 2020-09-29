@@ -36,4 +36,7 @@ app.get('/user:meeting_id', (request, response) => {
     const meeting_id = request.params.meeting_id;
     response.send(driver.newdriver.getMeeetingUsers);
 })
+app.get('/department', (request, response) => {
+    driver.newdriver.getDepartments(request, response);
+})
 app.get('/')
