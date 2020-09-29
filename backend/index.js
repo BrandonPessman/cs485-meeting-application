@@ -28,8 +28,12 @@ app.get('/positions', (request, response) => {
 app.get('/locations', (request, response) => {
     response.send(driver.newdriver.getLocations()); 
 })
-app.get('/feedback:meeting_id(', (request, response) => {
+app.get('/feedback:meeting_id', (request, response) => {
     const meeting_id = request.params.meeting_id;
     response.send(driver.newdriver.getFeedbackMeeting(meeting_id));
+})
+app.get('/user:meeting_id', (request, response) =>{
+    const meeting_id = request.params.meeting_id;
+    response.send(driver.newdriver.getMeeetingUsers);
 })
 app.get('/')
