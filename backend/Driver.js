@@ -36,7 +36,7 @@ class Driver {
       }
     });
   }
-  /*Inserts user to 'user' table*/
+  /*Inserts user to 'user' table*/ //(store user?)
   insertUser(id, email, password, phone, name, type) {
     var query =
       "INSERT INTO user (u_id, email, u_password, phone_number, name, type) VALUES (" +
