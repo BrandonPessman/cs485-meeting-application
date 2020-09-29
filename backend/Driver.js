@@ -93,6 +93,13 @@ class Driver {
       }
     });
   }
+  updateMeetingUsers(users, meeting_id) {
+    var query = 'UPDATE Meeting SET users WHERE meeting_id = ' + meeting_id;
+    this.connection.query(query, function (err, results) {
+      if (err) throw err;
+      console.log(results);
+    })
+  }
   /*Gets all users from specific meeting user meeting_id*/
   getMeeetingUsers(meeting_id) {
     var query = 'SELECT * FROM user WHERE email IN (SELECT email FROM meetingUser WHERE meeting_id = ' + meeting_id + ')'
