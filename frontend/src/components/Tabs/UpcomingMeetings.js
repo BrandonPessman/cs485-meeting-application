@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, { useState, useEffect } from 'react'
 import Grid from '@material-ui/core/Grid'
 import Paper from '@material-ui/core/Paper'
 
@@ -15,9 +15,9 @@ const months = {
     9: 'October',
     10: 'November',
     11: 'December'
-  }
+}
 
-const fakeData = 
+const fakeData =
 {
     meetings: [
         {
@@ -26,7 +26,7 @@ const fakeData =
             endtime: new Date(2020, 10, 10, 4, 30, 0),
             location: 'Phillips 007',
             candidate: 'Bob Bobkins',
-            users: [{name: "Steve", role: '1'}, { name: "Bob", role: '0'}]
+            users: [{ name: "Steve", role: '1' }, { name: "Bob", role: '0' }]
         },
         {
             title: 'Meeting with Sarah',
@@ -34,7 +34,7 @@ const fakeData =
             endtime: new Date(2020, 10, 10, 6, 30, 0),
             location: 'Phillips 007',
             candidate: 'Bob Bobkins',
-            users: [{name: "Sarah", role: '1'},  { name: "Bob", role: '0'}]
+            users: [{ name: "Sarah", role: '1' }, { name: "Bob", role: '0' }]
         },
         {
             title: 'Research Talk to Class',
@@ -42,7 +42,7 @@ const fakeData =
             endtime: new Date(2020, 10, 10, 8, 30, 0),
             location: 'Phillips 007',
             candidate: 'Bob Bobkins',
-            users: [{name: "Steve", role: '1'}, { name: "Sarah", role: '1'},  { name: "Bob", role: '0'}]
+            users: [{ name: "Steve", role: '1' }, { name: "Sarah", role: '1' }, { name: "Bob", role: '0' }]
         },
         {
             title: 'Research Talk to Class',
@@ -50,12 +50,12 @@ const fakeData =
             endtime: new Date(2020, 10, 11, 8, 30, 0),
             location: 'Phillips 007',
             candidate: 'Bob Bobkins',
-            users: [{name: "Steve", role: '1'}, { name: "Sarah", role: '1'},  { name: "Bob", role: '0'}]
+            users: [{ name: "Steve", role: '1' }, { name: "Sarah", role: '1' }, { name: "Bob", role: '0' }]
         }
     ]
 }
 
-export default function UpcomingMeetings () {
+export default function UpcomingMeetings() {
     const [data, setData] = useState([])
 
     useEffect(() => {
@@ -92,34 +92,35 @@ export default function UpcomingMeetings () {
         setData(list)
     }, [])
 
-  return (
-    <div style={{ margin: '40px 0px' }}>
-        <h2 style={{ marginBottom: '0', marginTop: '0', fontWeight: '300' }}>
-            Upcoming Meetings
+    return (
+        <div style={{ margin: '40px 0px' }}>
+            <h2 style={{ marginBottom: '0', marginTop: '0', fontWeight: '300' }}>
+                Upcoming Meetings
         </h2>
 
-        
-        {data.map(inst => {
-            return (
-                <div>
-                    <Paper elevation={3} style={{ padding: '10px 30px 30px 30px', margin: '20px 0' }}>
-                    <Grid container spacing={12}>
-                        <Grid item xs={12}>
-                            <h2>{inst.date}</h2>
-                        </Grid>
-                        {inst.meetings.map(meetings => { return (
-                            <Grid item xs={12}>
-                                <h4 style={{fontWeight: '300', margin: '0', borderBottom: 'solid 1px black'}}><span style={{fontWeight: '600'}}>{meetings.candidate}</span> - {meetings.title}<span style={{float: 'right', fontWeight: '600'}}>{meetings.location}</span></h4>
-                            </Grid>
-                            )
-                         })  
-                        }
-                    </Grid>
-                    </Paper>
-                </div>
-            )
-        })}
 
-    </div>
-  )
+            {data.map(inst => {
+                return (
+                    <div>
+                        <Paper elevation={3} style={{ padding: '10px 30px 30px 30px', margin: '20px 0' }}>
+                            <Grid container spacing={12}>
+                                <Grid item xs={12}>
+                                    <h2>{inst.date}</h2>
+                                </Grid>
+                                {inst.meetings.map(meetings => {
+                                    return (
+                                        <Grid item xs={12}>
+                                            <h4 style={{ fontWeight: '300', margin: '5px', borderBottom: 'dotted 1px rgba(0,0,0,.3)' }}><span style={{ fontWeight: '600' }}>{meetings.candidate}</span> - {meetings.title}<span style={{ float: 'right' }}>{meetings.starttime.getUTCHours()}:{meetings.starttime.getMinutes()} to {meetings.endtime.getUTCHours()}:{meetings.endtime.getMinutes()} - {' '}<span style={{ fontWeight: '600' }}> {meetings.location}</span></span></h4>
+                                        </Grid>
+                                    )
+                                })
+                                }
+                            </Grid>
+                        </Paper>
+                    </div>
+                )
+            })}
+
+        </div>
+    )
 }

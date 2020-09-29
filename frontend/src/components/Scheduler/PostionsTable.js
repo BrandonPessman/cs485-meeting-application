@@ -22,7 +22,7 @@ import Button from '@material-ui/core/Button'
 // import DeleteIcon from '@material-ui/icons/Delete'
 // import FilterListIcon from '@material-ui/icons/FilterList'
 
-function createData (
+function createData(
   positionId,
   positionTitle,
   department,
@@ -43,11 +43,9 @@ const rows = [
   createData('29395', 'Associate Professor', 'Computer Science', 3, 10),
   createData('84824', 'Associate Professor', 'Computer Science', 5, 10),
   createData('95021', 'Associate Professor', 'Computer Science', 3, 10),
-  createData('52947', 'Associate Professor', 'Physics', 5, 10),
-  createData('21052', 'Associate Professor', 'Physics', 3, 10)
 ]
 
-function descendingComparator (a, b, orderBy) {
+function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
     return -1
   }
@@ -57,13 +55,13 @@ function descendingComparator (a, b, orderBy) {
   return 0
 }
 
-function getComparator (order, orderBy) {
+function getComparator(order, orderBy) {
   return order === 'desc'
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy)
 }
 
-function stableSort (array, comparator) {
+function stableSort(array, comparator) {
   const stabilizedThis = array.map((el, index) => [el, index])
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0])
@@ -106,7 +104,7 @@ const headCells = [
   }
 ]
 
-function EnhancedTableHead (props) {
+function EnhancedTableHead(props) {
   const {
     classes,
     onSelectAllClick,
@@ -201,15 +199,15 @@ const EnhancedTableToolbar = props => {
           {numSelected} selected
         </Typography>
       ) : (
-        <Typography
-          className={classes.title}
-          variant='h6'
-          id='tableTitle'
-          component='div'
-        >
-          Select a Position
-        </Typography>
-      )}
+          <Typography
+            className={classes.title}
+            variant='h6'
+            id='tableTitle'
+            component='div'
+          >
+            Select a Position
+          </Typography>
+        )}
 
       {/* {numSelected > 0 ? (
         <Tooltip title='Delete'>
@@ -256,7 +254,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function EnhancedTable ({ setShowNextStep }) {
+export default function EnhancedTable({ setShowNextStep }) {
   const classes = useStyles()
   const [order, setOrder] = React.useState('asc')
   const [orderBy, setOrderBy] = React.useState('positionId')

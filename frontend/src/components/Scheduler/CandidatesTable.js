@@ -22,7 +22,7 @@ import Button from '@material-ui/core/Button'
 // import DeleteIcon from '@material-ui/icons/Delete'
 // import FilterListIcon from '@material-ui/icons/FilterList'
 
-function createData (name, email, positionId, documentsId, scheduleId) {
+function createData(name, email, positionId, documentsId, scheduleId) {
   return { name, email, positionId, documentsId, scheduleId }
 }
 
@@ -31,7 +31,7 @@ const rows = [
   createData('Sarah Sally', 'sarah@gmail.com', 48489, 12134, 21593)
 ]
 
-function descendingComparator (a, b, orderBy) {
+function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
     return -1
   }
@@ -41,13 +41,13 @@ function descendingComparator (a, b, orderBy) {
   return 0
 }
 
-function getComparator (order, orderBy) {
+function getComparator(order, orderBy) {
   return order === 'desc'
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy)
 }
 
-function stableSort (array, comparator) {
+function stableSort(array, comparator) {
   const stabilizedThis = array.map((el, index) => [el, index])
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0])
@@ -90,7 +90,7 @@ const headCells = [
   }
 ]
 
-function EnhancedTableHead (props) {
+function EnhancedTableHead(props) {
   const {
     classes,
     onSelectAllClick,
@@ -185,15 +185,15 @@ const EnhancedTableToolbar = props => {
           {numSelected} selected
         </Typography>
       ) : (
-        <Typography
-          className={classes.title}
-          variant='h6'
-          id='tableTitle'
-          component='div'
-        >
-          Select a Candidate
-        </Typography>
-      )}
+          <Typography
+            className={classes.title}
+            variant='h6'
+            id='tableTitle'
+            component='div'
+          >
+            Select a Candidate
+          </Typography>
+        )}
 
       {/* {numSelected > 0 ? (
         <Tooltip title='Delete'>
@@ -240,7 +240,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function EnhancedTable () {
+export default function EnhancedTable({ setShowNextStep }) {
   const classes = useStyles()
   const [order, setOrder] = React.useState('asc')
   const [orderBy, setOrderBy] = React.useState('name')
@@ -269,8 +269,10 @@ export default function EnhancedTable () {
 
     if (selected === name) {
       setSelected([])
+      setShowNextStep(false)
     } else {
       setSelected(name)
+      setShowNextStep(true)
     }
 
     // if (selectedIndex === -1) {

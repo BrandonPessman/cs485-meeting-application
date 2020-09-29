@@ -3,15 +3,17 @@ import React, { useState } from 'react'
 import Departments from '../Scheduler/Department'
 import Positions from '../Scheduler/Positions'
 import Candidates from '../Scheduler/Candidates'
-// import People from '../Scheduler/People'
+import Meetings from '../Scheduler/Meetings'
 import Paper from '../Scheduler/Paper'
 
-export default function MeetingScheduler () {
+export default function MeetingScheduler() {
   const [showPositions, setShowPositions] = useState(false)
   const [showCandidates, setShowCandidates] = useState(false)
+  const [showMeetings, setShowMeetings] = useState(false)
 
-  if (showCandidates && !showPositions) {
+  if ((showCandidates && !showPositions) || (showMeetings && !showCandidates)) {
     setShowCandidates(false)
+    setShowMeetings(false)
   }
 
   return (
@@ -30,14 +32,19 @@ export default function MeetingScheduler () {
           setShowNextStep={setShowCandidates}
         />
       ) : (
-        ''
-      )}
+          ''
+        )}
       {showCandidates && showPositions ? (
-        <Paper Comp={Candidates} Title='Candidates' noPaper={true} />
+        <Paper Comp={Candidates} Title='Candidates' noPaper={true} setShowNextStep={setShowMeetings} />
       ) : (
-        ''
-      )}
-      {/* <Paper Comp={People} Title='People' /> */}
+          ''
+        )}
+      {showCandidates && showPositions && showMeetings ? (
+        <Paper Comp={Meetings} Title='Meetings' noPaper={true} />
+      ) : (
+          ''
+        )}
+
     </div>
   )
 }
