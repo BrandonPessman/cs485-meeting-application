@@ -1,4 +1,3 @@
-'user strict'
 var MySQL = require('mysql')
 const moment = require('moment');
 const { response } = require('express');
@@ -23,6 +22,7 @@ class Driver {
   quit() {
     this.connection.end()
   }
+
   getAllMeetings(request, response) {
     const query = 'SELECT * FROM Meeting';
     this.connection.query(query, (error, rows) => {
@@ -36,6 +36,30 @@ class Driver {
       }
     });
   }
+
+  insertMeeting(request,response){
+    const query='INSERT INTO Meeting VALUES(?,?,?,?,?,?,?,?,?,?)';
+    const params=[null,request.meeting_title,request.meeting_descr,request.location_id,request.users,request.start_date_time,
+      request.end_date_time,request.position_id];
+      connection.query(query,params,(error,result)=>{
+        if(error){
+            console.log(error.message);
+        }
+        else{
+          var meeting_id=result.insertId;
+          response.send({status:true,meeting_id:meeting_id,});
+          var users = request.users.split(",");
+          /*For each user in 'users' string call meetingCombo*/
+          for (var i = 0; i < users.length; i++) {
+            var user_id = parseInt(users[i]);
+            this.meetingCombo(user_id, meeting_id);
+          }
+        }
+    });
+    var position = request.position_id;
+    insertNum(position)
+  }
+
   /*Inserts user to 'user' table*/
   insertUser(id, email, password, phone, name, type) {
     var query =
@@ -89,7 +113,7 @@ class Driver {
         console.log(error.message);
       }
       else {
-        response.json(rows[0]);
+        response.json(rows);
       }
     });
   }
@@ -126,38 +150,38 @@ class Driver {
   }
   /*Inserts a new meeting to 'Meeting' table
     calls meetingCombo to add users to meetingCombo table*/
-  insertMeeting(id, title, description, location, users, start_time, end_time, position_id) {
-    var query =
-      "INSERT INTO Meeting (meeting_id, meeting_title, meeting_descr, location_id, users, start_date_time, end_date_time, position_id) VALUES (" +
-      id +
-      "," +
-      title + 
-      "," + 
-      description +
-      "," +
-      location +
-      ", '" +
-      users +
-      "', '" +
-      start_time +
-      "', '" +
-      end_time +
-      "'," +
-      position_id +
-      ")"
-    this.connection.query(query, function (err, results) {
-      if (err) throw err;
-      console.log(results)
-    })
-    /*separates users string into array of user int*/
-    var users = users.split(",");
-    /*For each user in 'users' string call meetingCombo*/
-    for (var i = 0; i < users.length; i++) {
-      var user_id = parseInt(users[i]);
-      this.meetingCombo(user_id, id);
-    }
-    this.incrementNum(position_id)
-  }
+  // insertMeeting(id, title, description, location, users, start_time, end_time, position_id) {
+  //   var query =
+  //     "INSERT INTO Meeting (meeting_id, meeting_title, meeting_descr, location_id, users, start_date_time, end_date_time, position_id) VALUES (" +
+  //     id +
+  //     "," +
+  //     title + 
+  //     "," + 
+  //     description +
+  //     "," +
+  //     location +
+  //     ", '" +
+  //     users +
+  //     "', '" +
+  //     start_time +
+  //     "', '" +
+  //     end_time +
+  //     "'," +
+  //     position_id +
+  //     ")"
+  //   this.connection.query(query, function (err, results) {
+  //     if (err) throw err;
+  //     console.log(results)
+  //   })
+  //   /*separates users string into array of user int*/
+  //   var users = users.split(",");
+  //   /*For each user in 'users' string call meetingCombo*/
+  //   for (var i = 0; i < users.length; i++) {
+  //     var user_id = parseInt(users[i]);
+  //     this.meetingCombo(user_id, id);
+  //   }
+  //   this.incrementNum(position_id)
+  // }
   /*gets meeting from 'Meeting' table using meeting_id*/
   getMeeting(id) {
     var query = 'SELECT * FROM Meeting WHERE meeting_id = ' + id
@@ -339,6 +363,8 @@ function mapMeetings(row) {
     end_date_time: row.end_date_time,
     meeting_length: row.meeting_length,
     meeting_status: row.meeting_status,
+    meeting_title:row.meeting_title,
+	  meeting_descr:row.meeting_descr,
   };
 }
 /*Maps user columns for response.send() functionality*/

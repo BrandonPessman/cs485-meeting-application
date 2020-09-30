@@ -15,6 +15,11 @@ app.get('/types', (request, response) => {
 app.get('/meetings', (request, response) => {
     driver.newdriver.getAllMeetings(request, response);
 });
+
+app.post('/insertMeeting',(request,response)=>{
+    driver.newdriver.insertMeeting(request, response);
+});
+
 app.get('/users', (request, response) => {
     driver.newdriver.getAllUsers(response);
 });
