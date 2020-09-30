@@ -89,7 +89,7 @@ class Driver {
         console.log(error.message);
       }
       else {
-        response.json(rows[0]);
+        response.json(rows);
       }
     });
   }
