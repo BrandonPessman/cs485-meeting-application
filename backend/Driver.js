@@ -387,5 +387,4 @@ function mapDepartment(row) {
   };
 }
 var newdriver = new Driver();
-newdriver.getAllUsers();
-newdriver.quit();
+exports.newdriver = newdriver;;
