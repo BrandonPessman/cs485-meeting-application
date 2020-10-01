@@ -99,7 +99,7 @@ class Driver {
   }
   /*gets user from 'user' table using u_id col*/
   getUser(id) {
-    var query = 'SELECT * FROM user WHERE u_id = ' + id
+    var query = 'SELECT * FROM user WHERE u_id = ' + id + ' INNER JOIN userTypes ON user.type = userTypes.type_id'
     return this.connection.query(query, function (err, results) {
       if (err) throw err;
       console.log(results)
@@ -107,7 +107,7 @@ class Driver {
   }
   /*Gets all users from 'user' table*/
   getAllUsers(response) {
-    const query = 'SELECT * FROM user';
+    const query = 'SELECT * FROM user INNER JOIN userTypes ON user.type = userTypes.type_id';
     this.connection.query(query, (error, rows) => {
       if (error) {
         console.log(error.message);
@@ -118,7 +118,7 @@ class Driver {
     });
   }
   updateMeetingUsers(users, meeting_id) {
-    var query = 'UPDATE Meeting SET users WHERE meeting_id = ' + meeting_id;
+    var query = 'UPDATE Meeting SET users = ' + users +' WHERE meeting_id = ' + meeting_id;
     this.connection.query(query, function (err, results) {
       if (err) throw err;
       console.log(results);
@@ -148,40 +148,6 @@ class Driver {
       console.log(results);
     })
   }
-  /*Inserts a new meeting to 'Meeting' table
-    calls meetingCombo to add users to meetingCombo table*/
-  // insertMeeting(id, title, description, location, users, start_time, end_time, position_id) {
-  //   var query =
-  //     "INSERT INTO Meeting (meeting_id, meeting_title, meeting_descr, location_id, users, start_date_time, end_date_time, position_id) VALUES (" +
-  //     id +
-  //     "," +
-  //     title + 
-  //     "," + 
-  //     description +
-  //     "," +
-  //     location +
-  //     ", '" +
-  //     users +
-  //     "', '" +
-  //     start_time +
-  //     "', '" +
-  //     end_time +
-  //     "'," +
-  //     position_id +
-  //     ")"
-  //   this.connection.query(query, function (err, results) {
-  //     if (err) throw err;
-  //     console.log(results)
-  //   })
-  //   /*separates users string into array of user int*/
-  //   var users = users.split(",");
-  //   /*For each user in 'users' string call meetingCombo*/
-  //   for (var i = 0; i < users.length; i++) {
-  //     var user_id = parseInt(users[i]);
-  //     this.meetingCombo(user_id, id);
-  //   }
-  //   this.incrementNum(position_id)
-  // }
   /*gets meeting from 'Meeting' table using meeting_id*/
   getMeeting(id) {
     var query = 'SELECT * FROM Meeting WHERE meeting_id = ' + id
