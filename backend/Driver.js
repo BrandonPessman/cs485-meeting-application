@@ -105,18 +105,20 @@ class Driver {
       console.log(results)
     })
   }
-  /*Gets all users from 'user' table*/
+  /*Gets all users from 'user' table - returns type_descr from userTypes*/
   getAllUsers(response) {
-    const query = 'SELECT * FROM user INNER JOIN userTypes ON user.type = userTypes.type_id';
+    const query = 'SELECT * FROM user LEFT JOIN userTypes ON user.type = userTypes.type_id';
     this.connection.query(query, (error, rows) => {
       if (error) {
         console.log(error.message);
       }
       else {
+        console.log(rows)
         response.json(rows);
       }
     });
   }
+
   updateMeetingUsers(users, meeting_id) {
     var query = 'UPDATE Meeting SET users = ' + users +' WHERE meeting_id = ' + meeting_id;
     this.connection.query(query, function (err, results) {
@@ -385,4 +387,5 @@ function mapDepartment(row) {
   };
 }
 var newdriver = new Driver();
-exports.newdriver = newdriver;
+newdriver.getAllUsers();
+newdriver.quit();
