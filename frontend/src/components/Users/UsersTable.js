@@ -69,10 +69,10 @@ const headCells = [
     label: 'Email'
   },
   {
-    id: 'type',
+    id: 'role',
     numeric: true,
     disablePadding: false,
-    label: 'Type'
+    label: 'Role'
   }
 ]
 
@@ -363,7 +363,7 @@ export default function EnhancedTable() {
                       {row.email}
                     </TableCell>
                     <TableCell align='right'>
-                      {row.type}
+                      {row.type_descr}
                     </TableCell>
                   </TableRow>
                 )
