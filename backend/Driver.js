@@ -57,7 +57,7 @@ class Driver {
         }
     });
     var position = request.position_id;
-    insertNum(position)
+    incrementNum(position)
   }
 
   /*Inserts user to 'user' table*/
@@ -238,20 +238,18 @@ class Driver {
     })
   }
   /*Returns all positions from 'EmployeePosition' table*/
-  getPositions() {
+  getPositions(response) {
     var query = 'SELECT * FROM EmployeePosition';
     this.connection.query(query, (err, rows) => {
       if (err) {
         console.log(err)
       }
       else {
-        response.send({
-          positions: rows.map(mapPosition)
-        })
+        response.json(rows);
       }
     })
   }
-  
+  /**Increments the number of meetings under position - only called by insertMeeting */
   incrementNum(position_id) {
     var num = this.getNumMeetings(position_id);
     num = num+1;
@@ -262,53 +260,53 @@ class Driver {
     })
   }
   /*Returns all locations from 'Location' table*/
-  getLocations() {
+  getLocations(response) {
     var query = 'SELECT * FROM Location';
     this.connection.query(query, (err, rows) => {
       if (err) {
         console.log(err)
       }
       else {
-        response.send({
-          locations: rows.map(mapLocation)
-        })
+        response.json(rows)
       }
     })
   }
   /*Returns all user types from 'userType' table*/
-  getUserTypes() {
+  getUserTypes(response) {
     var query = 'SELECT * FROM userTypes';
     this.connection.query(query, (err, rows) => {
       if (err) {
         console.log(err)
       }
       else {
-        response.send({
-          types: rows.map(mapTypes)
-        })
-        console.log(rows)
+        response.json(rows)
       }
     })
   }
-  getDepartments(){
+  /*Gets all departments from Department table*/
+  getDepartments(response){
     var query = 'SELECT * FROM Department';
     this.connection.query(query, (err, rows) => {
       if (err) {
         console.log(err)
       }
       else {
-        response.send({
-          types: rows.map(mapDepartment)
-        })
+        response.json(rows)
         console.log(rows)
       }
       })
   }
-  insertDepartment(dept_id, dept_title, dept_short) {
-    var query = "INSERT INTO Department (dept_id, dept_title, dept_short) VALUES (" + dept_id + ", '" + dept_title + "', '" + dept_short + "')"
-    this.connection.query(query, function (err, results) {
-      if (err) throw err;
-      console.log(results);
+  /**Inserts a new department in Department table */
+  insertDepartment(request,response) {
+    var query = "INSERT INTO Department (dept_id, dept_title, dept_short) VALUES (?,?,?)"
+    var params = [request.dept_id, request.dept_title, request.dept_short]
+    this.connection.query(query, params, (err, results) =>{
+      if (err){
+        console.log(err)
+      }
+      else{
+        response.json(rows)
+      }
     })
   }
   /*Purely for dev use - will not be used in after linked to frontend*/
@@ -385,6 +383,4 @@ function mapDepartment(row) {
   };
 }
 var newdriver = new Driver();
-var myObj = {meeting_id:1};
-newdriver.getMeetingFeedback(myObj);
-newdriver.quit();
+exports.newdriver = newdriver;
