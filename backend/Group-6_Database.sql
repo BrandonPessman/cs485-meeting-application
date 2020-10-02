@@ -39,15 +39,15 @@ CREATE TABLE user_box(
 );
 **/
 CREATE TABLE Meeting(
-	meeting_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	location_id INT , /*changed to long, looks like MySQL doesn't support Location*/
-	users VARCHAR(50),
-	start_date_time date,
-	end_date_time date,
-	meeting_length long,
-	meeting_status varchar(50),
-	meeting_title VARCHAR(25),
-	meeting_descr VARCHAR(50)
+meeting_id int PRIMARY KEY,
+meeting_title varchar(25),
+meeting_descr varchar(50),
+location_id int REFERENCES Location(location_id),
+start_date_time date,
+end_date_time date,
+meeting_length int,
+meeting_status varchar(50),
+position_id int REFERENCES EmployeePosition(position_id)
 );
 
 CREATE TABLE Feedback (

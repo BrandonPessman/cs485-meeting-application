@@ -22,7 +22,7 @@ class Driver {
   quit() {
     this.connection.end()
   }
-
+  /*Get all meetings*/
   getAllMeetings(request, response) {
     const query = 'SELECT * FROM Meeting';
     this.connection.query(query, (error, rows) => {
@@ -36,10 +36,10 @@ class Driver {
       }
     });
   }
-
+  /*Insert new Meeting*/
   insertMeeting(request,response){
-    const query='INSERT INTO Meeting VALUES(?,?,?,?,?,?,?,?,?,?)';
-    const params=[null,request.meeting_title,request.meeting_descr,request.location_id,request.users,request.start_date_time,
+    const query='INSERT INTO Meeting VALUES(?,?,?,?,?,?,?,?,?)';
+    const params=[null,request.meeting_title,request.meeting_descr,request.location_id,request.start_date_time,
       request.end_date_time,request.position_id];
       connection.query(query,params,(error,result)=>{
         if(error){
@@ -61,27 +61,17 @@ class Driver {
   }
 
   /*Inserts user to 'user' table*/
-  insertUser(id, email, password, phone, name, type) {
+  insertUser(request,response) {
     var query =
-      "INSERT INTO user (u_id, email, u_password, phone_number, name, type) VALUES (" +
-      id +
-      ", '" +
-      email +
-      "', '" +
-      password +
-      "'," +
-      phone +
-      ", '" +
-      name +
-      "'," +
-      type +
-      ")"
-    return this.connection.query(query, function (err, results) {
-      if (err) throw err
-      console.log(results)
-    })
+      "INSERT INTO user VALUES (?,?,?,?,?,?,?)"
+    var params = [NULL, request.email, request.phone_number, request.name, request.type, request.u_position]
+    return this.connection.query(query, params, (err, response) =>{
+      if (err) 
+      {console.log(err)}
+      else{response.send({status:true,u_id:u_id,})}
+    });
   }
-  /*Updates user in 'user' table*/
+  /*Updates user in 'user' table - need to change to make frontend-friendly*/
   updateUser({ id, password, phone, name, type }) {
     var currentUser = getUser(id)
     var update = [password, phone, name, type]
@@ -98,11 +88,13 @@ class Driver {
     }
   }
   /*gets user from 'user' table using u_id col*/
-  getUser(id) {
-    var query = 'SELECT * FROM user WHERE u_id = ' + id + ' INNER JOIN userTypes ON user.type = userTypes.type_id'
-    return this.connection.query(query, function (err, results) {
-      if (err) throw err;
-      console.log(results)
+  getUser(request,response) {
+    var query = 'SELECT * FROM user WHERE u_id = ? LEFT JOIN userTypes ON user.type = userTypes.type_id'
+    const params = [request.u_id];
+    this.connection.query(query, params,(err, rows) =>{
+      if (err)
+     {console.log(err)}
+      else{response.json(rows);}
     })
   }
   /*Gets all users from 'user' table - returns type_descr from userTypes*/
@@ -118,28 +110,35 @@ class Driver {
       }
     });
   }
-
-  updateMeetingUsers(users, meeting_id) {
-    var query = 'UPDATE Meeting SET users = ' + users +' WHERE meeting_id = ' + meeting_id;
-    this.connection.query(query, function (err, results) {
-      if (err) throw err;
-      console.log(results);
+  addMeetingUser(request, response) {
+    var query = 'INSERT INTO meetingUser VALUES (?,?)'
+    const params = [request.meeting_id, request.u_id];
+    this.connection.query(query, params, function (err, response) {
+      if(err) {
+        console.log(err);
+      }
+      else{
+        console.log(response)
+      }
     })
   }
-  /*Gets all users from specific meeting user meeting_id*/
-  getMeeetingUsers(meeting_id) {
-    var query = 'SELECT * FROM user WHERE email IN (SELECT email FROM meetingUser WHERE meeting_id = ' + meeting_id + ')'
-    return this.connection.query(query, function (err, results) {
-      if (err) throw err;
-      console.log(results)
+  /*Gets all users from specific meeting user meeting_id - need to add left join for usertype string*/
+  getMeetingUsers(request,response) {
+    var query = 'SELECT * FROM user WHERE user.u_id IN (SELECT meetingUser.u_id FROM meetingUser WHERE meetingUser.meeting_id = ?)' //LEFT JOIN ON user.type = userTypes.type_id?
+    var params = [request.meeting_id]
+    this.connection.query(query, params, (err, rows) => {
+      if (err) {
+        console.log(err)}
+      else{console.log(rows)}
     })
   }
-  /*Returns string of user type from 'userTypes' table*/
-  getUserType(id) {
-    var query = 'SELECT type_descr FROM userTypes WHERE type_id IN (SELECT type FROM user where u_id = ' + id + ')'
-    return this.connection.query(query, function (err, results) {
-      if (err) throw err;
-      console.log(results)
+  /*Returns string of user type from 'userTypes' table for requested User*/
+  getUserType(request,response) {
+    var query = 'SELECT type_descr FROM userTypes WHERE type_id IN (SELECT type FROM user where u_id = ?)'
+    var params = [request.u_id];
+    return this.connection.query(query, params, (err, rows)=> {
+      if (err) {console.log(err)}
+      else{response.json(rows)};
     })
   }
   /*Adds each user in meeting to meetingCombo table, only ever called by insertMeeting*/
@@ -151,14 +150,15 @@ class Driver {
     })
   }
   /*gets meeting from 'Meeting' table using meeting_id*/
-  getMeeting(id) {
-    var query = 'SELECT * FROM Meeting WHERE meeting_id = ' + id
-    return this.connection.query(query, function (err, results) {
-      if (err) throw err;
-      console.log(results)
+  getMeeting(request, response) {
+    var query = 'SELECT * FROM Meeting WHERE meeting_id = ?'
+    var params = [request.meeting_id]
+    return this.connection.query(query, params,(err, rows)=> {
+      if (err) {console.log(err)}
+      else {response.json(rows)}
     })
   }
-  /*Updates meeting in 'Meeting' table*/
+  /*Updates meeting in 'Meeting' table -- need to update*/
   updateMeeting(id, location, users, start_time, end_time) {
     var currentMeeting = this.getMeeting(id);
     console.log(currentMeeting.location_id);
@@ -183,52 +183,50 @@ class Driver {
     })
   }
   /*Inserts feedback instance into 'Feedback' table*/
-  insertFeedback(id, content, author, meeting_id) {
+  insertFeedback(request,response) {
     let now = moment().format("YYYY-MM-DD HH:mm:ss");
     var query =
-      "INSERT INTO Feedback (feedback_Id, content, author, date_time_created, meeting_id) VALUES (" +
-      id +
-      ", '" +
-      content +
-      "', '" +
-      author +
-      "', '" +
-      now +
-      "'," +
-      meeting_id +
-      ")"
+      "INSERT INTO Feedback (feedback_Id, content, author, date_time_created, meeting_id) VALUES (?, ?, ?, ?, ?)"
+    var params = [request.feedback_Id, request.content, request.author, now, request.meeting_id];
     var comboQuery = 'INSERT INTO feedbackCombo (feedback_id, meeting_id, author_email) VALUES (' +
-      id +
+      request.feedback_Id +
       ", " +
-      meeting_id +
+      request.meeting_id +
       ", '" +
-      author +
+      request.author +
       "')"
     /*Adds combination to insertFeedbackCombo*/
     this.insertFeedbackCombo(comboQuery)
-    return this.connection.query(query, function (err, results) {
-      if (err) throw err;
-      console.log(results)
+    return this.connection.query(query, params, (err, response) =>{
+      if (err) {
+        console.log(err);
+      } else{
+      console.log(response)
+      }
     })
   }
   /*Get all feedback that exist in specific Meeting*/
-  getFeedbackMeeting(meetingId) {
-    var query = 'SELECT * FROM Feedback WHERE meeting_id = ' + meetingId
-    return this.connection.query(query, function (err, results) {
-      if (err) throw err
-      console.log(results)
+  getMeetingFeedback(request, response) {
+    var query = 'SELECT * FROM Feedback WHERE feedback_id IN (SELECT feedback_id FROM feedbackCombo where meeting_id = ?)'
+    var params = [request.meeting_id]
+    return this.connection.query(query, params, (err, rows)=> {
+      if (err) {
+        console.log(err)
+      } else{
+        response.json(rows)
+      }
     })
   }
   /*Returns all feedback from 'Feedback' table*/
-  getAllFeedback() {
+  getAllFeedback(response) {
     var query = 'SELECT * FROM Feedback'
     return this.connection.query(query, (err, rows) => {
       if (err) {
         console.log(err)
       }
-      response.send({
-        feedback: rows.map(mapFeedback)
-      })
+      else{
+        response.json(rows)
+      }
     })
   }
   /**Updates feedback instance in 'Feedback' table - The only thing the user can change is content */
@@ -387,4 +385,6 @@ function mapDepartment(row) {
   };
 }
 var newdriver = new Driver();
-exports.newdriver = newdriver;;
+var myObj = {meeting_id:1};
+newdriver.getMeetingFeedback(myObj);
+newdriver.quit();
