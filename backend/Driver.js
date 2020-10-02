@@ -23,43 +23,7 @@ class Driver {
     this.connection.end()
   }
   /*Get all meetings*/
-  getAllMeetings(request, response) {
-    const query = 'SELECT * FROM Meeting';
-    this.connection.query(query, (error, rows) => {
-      if (error) {
-        console.log(error.message);
-      }
-      else {
-        response.send({
-          meetings: rows.map(mapMeetings),
-        });
-      }
-    });
-  }
-  /*Insert new Meeting*/
-  insertMeeting(request,response){
-    const query='INSERT INTO Meeting VALUES(?,?,?,?,?,?,?,?,?)';
-    const params=[null,request.meeting_title,request.meeting_descr,request.location_id,request.start_date_time,
-      request.end_date_time,request.position_id];
-      connection.query(query,params,(error,result)=>{
-        if(error){
-            console.log(error.message);
-        }
-        else{
-          var meeting_id=result.insertId;
-          response.send({status:true,meeting_id:meeting_id,});
-          var users = request.users.split(",");
-          /*For each user in 'users' string call meetingCombo*/
-          for (var i = 0; i < users.length; i++) {
-            var user_id = parseInt(users[i]);
-            this.meetingCombo(user_id, meeting_id);
-          }
-        }
-    });
-    var position = request.position_id;
-    incrementNum(position)
-  }
-
+ 
   /*Inserts user to 'user' table*/
   insertUser(request,response) {
     var query =
@@ -110,6 +74,15 @@ class Driver {
       }
     });
   }
+  /*Returns string of user type from 'userTypes' table for requested User*/
+  getUserType(request,response) {
+    var query = 'SELECT type_descr FROM userTypes WHERE type_id IN (SELECT type FROM user where u_id = ?)'
+    var params = [request.u_id];
+    return this.connection.query(query, params, (err, rows)=> {
+      if (err) {console.log(err)}
+      else{response.json(rows)};
+    })
+  }
   addMeetingUser(request, response) {
     var query = 'INSERT INTO meetingUser VALUES (?,?)'
     const params = [request.meeting_id, request.u_id];
@@ -124,7 +97,7 @@ class Driver {
   }
   /*Gets all users from specific meeting user meeting_id - need to add left join for usertype string*/
   getMeetingUsers(request,response) {
-    var query = 'SELECT * FROM user WHERE user.u_id IN (SELECT meetingUser.u_id FROM meetingUser WHERE meetingUser.meeting_id = ?)' //LEFT JOIN ON user.type = userTypes.type_id?
+    var query = 'SELECT * FROM user U LEFT JOIN userTypes on U.type=userTypes.type_id WHERE U.u_id=ANY(SELECT u_id FROM meetingUser WHERE meeting_id=?)'
     var params = [request.meeting_id]
     this.connection.query(query, params, (err, rows) => {
       if (err) {
@@ -132,22 +105,50 @@ class Driver {
       else{console.log(rows)}
     })
   }
-  /*Returns string of user type from 'userTypes' table for requested User*/
-  getUserType(request,response) {
-    var query = 'SELECT type_descr FROM userTypes WHERE type_id IN (SELECT type FROM user where u_id = ?)'
-    var params = [request.u_id];
-    return this.connection.query(query, params, (err, rows)=> {
-      if (err) {console.log(err)}
-      else{response.json(rows)};
-    })
+  getAllMeetings(response) {
+    const query = 'SELECT * FROM Meeting';
+    this.connection.query(query, (error, rows) => {
+      if (error) {
+        console.log(error.message);
+      }
+      else {
+        console.log(rows)
+      }
+    });
   }
-  /*Adds each user in meeting to meetingCombo table, only ever called by insertMeeting*/
+  /*Adds each user in meeting to meetingCombo table, ONLY ever called by insertMeeting*/
   meetingCombo(user_id, meeting_id) {
     var query = 'Insert into meetingUser (meeting_id, u_id) VALUES(' + meeting_id + ', ' + user_id + ')'
     this.connection.query(query, function (err, results) {
       if (err) throw err;
       console.log(results);
     })
+  }
+  /*Insert new Meeting*/
+  insertMeeting(request,response){
+    const query='INSERT INTO Meeting (meeting_id,meeting_title, meeting_descr, location_id, start_date_time, end_date_time, position_id) VALUES (?,?,?,?,?,?,?)';
+    const params=[request.meeting_id, request.meeting_title,request.meeting_descr,request.location_id,request.start_date_time,
+      request.end_date_time,request.position_id];
+      this.connection.query(query,params,(error,response)=>{
+        if(error){
+            console.log(error.message);
+        }
+        else{
+          var meeting_id=response.insertId;
+          response.send({status:true,meeting_id:meeting_id,});
+          console.log(response)
+          var users = request.users.split(",");
+          /*For each user in 'users' string call meetingCombo*/
+          for (var i = 0; i < users.length; i++) {
+            var user_id = parseInt(users[i]);
+            this.meetingCombo(user_id)
+          }
+        }
+    });
+    var position = request.position_id;
+    var meeting = request.meeting_id
+    var req = {position_id: position, meeting_id:meeting}
+    this.insertMeetingPosition(req)
   }
   /*gets meeting from 'Meeting' table using meeting_id*/
   getMeeting(request, response) {
@@ -230,33 +231,39 @@ class Driver {
     })
   }
   /**Updates feedback instance in 'Feedback' table - The only thing the user can change is content */
-  updateFeedback(id, content) {
-    var query = 'UPDATE feedback SET content = ' + content + 'WHERE feedback_id = ' + id
-    return this.connection.query(query, function (err, results) {
-      if (err) throw err;
-      console.log(results);
+  updateFeedback(request,reponse) {
+    var query = 'UPDATE feedback SET content = ? WHERE feedback_id = ?'
+    var params = [request.content, request.feedback_id]
+    return this.connection.query(query, params, (err, response) =>{
+      if (err){
+        console.log(err)
+      } else{
+      response.send(response)
+      }
     })
   }
   /*Returns all positions from 'EmployeePosition' table*/
   getPositions(response) {
-    var query = 'SELECT * FROM EmployeePosition';
+    var query = 'SELECT EmployeePosition.position_id, EmployeePosition.position_title, EmployeePosition.currentEmployee, EmployeePosition.department_id, EmployeePosition.vacant, Count(EmployeePosition.position_id) as meeting_count FROM EmployeePosition LEFT JOIN meetingPositions ON EmployeePosition.position_id = meetingPositions.position_id group by position_id'
     this.connection.query(query, (err, rows) => {
       if (err) {
         console.log(err)
       }
       else {
-        response.json(rows);
+        console.log(rows)
       }
     })
   }
   /**Increments the number of meetings under position - only called by insertMeeting */
-  incrementNum(position_id) {
-    var num = this.getNumMeetings(position_id);
-    num = num+1;
-    var query = 'UPDATE EmployeePosition SET num_meetings = ' +num;
-    this.connection.query(query, function (err, results) {
-      if (err) throw err;
-      return results;
+  insertMeetingPosition(request,response) {
+    var query = 'INSERT  INTO meetingPositions VALUES(?,?)'
+    var params = [request.position_id, request.meeting_id]
+    this.connection.query(query, params, (err, response) =>{
+      if (err){
+        console.log(err)
+      } else{
+      console.log(response);
+      }
     })
   }
   /*Returns all locations from 'Location' table*/
@@ -383,4 +390,13 @@ function mapDepartment(row) {
   };
 }
 var newdriver = new Driver();
-exports.newdriver = newdriver;
+/**exports.newdriver = newdriver;**/
+var date = new Date(2018,10,2,12)
+var dateTwo = new Date(2018,10,2,14)
+date = newdriver.toDate(date);
+dateTwo = newdriver.toDate(dateTwo);
+var myObj = {meeting_id:4, meeting_title:'MeetingFour', meeting_descr:'This is the fourth meeting.', location_id:1, start_date_time:date, end_date_time:dateTwo, position_id:3}
+newdriver.insertMeeting(myObj)
+newdriver.getAllMeetings();
+newdriver.getPositions();
+newdriver.quit();

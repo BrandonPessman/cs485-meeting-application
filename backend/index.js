@@ -12,42 +12,34 @@ app.listen(port, () => {
 app.get('/types', (request, response) => {
     driver.newdriver.getUserTypes(request, response);
 });
-app.get('/meetings', (request, response) => {
-    driver.newdriver.getAllMeetings(request, response);
+app.get('/meetings', (response) => {
+    driver.newdriver.getAllMeetings(response);
 });
 
 app.post('/insertMeeting',(request,response)=>{
     driver.newdriver.insertMeeting(request, response);
 });
 
-app.get('/users', (request, response) => {
+app.get('/users', (response) => {
     driver.newdriver.getAllUsers(response);
 });
 app.get('/users:u_id', (request, response) => {
-    const u_id = request.params.u_id;
-    response.send(driver.newdriver.getUser(u_id));
+    driver.newdriver.getUser(request);
 })
-app.put('/users:u_id, u_password, phone_number, name, type', (request,response) => {
-    const u_id = request.params.u_id;
-    const u_password = request.params.u_password;
-    const phone_number = request.params.phone_number;
-    const name = request.params.name;
-    const type = request.params.type;
-    response.send(driver.newdriver.updateUser(u_id, u_password, phone_number, name, type));
+app.put('/user', (request,response) => {
+    driver.newdirver.updateUser(request,response);
 })
 app.get('/positions', (request, response) => {
     driver.newdriver.getPositions(request, response);
 })
-app.get('/locations', (request, response) => {
-    response.send(driver.newdriver.getLocations());
+app.get('/locations', (response) => {
+    driver.newdriver.getLocations(response)
 })
-app.get('/feedback:meeting_id', (request, response) => {
-    const meeting_id = request.params.meeting_id;
-    response.send(driver.newdriver.getFeedbackMeeting(meeting_id));
+app.get('/meetingFeedback', (request, response) => {
+    driver.newdriver.getMeetingFeedback(request,response);
 })
-app.get('/user:meeting_id', (request, response) => {
-    const meeting_id = request.params.meeting_id;
-    response.send(driver.newdriver.getMeeetingUsers);
+app.get('/meetingUsers', (request, response) => {
+    driver.newdriver.getMeetingUsers(request,response);
 })
 app.get('/department', (request, response) => {
     driver.newdriver.getDepartments(request, response);
