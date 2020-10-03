@@ -12,8 +12,6 @@ pipeline {
         }
         stage("Deploy") {
             steps {
-                sh 'chmod +x ./deploy'
-                sh 'chown -R jenkins cs485-meeting-application/' 
                 sh './deploy'
             }
         }
