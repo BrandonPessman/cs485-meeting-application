@@ -11,10 +11,10 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-            dir("frontend") {
-                sh "pwd"
-            }
-                sh 'npm install'
+                dir("frontend") {
+                    sh "pwd"
+                    sh 'npm install'
+                }
             }
         }
         stage('Test') {
