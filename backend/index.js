@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
 var cors = require('cors');
-const driver = require("./driver.js");
+const driver = require("./Driver.js");
 
 app.use(cors());
 
@@ -16,7 +16,7 @@ app.get('/meetings', (response) => {
     driver.newdriver.getAllMeetings(response);
 });
 
-app.post('/insertMeeting',(request,response)=>{
+app.post('/insertMeeting', (request, response) => {
     driver.newdriver.insertMeeting(request, response);
 });
 
@@ -26,8 +26,8 @@ app.get('/users', (response) => {
 app.get('/users:u_id', (request, response) => {
     driver.newdriver.getUser(request);
 })
-app.put('/user', (request,response) => {
-    driver.newdirver.updateUser(request,response);
+app.put('/user', (request, response) => {
+    driver.newdirver.updateUser(request, response);
 })
 app.get('/positions', (request, response) => {
     driver.newdriver.getPositions(request, response);
@@ -36,10 +36,10 @@ app.get('/locations', (response) => {
     driver.newdriver.getLocations(response)
 })
 app.get('/meetingFeedback', (request, response) => {
-    driver.newdriver.getMeetingFeedback(request,response);
+    driver.newdriver.getMeetingFeedback(request, response);
 })
 app.get('/meetingUsers', (request, response) => {
-    driver.newdriver.getMeetingUsers(request,response);
+    driver.newdriver.getMeetingUsers(request, response);
 })
 app.get('/department', (request, response) => {
     driver.newdriver.getDepartments(request, response);
