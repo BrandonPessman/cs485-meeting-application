@@ -1,4 +1,4 @@
--#!/bin/sh     
+#!/bin/sh     
 ssh root@104.131.115.65 <<EOF       
  cd /var/www/cs485-meeting-application/
  git pull  
