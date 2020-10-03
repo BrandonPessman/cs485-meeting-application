@@ -13,6 +13,7 @@ pipeline {
         stage("Deploy") {
             steps {
                 sh 'chmod +x ./deploy'
+                sh 'chown -R $USER /var/www/cs485-meeting-application/' 
                 sh './deploy'
             }
         }
