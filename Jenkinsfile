@@ -1,13 +1,39 @@
 pipeline {
     agent any
     
+    options {
+        skipDefaultCheckout(true)
+    }
     stages {
-        stage("Build") {
+        stage("Frontend NPM Install") {
             steps {
                 dir("frontend") {
-                    sh "npm install"
                     sh "npm run build"
                 }
+            }
+        }
+        stage("Frontend Build") {
+            steps {
+                dir("frontend") {
+                    sh "npm run build"
+                }
+            }
+        }
+        stage("Backend NPM Install") {
+            steps {
+                dir("backend") {
+                    sh "npm install"
+                }
+            }
+        }
+        stage('Frontend Tests') {
+            steps {
+                echo 'Testing..'
+            }
+        }
+        stage('Backend Tests') {
+            steps {
+                echo 'Testing..'
             }
         }
         stage("Deploy") {
