@@ -1,5 +1,11 @@
 pipeline {
-     agent any
+    agent {
+        docker {
+            image "keymetrics/pm2:latest-alpine"
+            args '-p 3000:3000'
+        }
+    }
+    
      stages {
         stage("Build") {
             steps {
