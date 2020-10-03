@@ -19,16 +19,16 @@ pipeline {
                 }
             }
         }
+        stage('Frontend Tests') {
+            steps {
+                echo 'Testing..'
+            }
+        }
         stage("Backend NPM Install") {
             steps {
                 dir("backend") {
                     sh "npm install"
                 }
-            }
-        }
-        stage('Frontend Tests') {
-            steps {
-                echo 'Testing..'
             }
         }
         stage('Backend Tests') {
