@@ -12,8 +12,8 @@ pipeline {
         }
         stage("Deploy") {
             steps {
-                sh "sudo rm -rf /var/www/meeting-app/"
-                sh "sudo cp -r ${WORKSPACE}/frontend/build/ /var/www/meeting-app/"
+                sh "rm -rf /var/www/meeting-app/"
+                sh "cp -r ${WORKSPACE}/frontend/build/ /var/www/meeting-app/"
             }
         }
     }
