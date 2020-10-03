@@ -1,12 +1,12 @@
 pipeline {
     agent {
         docker {
-            image 'node:lts-alpine3.9'
+            image 'node:6-alpine'
             args '-p 3000:3000'
         }
     }
     environment {
-        CI = 'true'
+        CI = 'false'
     }
     stages {
         stage('Build') {
