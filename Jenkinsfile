@@ -12,7 +12,7 @@ pipeline {
         stage('Deploy') {
             steps {
                     sh "echo '================== Deploy Script =================='"
-                    sh './deploy'
+                    sh 'bash ./deploy.sh'
             }
         }
     }
