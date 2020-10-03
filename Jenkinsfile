@@ -1,19 +1,18 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:current-alpine3.12'
-            args '-p 3000:3000'
-        }
-    }
-    environment {
-        CI = 'false'
-    }
-    stages {
-        stage('Deploy') {
+     agent any
+     stages {
+        stage("Build") {
             steps {
-                    sh 'chmod +x ./deploy'
-                    sh "echo '================== Deploy Script =================='"
-                    sh './deploy'
+                dir("frontend") {
+                    sh "npm install"
+                    sh "npm run build"
+                }
+            }
+        }
+        stage("Deploy") {
+            steps {
+                sh "sudo rm -rf /var/www/meeting-app/"
+                sh "sudo cp -r ${WORKSPACE}/frontend/build/ /var/www/meeting-app/"
             }
         }
     }
