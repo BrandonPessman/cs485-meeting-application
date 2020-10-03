@@ -13,7 +13,7 @@ pipeline {
             steps {
                     sh 'chmod +x ./deploy.sh'
                     sh "echo '================== Deploy Script =================='"
-                    sh './deploy.sh'
+                    sh './deploy'
             }
         }
     }
