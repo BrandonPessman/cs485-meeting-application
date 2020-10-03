@@ -12,8 +12,8 @@ pipeline {
         }
         stage("Deploy") {
             steps {
-                sh "rm -rf /var/www/meeting-app/"
-                sh "cp -r ${WORKSPACE}/frontend/build/ /var/www/meeting-app/"
+                sh 'chmod +x ./deploy'
+                sh './deploy'
             }
         }
     }
