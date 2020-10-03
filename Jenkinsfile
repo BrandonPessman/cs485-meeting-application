@@ -1,12 +1,7 @@
 pipeline {
-    agent {
-        docker {
-            image "keymetrics/pm2:latest-alpine"
-            args '-p 3000:3000'
-        }
-    }
+    agent any
     
-     stages {
+    stages {
         stage("Build") {
             steps {
                 dir("frontend") {
@@ -17,8 +12,8 @@ pipeline {
         }
         stage("Deploy") {
             steps {
-                sh "rm -rf /var/www/meeting-app/"
-                sh "cp -r ${WORKSPACE}/frontend/build/ /var/www/meeting-app/"
+                sh "sudo rm -rf /var/www/meeting-app/"
+                sh "sudo cp -r ${WORKSPACE}/frontend/build/ /var/www/meeting-app/"
             }
         }
     }
