@@ -14,6 +14,7 @@ pipeline {
                 dir("frontend") {
                     sh "echo '================== FRONTEND BUILD =================='"
                     sh 'npm install'
+                    sh 'npm run build'
                 }
                 dir("backend") {
                     sh "echo '================== BACKEND BUILD =================='"
