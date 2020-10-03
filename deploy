@@ -1,5 +1,4 @@
-#!/bin/sh     
-ssh root@104.131.115.65 <<EOF       
+#!/bin/sh      
  cd /var/www/cs485-meeting-application/
  git pull  
  cd /var/www/cs485-meeting-application/frontend 
@@ -9,4 +8,3 @@ ssh root@104.131.115.65 <<EOF
  npm install 
  pm2 restart all
  exit      
-EOF
