@@ -1,10 +1,10 @@
 #!/bin/sh      
  cd /var/www/cs485-meeting-application/
- git pull  
+ sudo git pull  
  cd /var/www/cs485-meeting-application/frontend 
- npm install
- npm run build
+ sudo npm install
+ sudo npm run build
  cd /var/www/cs485-meeting-application/backend
- npm install 
- pm2 restart all
+ sudo npm install 
+ sudo pm2 restart all
  exit      
