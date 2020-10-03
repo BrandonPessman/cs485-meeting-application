@@ -12,21 +12,25 @@ pipeline {
         stage('Build') {
             steps {
                 dir("frontend") {
-                    sh "pwd"
+                    sh "echo '================== FRONTEND BUILD =================='"
+                    sh 'npm install'
+                }
+                dir("backend") {
+                    sh "echo '================== BACKEND BUILD =================='"
                     sh 'npm install'
                 }
             }
         }
         stage('Test') {
             steps {
-                sh './jenkins/scripts/test.sh'
-            }
-        }
-        stage('Deliver') {
-            steps {
-                sh './jenkins/scripts/deliver.sh'
-                input message: 'Finished using the web site? (Click "Proceed" to continue)'
-                sh './jenkins/scripts/kill.sh'
+                dir("frontend") {
+                    sh "echo '================== FRONTEND DEPLOY =================='"
+                    sh 'npm start'
+                }
+                dir("backend") {
+                    sh "echo '================== BACKEND DEPLOY =================='"
+                    sh 'node index.js'
+                }
             }
         }
     }
