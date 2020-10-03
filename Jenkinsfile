@@ -9,29 +9,10 @@ pipeline {
         CI = 'false'
     }
     stages {
-        stage('Build') {
+        stage('Deploy') {
             steps {
-                dir("frontend") {
-                    sh "echo '================== FRONTEND BUILD =================='"
-                    sh 'npm install'
-                    sh 'npm run build'
-                }
-                dir("backend") {
-                    sh "echo '================== BACKEND BUILD =================='"
-                    sh 'npm install'
-                }
-            }
-        }
-        stage('Test') {
-            steps {
-                dir("frontend") {
-                    sh "echo '================== FRONTEND DEPLOY =================='"
-                    sh 'npm start'
-                }
-                dir("backend") {
-                    sh "echo '================== BACKEND DEPLOY =================='"
-                    sh 'node index.js'
-                }
+                    sh "echo '================== Deploy Script =================='"
+                    sh './deploy'
             }
         }
     }
