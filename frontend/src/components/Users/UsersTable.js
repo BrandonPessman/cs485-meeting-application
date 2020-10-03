@@ -238,7 +238,7 @@ export default function EnhancedTable() {
 
   useEffect(() => {
 
-    axios.get('http://localhost:3443/users')
+    axios.get('http://104.131.115.65:3443/users')
       .then(function (response) {
         // handle success
         console.log(response);

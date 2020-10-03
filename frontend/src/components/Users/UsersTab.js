@@ -7,7 +7,6 @@ export default function Department({ setShowNextStep }) {
     <div>
       <Grid container spacing={12} style={{ marginTop: '10px' }}>
         <UsersTable />
-        <p>Test</p>
       </Grid>
     </div>
   )

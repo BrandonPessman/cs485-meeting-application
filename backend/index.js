@@ -20,7 +20,7 @@ app.post('/insertMeeting', (request, response) => {
     driver.newdriver.insertMeeting(request, response);
 });
 
-app.get('/users', (response) => {
+app.get('/users', (request, response) => {
     driver.newdriver.getAllUsers(response);
 });
 app.get('/users:u_id', (request, response) => {
