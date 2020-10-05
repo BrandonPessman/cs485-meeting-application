@@ -15,19 +15,12 @@ app.get('/types', (request, response) => {
 app.get('/meetings', (response) => {
     driver.newdriver.getAllMeetings(response);
 });
-
-app.post('/insertMeeting', (request, response) => {
-    driver.newdriver.insertMeeting(request, response);
-});
-
 app.get('/users', (request, response) => {
     driver.newdriver.getAllUsers(response);
 });
-app.get('/users:u_id', (request, response) => {
-    driver.newdriver.getUser(request);
-})
-app.put('/user', (request, response) => {
-    driver.newdirver.updateUser(request, response);
+//use e-mail and password to login
+app.get('/users/:email/:u_password', (request, response) => {
+    driver.newdriver.getUser(request,response);
 })
 app.get('/positions', (request, response) => {
     driver.newdriver.getPositions(request, response);
@@ -46,3 +39,12 @@ app.get('/department', (request, response) => {
 })
 
 app.get('/')
+
+
+app.post('/insertMeeting', (request, response) => {
+    driver.newdriver.insertMeeting(request, response);
+});
+
+app.put('/user', (request, response) => {
+    driver.newdirver.updateUser(request, response);
+})
