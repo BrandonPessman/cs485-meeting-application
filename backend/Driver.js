@@ -94,7 +94,7 @@ class Driver {
       else { console.log(rows) }
     })
   }
-  getAllMeetings(response) {
+  getAllMeetings(request, response) {
     const query = 'SELECT * FROM Meeting';
     this.connection.query(query, (error, rows) => {
       if (error) {
@@ -102,6 +102,7 @@ class Driver {
       }
       else {
         console.log(rows)
+        response.json(rows)
       }
     });
   }
@@ -232,7 +233,7 @@ class Driver {
     })
   }
   /*Returns all positions from 'EmployeePosition' table*/
-  getPositions(response) {
+  getPositions(request, response) {
     var query = 'SELECT EmployeePosition.position_id, EmployeePosition.position_title, EmployeePosition.currentEmployee, EmployeePosition.department_id, EmployeePosition.vacant, Count(EmployeePosition.position_id) as meeting_count FROM EmployeePosition LEFT JOIN meetingPositions ON EmployeePosition.position_id = meetingPositions.position_id group by position_id'
     this.connection.query(query, (err, rows) => {
       if (err) {
@@ -240,6 +241,7 @@ class Driver {
       }
       else {
         console.log(rows)
+        response.json(rows)
       }
     })
   }
@@ -256,7 +258,7 @@ class Driver {
     })
   }
   /*Returns all locations from 'Location' table*/
-  getLocations(response) {
+  getLocations(request, response) {
     var query = 'SELECT * FROM Location';
     this.connection.query(query, (err, rows) => {
       if (err) {
@@ -280,7 +282,7 @@ class Driver {
     })
   }
   /*Gets all departments from Department table*/
-  getDepartments(response) {
+  getDepartments(request, response) {
     var query = 'SELECT * FROM Department';
     this.connection.query(query, (err, rows) => {
       if (err) {

@@ -12,21 +12,21 @@ app.listen(port, () => {
 app.get('/types', (request, response) => {
     driver.newdriver.getUserTypes(request, response);
 });
-app.get('/meetings', (response) => {
-    driver.newdriver.getAllMeetings(response);
+app.get('/meetings', (request, response) => {
+    driver.newdriver.getAllMeetings(request, response);
 });
 app.get('/users', (request, response) => {
     driver.newdriver.getAllUsers(response);
 });
 //use e-mail and password to login
 app.get('/users/:email/:u_password', (request, response) => {
-    driver.newdriver.getUser(request,response);
+    driver.newdriver.getUser(request, response);
 })
 app.get('/positions', (request, response) => {
     driver.newdriver.getPositions(request, response);
 })
-app.get('/locations', (response) => {
-    driver.newdriver.getLocations(response)
+app.get('/locations', (request, response) => {
+    driver.newdriver.getLocations(request, response)
 })
 app.get('/meetingFeedback', (request, response) => {
     driver.newdriver.getMeetingFeedback(request, response);
