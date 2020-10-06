@@ -242,7 +242,7 @@ export default function EnhancedTable() {
       .then(function (response) {
         // handle success
         console.log(response);
-        setData(response.data)
+        setData(response.data.user)
       })
       .catch(function (error) {
         // handle error
@@ -363,7 +363,7 @@ export default function EnhancedTable() {
                       {row.email}
                     </TableCell>
                     <TableCell align='right'>
-                      {row.type_descr}
+                      {row.type}
                     </TableCell>
                   </TableRow>
                 )
