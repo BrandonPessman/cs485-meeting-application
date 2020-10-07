@@ -45,6 +45,24 @@ app.post('/insertMeeting', (request, response) => {
     driver.newdriver.insertMeeting(request, response);
 });
 
-app.put('/user', (request, response) => {
+app.post('/user', (request, response) => {
     driver.newdirver.updateUser(request, response);
-})
+});
+app.post('/addMeetingUser', (request, response) => {
+    driver.newdriver.addMeetingUser(request, response);
+});
+app.post('/updateMeeting', (request, response) => {
+    driver.newdriver.updateMeeting(request,response);
+});
+app.post('/deleteUserAccount', (request, response) => {
+    driver.newdriver.deleteAccount(request,response);
+});
+app.post('/deleteMeeting', (request,response) => {
+    driver.newdriver.deleteMeeting(request,response);
+});
+app.post('/insertPosition', (request, response) => {
+    driver.newdriver.insertPositions(request,response);
+});
+app.post('/insertDepartment', (request, response) => {
+    driver.newdriver.insertDepartment(request, response);
+});
