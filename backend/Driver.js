@@ -479,10 +479,4 @@ function mapUser(row) {
 }
 
 var newdriver = new Driver();
-/*exports.newdriver = newdriver;*/
-//var myDept = {dept_id:5, dept_title: "Communications Sciences & Disorders", dept_short: "CSD"}
-//newdriver.insertDepartment(myDept);
-//var myObjTwo = {position_id:6, position_title:"Associate Professor", currentEmployee: "", department_id:5};
-//newdriver.insertPositions(myObjTwo);
-newdriver.getDepartments();
-newdriver.quit();
+exports.newdriver = newdriver;
