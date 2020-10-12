@@ -18,58 +18,15 @@ const months = {
     11: 'December'
 }
 
-const fakeData =
-{
-    meetings: [
-        {
-            title: 'Meeting with Steve',
-            starttime: new Date(2020, 10, 10, 3, 30, 0),
-            endtime: new Date(2020, 10, 10, 4, 30, 0),
-            location: 'Phillips 007',
-            candidate: 'Bob Bobkins',
-            users: [{ name: "Steve", role: '1' }, { name: "Bob", role: '0' }]
-        },
-        {
-            title: 'Meeting with Sarah',
-            starttime: new Date(2020, 10, 10, 5, 30, 0),
-            endtime: new Date(2020, 10, 10, 6, 30, 0),
-            location: 'Phillips 007',
-            candidate: 'Bob Bobkins',
-            users: [{ name: "Sarah", role: '1' }, { name: "Bob", role: '0' }]
-        },
-        {
-            title: 'Research Talk to Class',
-            starttime: new Date(2020, 10, 10, 7, 30, 0),
-            endtime: new Date(2020, 10, 10, 8, 30, 0),
-            location: 'Phillips 007',
-            candidate: 'Bob Bobkins',
-            users: [{ name: "Steve", role: '1' }, { name: "Sarah", role: '1' }, { name: "Bob", role: '0' }]
-        },
-        {
-            title: 'Research Talk to Class',
-            starttime: new Date(2020, 10, 11, 7, 30, 0),
-            endtime: new Date(2020, 10, 11, 8, 30, 0),
-            location: 'Phillips 007',
-            candidate: 'Bob Bobkins',
-            users: [{ name: "Steve", role: '1' }, { name: "Sarah", role: '1' }, { name: "Bob", role: '0' }]
-        }
-    ]
-}
-
 export default function UpcomingMeetings() {
     const [data, setData] = useState([])
 
     useEffect(() => {
         let list = [];
-        axios.get('http://104.131.115.65:3443/department')
-            .then(function (response) {
-                console.log(response)
-            })
 
         axios.get('http://104.131.115.65:3443/meetings')
             .then(function (response) {
                 let t = response.data.meeting;
-                console.log(fakeData)
                 for (let i = 0; i < t.length; i++) {
                     let z = t[i];
                     let added = false

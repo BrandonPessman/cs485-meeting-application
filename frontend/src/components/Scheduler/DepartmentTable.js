@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import clsx from 'clsx'
 import { makeStyles } from '@material-ui/core/styles' // lighten, withTheme
@@ -15,6 +15,7 @@ import Typography from '@material-ui/core/Typography'
 import Paper from '@material-ui/core/Paper'
 import Checkbox from '@material-ui/core/Checkbox'
 import Button from '@material-ui/core/Button'
+import axios from 'axios'
 // import IconButton from '@material-ui/core/IconButton'
 // import Tooltip from '@material-ui/core/Tooltip'
 // import FormControlLabel from '@material-ui/core/FormControlLabel'
@@ -22,21 +23,21 @@ import Button from '@material-ui/core/Button'
 // import DeleteIcon from '@material-ui/icons/Delete'
 // import FilterListIcon from '@material-ui/icons/FilterList'
 
-function createData (
-  department,
-  shortName,
-  openPositionTotal,
-  upcomingMeetings
-) {
-  return { department, shortName, openPositionTotal, upcomingMeetings }
-}
+// function createData (
+//   department,
+//   shortName,
+//   openPositionTotal,
+//   upcomingMeetings
+// ) {
+//   return { department, shortName, openPositionTotal, upcomingMeetings }
+// }
 
-const rows = [
-  createData('Computer Science', 'CS', 10, 10),
-  createData('Physics', 'PHYS', 5, 5)
-]
+// const rows = [
+//   createData('Computer Science', 'CS', 10, 10),
+//   createData('Physics', 'PHYS', 5, 5)
+// ]
 
-function descendingComparator (a, b, orderBy) {
+function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
     return -1
   }
@@ -46,13 +47,13 @@ function descendingComparator (a, b, orderBy) {
   return 0
 }
 
-function getComparator (order, orderBy) {
+function getComparator(order, orderBy) {
   return order === 'desc'
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy)
 }
 
-function stableSort (array, comparator) {
+function stableSort(array, comparator) {
   const stabilizedThis = array.map((el, index) => [el, index])
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0])
@@ -89,7 +90,7 @@ const headCells = [
   }
 ]
 
-function EnhancedTableHead (props) {
+function EnhancedTableHead(props) {
   const {
     classes,
     onSelectAllClick,
@@ -184,15 +185,15 @@ const EnhancedTableToolbar = props => {
           {numSelected} selected
         </Typography>
       ) : (
-        <Typography
-          className={classes.title}
-          variant='h6'
-          id='tableTitle'
-          component='div'
-        >
-          Select a Department
-        </Typography>
-      )}
+          <Typography
+            className={classes.title}
+            variant='h6'
+            id='tableTitle'
+            component='div'
+          >
+            Select a Department
+          </Typography>
+        )}
 
       {/* {numSelected > 0 ? (
         <Tooltip title='Delete'>
@@ -239,7 +240,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function EnhancedTable ({ setShowNextStep }) {
+export default function EnhancedTable({ setShowNextStep }) {
   const classes = useStyles()
   const [order, setOrder] = React.useState('asc')
   const [orderBy, setOrderBy] = React.useState('department')
@@ -247,6 +248,14 @@ export default function EnhancedTable ({ setShowNextStep }) {
   const [page, setPage] = React.useState(0)
   const [dense] = React.useState(true)
   const [rowsPerPage, setRowsPerPage] = React.useState(5)
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    axios.get('http://104.131.115.65:3443/department')
+      .then(function (response) {
+        setData(response.data)
+      })
+  }, [])
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc'
@@ -264,8 +273,8 @@ export default function EnhancedTable ({ setShowNextStep }) {
     setShowNextStep(false)
   }
 
-  const handleClick = (event, name) => {
-    const selectedIndex = selected.indexOf(name)
+  const handleClick = (event, name, id) => {
+    // SEND ID TO PARENT
 
     if (selected === name) {
       setSelected([])
@@ -305,7 +314,7 @@ export default function EnhancedTable ({ setShowNextStep }) {
   const isSelected = name => selected.indexOf(name) !== -1
 
   const emptyRows =
-    rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage)
+    rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage)
 
   return (
     <div className={classes.root}>
@@ -325,23 +334,23 @@ export default function EnhancedTable ({ setShowNextStep }) {
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
+              rowCount={data.length}
             />
             <TableBody>
-              {stableSort(rows, getComparator(order, orderBy))
+              {stableSort(data, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
-                  const isItemSelected = isSelected(row.department)
+                  const isItemSelected = isSelected(row.dept_title)
                   const labelId = `enhanced-table-checkbox-${index}`
 
                   return (
                     <TableRow
                       hover
-                      onClick={event => handleClick(event, row.department)}
+                      onClick={event => handleClick(event, row.dept_title, row.dept_id)}
                       role='checkbox'
                       aria-checked={isItemSelected}
                       tabIndex={-1}
-                      key={row.department}
+                      key={row.dept_id}
                       selected={isItemSelected}
                     >
                       <TableCell padding='checkbox'>
@@ -356,14 +365,14 @@ export default function EnhancedTable ({ setShowNextStep }) {
                         scope='row'
                         padding='none'
                       >
-                        {row.department}
+                        {row.dept_title}
                       </TableCell>
-                      <TableCell align='right'>{row.shortName}</TableCell>
+                      <TableCell align='right'>{row.dept_short}</TableCell>
                       <TableCell align='right'>
-                        {row.openPositionTotal}
+                        {0}
                       </TableCell>
                       <TableCell align='right'>
-                        {row.upcomingMeetings}
+                        {0}
                       </TableCell>
                     </TableRow>
                   )
@@ -379,7 +388,7 @@ export default function EnhancedTable ({ setShowNextStep }) {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component='div'
-          count={rows.length}
+          count={data.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onChangePage={handleChangePage}
