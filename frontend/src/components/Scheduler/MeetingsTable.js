@@ -281,7 +281,7 @@ export default function EnhancedTable({ setShowNextStep }) {
             users: [1]
         }
         console.log(obj)
-        axios.post('http://localhost:3443/insertMeeting', obj)
+        axios.post('http://104.131.115.65:3443/insertMeeting', obj)
         setNewMeetingOpen(false);
     }
 
