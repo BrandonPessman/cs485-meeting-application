@@ -29,25 +29,25 @@ class Driver {
     var params = [NULL, request.body.email, request.body.phone_number, request.body.name, request.body.type, request.body.u_position]
     this.connection.query(query, params, (err, result) => {
       if (err) { console.log(err) }
-      else { response.send({status: true}); }
+      else { response.send({ status: true }); }
     });
   }
   /*Updates user in 'user' table - need to change to make frontend-friendly*/
   updateUser(request, response) {
     var query = 'UPDATE user SET u_password=?, phone_number=?, name=?, type=? WHERE u_id = ?';
-    var params=[request.body.u_password,request.body.phone_number,request.body.name,request.body.type,request.body.u_id];
-    this.connection.query(query, params,(err) =>{
+    var params = [request.body.u_password, request.body.phone_number, request.body.name, request.body.type, request.body.u_id];
+    this.connection.query(query, params, (err) => {
       if (err) { console.log(err) }
-      else { response.send({status: true}); }
+      else { response.send({ status: true }); }
     });
   }
   /*gets user from 'user' table using email and u_password col*/
   getUser(request, response) {
     var query = 'SELECT * FROM user LEFT JOIN userTypes ON user.type = userTypes.type_id WHERE email = ? and u_password=?';
-    const params = [request.params.email,request.params.u_password];
+    const params = [request.params.email, request.params.u_password];
     this.connection.query(query, params, (err, rows) => {
       if (err) { console.log(err) }
-      else { response.send({user:rows.map(mapUser)}); }
+      else { response.send({ user: rows.map(mapUser) }); }
     })
   }
   /*Gets all users from 'user' table - returns type_descr from userTypes*/
@@ -58,7 +58,7 @@ class Driver {
         console.log(error.message);
       }
       else {
-        response.send({user:rows.map(mapUser)});
+        response.send({ user: rows.map(mapUser) });
       }
     });
   }
@@ -68,7 +68,7 @@ class Driver {
     var params = [request.body.u_id];
     return this.connection.query(query, params, (err, rows) => {
       if (err) { console.log(err) }
-      else { response.send({user_type:rows.map(mapTypes)}) };
+      else { response.send({ user_type: rows.map(mapTypes) }) };
     })
   }
   addMeetingUser(request, response) {
@@ -101,7 +101,7 @@ class Driver {
         console.log(error.message);
       }
       else {
-        response.send({meeting:rows.map(mapMeeting)});
+        response.send({ meeting: rows.map(mapMeeting) });
       }
     });
   }
@@ -232,16 +232,16 @@ class Driver {
   }
   /*Returns all positions from 'EmployeePosition' table*/
   getPositions(response) {
-    var query = 'SELECT EmployeePosition.position_id, EmployeePosition.position_title, '+
-    'EmployeePosition.currentEmployee, EmployeePosition.department_id, EmployeePosition.vacant, '+
-    'Count(EmployeePosition.position_id) as meeting_count FROM EmployeePosition LEFT JOIN meetingPositions '+
-    'ON EmployeePosition.position_id = meetingPositions.position_id group by position_id';
+    var query = 'SELECT EmployeePosition.position_id, EmployeePosition.position_title, ' +
+      'EmployeePosition.currentEmployee, EmployeePosition.department_id, EmployeePosition.vacant, ' +
+      'Count(EmployeePosition.position_id) as meeting_count FROM EmployeePosition LEFT JOIN meetingPositions ' +
+      'ON EmployeePosition.position_id = meetingPositions.position_id group by position_id';
     this.connection.query(query, (err, rows) => {
       if (err) {
         console.log(err)
       }
       else {
-        response.send({meeting:rows.map(mapPosition)});
+        response.send({ meeting: rows.map(mapPosition) });
       }
     })
   }
@@ -282,7 +282,7 @@ class Driver {
     })
   }
   /*Gets all departments from Department table*/
-  getDepartments(response) {
+  getDepartments(request, response) {
     var query = 'SELECT * FROM Department';
     this.connection.query(query, (err, rows) => {
       if (err) {
@@ -364,9 +364,9 @@ function mapPosition(row) {
     position_id: row.position_id,
     position_title: row.title,
     currentEmployee: row.currentEmployee,
-    department_id:row.department_id, 
-    vacant:row.vacant, 
-    meeting_count:row.meeting_count,
+    department_id: row.department_id,
+    vacant: row.vacant,
+    meeting_count: row.meeting_count,
   };
 }
 /*Maps userTypes columns for response.send() functionality*/
@@ -383,16 +383,16 @@ function mapDepartment(row) {
     dept_short: row.dept_short
   };
 }
-function mapUser(row){
-  return{
-    u_id:row.u_id,
-	  email:row.email,
-	  u_password:row.u_password,
-	  phone_number:row.phone_number,
-	  name:row.name,
-	  type:row.type,
-    u_position:row.u_position,
-    type_desc:row.type_desc
+function mapUser(row) {
+  return {
+    u_id: row.u_id,
+    email: row.email,
+    u_password: row.u_password,
+    phone_number: row.phone_number,
+    name: row.name,
+    type: row.type,
+    u_position: row.u_position,
+    type_desc: row.type_desc
   }
 }
 
