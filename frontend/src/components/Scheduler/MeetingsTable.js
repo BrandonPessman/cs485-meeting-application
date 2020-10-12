@@ -17,12 +17,7 @@ import Checkbox from '@material-ui/core/Checkbox'
 import Button from '@material-ui/core/Button'
 import Modal from '@material-ui/core/Modal';
 import TextField from '@material-ui/core/TextField';
-import {
-    MuiPickersUtilsProvider,
-    KeyboardTimePicker,
-    KeyboardDatePicker,
-} from '@material-ui/pickers';
-import DateFnsUtils from '@date-io/date-fns';
+import axios from 'axios'
 
 const months = {
     0: 'January',
@@ -274,11 +269,21 @@ export default function EnhancedTable({ setShowNextStep }) {
     const [dense] = React.useState(true)
     const [rowsPerPage, setRowsPerPage] = React.useState(5)
     const [newMeetingOpen, setNewMeetingOpen] = React.useState(false)
-    const [selectedDate, setSelectedDate] = React.useState(new Date('2014-08-18T21:11:54'));
 
-    const handleDateChange = (date) => {
-        setSelectedDate(date);
-    };
+    const handleCreateMeeting = () => {
+        let obj = {
+            meeting_title: document.getElementById('create-event-title').value,
+            meeting_descr: document.getElementById('create-event-desc').value,
+            location_id: document.getElementById('create-event-location').value,
+            start_date_time: document.getElementById('create-event-starttime').value,
+            end_date_time: document.getElementById('create-event-endtime').value,
+            position_id: '1',
+            users: [1]
+        }
+        console.log(obj)
+        axios.post('http://localhost:3443/insertMeeting', obj)
+        setNewMeetingOpen(false);
+    }
 
     const handleRequestSort = (event, property) => {
         const isAsc = orderBy === property && order === 'asc'
@@ -431,7 +436,17 @@ export default function EnhancedTable({ setShowNextStep }) {
                     <h1>New Meeting</h1>
                     <TextField
                         label="Title"
-                        id="outlined-size-small"
+                        id="create-event-title"
+                        variant="outlined"
+                        size="small"
+                        style={{
+                            width: '100%',
+                            marginBottom: '10px'
+                        }}
+                    />
+                    <TextField
+                        label="Description"
+                        id="create-event-desc"
                         variant="outlined"
                         size="small"
                         style={{
@@ -441,62 +456,32 @@ export default function EnhancedTable({ setShowNextStep }) {
                     />
                     <TextField
                         label="Location"
-                        id="outlined-size-small"
-                        variant="outlined"
-                        size="small"
-                        style={{
-                            width: '100%',
-                            marginBottom: '10px'
-                        }}
-                    />
-                    <TextField
-                        label="Feedbackers"
-                        id="outlined-size-small"
+                        id="create-event-location"
                         variant="outlined"
                         size="small"
                         style={{
                             width: '100%'
                         }}
                     />
-                    <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                        <KeyboardDatePicker
-                            disableToolbar
-                            variant="inline"
-                            format="MM/dd/yyyy"
-                            margin="normal"
-                            id="date-picker-inline"
-                            label="Date"
-                            value={selectedDate}
-                            onChange={handleDateChange}
-                            KeyboardButtonProps={{
-                                'aria-label': 'change date',
-                            }}
-                            style={{ width: '100%' }}
-                        />
-                        <KeyboardTimePicker
-                            margin="normal"
-                            id="time-picker"
-                            label="Start Time"
-                            value={selectedDate}
-                            onChange={handleDateChange}
-                            KeyboardButtonProps={{
-                                'aria-label': 'change time',
-                            }}
-                            style={{ width: '45%' }}
-                        />
-                        <KeyboardTimePicker
-                            margin="normal"
-                            id="time-picker"
-                            label="End Time"
-                            value={selectedDate}
-                            onChange={handleDateChange}
-                            KeyboardButtonProps={{
-                                'aria-label': 'change time',
-                            }}
-                            style={{ float: 'right', width: '45%' }}
-                        />
-                    </MuiPickersUtilsProvider>
-                    <Button variant='contained' color='secondary' style={{ width: '45%' }}>
+                    <TextField
+                        id="create-event-starttime"
+                        label="Next appointment"
+                        type="datetime-local"
+                        defaultValue={new Date()}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                    <TextField
+                        id="create-event-endtime"
+                        label="Next appointment"
+                        type="datetime-local"
+                        defaultValue={new Date()}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                    <Button variant='contained' color='secondary' style={{ width: '45%' }} onClick={handleCreateMeeting}>
                         Create
                     </Button>
                     <Button

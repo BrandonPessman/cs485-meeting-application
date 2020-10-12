@@ -115,7 +115,7 @@ class Driver {
   }
   /*Insert new Meeting*/
   insertMeeting(request, response) {
-    const query = 'INSERT INTO Meeting (meeting_id,meeting_title, meeting_descr, location_id, start_date_time, end_date_time, position_id) VALUES (6,?,?,?,?,?,?)';
+    const query = 'INSERT INTO Meeting (meeting_title, meeting_descr, location_id, start_date_time, end_date_time, position_id) VALUES (?,?,?,?,?,?)';
     const params = [request.body.meeting_title, request.body.meeting_descr, request.body.location_id, request.body.start_date_time,
     request.body.end_date_time, request.body.position_id];
     this.connection.query(query, params, (error, result) => {
@@ -129,7 +129,7 @@ class Driver {
         /*For each user in 'users' string call meetingCombo*/
         for (var i = 0; i < users.length; i++) {
           var user_id = parseInt(users[i]);
-          this.meetingCombo(user_id)
+          this.meetingCombo(user_id, meeting_id)
         }
       }
     });

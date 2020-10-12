@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Grid from '@material-ui/core/Grid'
 import Paper from '@material-ui/core/Paper'
 import axios from 'axios'
+import Button from '@material-ui/core/Button'
 
 const months = {
     0: 'January',
@@ -27,6 +28,9 @@ export default function UpcomingMeetings() {
         axios.get('http://104.131.115.65:3443/meetings')
             .then(function (response) {
                 let t = response.data.meeting;
+
+                t.sort((a, b) => new Date(a.start_date_time) - new Date(b.start_date_time));
+
                 for (let i = 0; i < t.length; i++) {
                     let z = t[i];
                     let added = false
@@ -41,23 +45,26 @@ export default function UpcomingMeetings() {
                         date: ''
                     }
 
-                    meeting.date = months[meeting.starttime.getMonth()] + ' ' + meeting.starttime.getDate() + ', ' + meeting.starttime.getFullYear()
+                    if (new Date() < meeting.starttime) {
+                        meeting.date = months[meeting.starttime.getMonth()] + ' ' + meeting.starttime.getDate() + ', ' + meeting.starttime.getFullYear()
 
-                    for (let j = 0; j < list.length; j++) {
-                        if (list[j].date === meeting.date) {
-                            list[j].meetings.push(meeting);
-                            added = true;
+                        for (let j = 0; j < list.length; j++) {
+                            if (list[j].date === meeting.date) {
+                                list[j].meetings.push(meeting);
+                                added = true;
+                            }
                         }
-                    }
 
-                    if (!added) {
-                        let t = {
-                            date: meeting.date,
-                            meetings: [meeting]
+                        if (!added) {
+                            let t = {
+                                date: meeting.date,
+                                meetings: [meeting]
+                            }
+                            list.push(t)
                         }
-                        list.push(t)
                     }
                 }
+
                 setData(list)
             })
     }, [])
@@ -66,7 +73,10 @@ export default function UpcomingMeetings() {
         <div style={{ margin: '40px 0px' }}>
             <h2 style={{ marginBottom: '0', marginTop: '0', fontWeight: '300' }}>
                 Upcoming Meetings
-        </h2>
+                <span style={{ float: 'right' }}><Button variant='contained' color='secondary' onClick={() => { document.body.style.zoom = .75; window.print(); document.body.style.zoom = 1; }}>
+                    Print Itinarary
+            </Button></span>
+            </h2>
 
 
             {data.map(inst => {
