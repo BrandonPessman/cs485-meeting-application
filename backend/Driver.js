@@ -1,5 +1,7 @@
 var MySQL = require('mysql')
 const moment = require('moment');
+const { response } = require('express');
+var datetime = require()
 
 class Driver {
   /*Establishes connection to mySQL database - Interview Tracker*/
@@ -41,6 +43,16 @@ class Driver {
       else { response.send({ status: true }); }
     });
   }
+  /*Deletes user in 'user' table - cascades to all instances of this user*/
+  deleteUser(request, response) {
+    var query = 'DELETE FROM user WHERE u_id = ?'
+    var params = [request.body.u_id];
+    this.connection.query(query, params, (err) => {
+      if (err) {console.log(err) }
+      else {response.send({status:true})}
+    })
+    this.deleteMeetingUser(request);
+  }
   /*gets user from 'user' table using email and u_password col*/
   getUser(request, response) {
     var query = 'SELECT * FROM user LEFT JOIN userTypes ON user.type = userTypes.type_id WHERE email = ? and u_password=?';
@@ -71,18 +83,6 @@ class Driver {
       else { response.send({ user_type: rows.map(mapTypes) }) };
     })
   }
-  addMeetingUser(request, response) {
-    var query = 'INSERT INTO meetingUser VALUES (?,?)'
-    const params = [request.body.meeting_id, request.body.u_id];
-    this.connection.query(query, params, function (err, response) {
-      if (err) {
-        console.log(err);
-      }
-      else {
-        console.log(response)
-      }
-    })
-  }
   /*Gets all users from specific meeting user meeting_id - need to add left join for usertype string*/
   getMeetingUsers(request, response) {
     var query = 'SELECT * FROM user U LEFT JOIN userTypes on U.type=userTypes.type_id WHERE U.u_id=ANY(SELECT u_id FROM meetingUser WHERE meeting_id=?)'
@@ -91,7 +91,7 @@ class Driver {
       if (err) {
         console.log(err)
       }
-      else { console.log(rows) }
+      else { response.send(rows) }
     })
   }
   getAllMeetings(response) {
@@ -105,12 +105,32 @@ class Driver {
       }
     });
   }
-  /*Adds each user in meeting to meetingCombo table, ONLY ever called by insertMeeting*/
-  meetingCombo(user_id, meeting_id) {
-    var query = 'Insert into meetingUser (meeting_id, u_id) VALUES(' + meeting_id + ', ' + user_id + ')'
-    this.connection.query(query, function (err, results) {
-      if (err) throw err;
-      console.log(results);
+  /*Deletes user in meeting using meeting_id & u_id*/
+  deleteMeetingUser(request, response){
+    const query= "DELETE FROM meetingUser Where meeting_id=? and u_id=?";
+    const params=[request.meeting_id, request.u_id];
+      this.connection.query(query,params,(error, result)=>{
+        if(error){
+          console.log(error);
+        }
+        else{
+          response.send({status:true})//send a message to the string
+        }
+    })
+  }
+  /*Adds each user in meeting to meetingCombo table - called by insertMeeting when meeting initialized.*/
+  addMeetingUser(request, response) {
+    var query = 'INSERT INTO meetingUser VALUES (?,?)'
+    const params = [request.body.meeting_id, request.body.u_id];
+    this.connection.query(query, params, function (err, response) {
+      if (err) {
+        console.log(err);
+      }
+      else {
+        if (response != NULL) {
+          response.send({status:true});
+        }
+      }
     })
   }
   /*Insert new Meeting*/
@@ -120,23 +140,22 @@ class Driver {
     request.body.end_date_time, request.body.position_id];
     this.connection.query(query, params, (error, result) => {
       if (error) {
-        console.log(error.message);
+        console.log("Error message: " + error.message);
       }
       else {
-        var meeting_id = result.insertId;
-        response.send({ status: true, meeting_id: meeting_id, });
+        var meeting_id = result.meeting_id;
+        var myMeeting = {meeting_id:meeting_id, position_id:request.body.position_id}
+        //response.send({ status: true, meeting_id: meeting_id, });
+        this.insertMeetingPosition(myMeeting,response)
         var users = request.body.users;
         /*For each user in 'users' string call meetingCombo*/
         for (var i = 0; i < users.length; i++) {
           var user_id = parseInt(users[i]);
-          this.meetingCombo(user_id, meeting_id)
+          this.addMeetingUser(user_id, meeting_id)
         }
+        response.send(result.meeting_id);
       }
     });
-    var position = request.body.position_id;
-    var meeting = request.body.meeting_id
-    var req = { position_id: position, meeting_id: meeting }
-    this.insertMeetingPosition(req)
   }
   /*gets meeting from 'Meeting' table using meeting_id*/
   getMeeting(request, response) {
@@ -144,53 +163,100 @@ class Driver {
     var params = [request.body.meeting_id]
     return this.connection.query(query, params, (err, rows) => {
       if (err) { console.log(err) }
-      else { response.json(rows) }
+      else {response.send({ meeting: rows.map(mapMeeting) })}
     })
   }
   /*Updates meeting in 'Meeting' table -- need to update*/
-  updateMeeting(id, location, users, start_time, end_time) {
-    var currentMeeting = this.getMeeting(id);
-    console.log(currentMeeting.location_id);
-    var list = [location, users, start_time, end_time]
-    var objectList = [currentMeeting.location_id, currentMeeting.users, currentMeeting.start_time, currentMeeting.end_time]
-    /*Checks if original value in column is equal to the new one, if not, update*/
-    for (var i = 0; i < list.length; i++) {
-      if (objectList[i] != list[i]) {
-        this.connection.query("UPDATE Meeting SET " + objectList[i] + ' = ' + list[i] + ' WHERE meeting_id = ' + id, function (err, results) {
-          if (err) throw err;
-          console.log(results)
-        })
-      }
+  updateMeeting(id, location, start_time, end_time) {
+    var query = 'UPDATE Meeting SET meeting_title = ?, meeting_descr = ?, location_id = ?, start_date_time = ?, end_date_time = ? WHERE meeting_id = ?'
+    var params = [request.body.meeting_title, request.body.meeting_descr, request.body.location_id, request.body.start_date_time, request.body.end_date_time, request.body.meeting_id]
+    this.connection.query(query, params, (err, result)=> {
+      if (err) {console.log(err)}
+      else{response.send({status:true})}
+    })
+  }
+  /*Deletes all meeting/feedback relationships via meeting_id or feedback_id*/
+  deleteMeetingFeedback(request) {
+    if (request.body.meeting_id>0) {
+      var query = 'DELETE FROM feedbackCombo WHERE meeting_id = ?'
+      var params = [request.body.meeting_id]
+      this.connection.query(query, params, (err,result) => {
+        if (err) {console.log(err)}
+        else{console.log({status:true})}
+      })
     }
+    else {
+      var query = 'DELETE FROM feedbackCombo WHERE feedback_id = ?'
+      var params = [request.body.feedback_id]
+      this.connection.query(query, params, (err,result) => {
+        if (err) {console.log(err)}
+        else{console.log({status:true})}
+      })
+    }
+  }
+  /*Deletes all meeting/position relationships via meeting_id or position_id*/
+  deleteMeetingPosition(request,response) {
+    if (request.body.meeting_id >0) {
+      var query = 'DELETE FROM meetingPosition WHERE meeting_id = ?'
+      var params = [request.body.meeting_id]
+      this.connection.query(query, params, (err,result) => {
+        if (err) {console.log(err)}
+        else{response.send({status:true})}
+      })
+    }
+    else {
+      var query = 'DELETE FROM meetingPosition WHERE position_id = ?'
+      var params = [request.body.position_id]
+      this.connection.query(query, params, (err,result) => {
+        if (err) {console.log(err)}
+        else{response.send({status:true})}
+      })
+    }
+  }
+  /*Deletes a Meeting entity
+  *calls deleteMeetingUser to delete all meeting/User relationships
+  *calls deleteMeetingPosition to delete all meeting/Position relationships
+  */
+  deleteMeeting(request,response) {
+    var query = 'DELETE FROM Meeting WHERE meeting_id = ?'
+    var params = [request.body.meeting_id]
+    this.connection.query(query, params, (err, result) => {
+      if (err) {
+        console.log(err);
+      } else {
+        response.send({status:true});
+      }
+    })
+    this.deleteMeetingPosition(request)
+    this.deleteMeetingFeedback(request)
+    this.deleteMeetingUser(request)
   }
   /*Insert feedback & meeting into feedbackCombo
     only ever called by insertFeedback*/
   insertFeedbackCombo(query) {
-    return this.connection.query(query, function (err, results) {
-      if (err) throw err;
-      console.log(results)
+    this.connection.query(query, function (err, results) {
+      if (err) {
+        console.log(err);
+      }
+      else{
+        console.log(results)
+      }
     })
   }
   /*Inserts feedback instance into 'Feedback' table*/
   insertFeedback(request, response) {
     let now = moment().format("YYYY-MM-DD HH:mm:ss");
     var query =
-      "INSERT INTO Feedback (feedback_Id, content, author, date_time_created, meeting_id) VALUES (?, ?, ?, ?, ?)"
-    var params = [request.body.feedback_Id, request.body.content, request.body.author, now, request.body.meeting_id];
-    var comboQuery = 'INSERT INTO feedbackCombo (feedback_id, meeting_id, author_email) VALUES (' +
-      request.body.feedback_Id +
-      ", " +
-      request.body.meeting_id +
-      ", '" +
-      request.body.author +
-      "')"
-    /*Adds combination to insertFeedbackCombo*/
-    this.insertFeedbackCombo(comboQuery)
-    return this.connection.query(query, params, (err, response) => {
+      "INSERT INTO Feedback (content, author, date_time_created, meeting_id) VALUES (?, ?, ?, ?, ?)"
+    var params = [request.content, request.author, now, request.meeting_id];
+    //Adds combination to insertFeedbackCombo
+    //this.insertFeedbackCombo(comboQuery)
+    this.connection.query(query, params, (err, response) => {
       if (err) {
         console.log(err);
       } else {
-        console.log(response)
+        var feedback_id = result.insertId
+        response.send({ status: true, feedback_Id: feedback_id, });
       }
     })
   }
@@ -202,7 +268,7 @@ class Driver {
       if (err) {
         console.log(err)
       } else {
-        response.json(rows)
+        response.json({feedback: rows.map(mapFeedback)})
       }
     })
   }
@@ -214,21 +280,80 @@ class Driver {
         console.log(err)
       }
       else {
-        response.json(rows)
+        response.json({feedback: rows.map(mapFeedback)})
       }
     })
   }
-  /**Updates feedback instance in 'Feedback' table - The only thing the user can change is content */
-  updateFeedback(request, reponse) {
-    var query = 'UPDATE feedback SET content = ? WHERE feedback_id = ?'
-    var params = [request.body.content, request.body.feedback_id]
-    return this.connection.query(query, params, (err, response) => {
+  deleteFeedback(request,response) {
+    var query = 'DELETE FROM Feedback WHERE feedback_Id = ?'
+    var params = [request.body.feedback_id]
+    this.connection.query(query, params, (err) => {
       if (err) {
         console.log(err)
       } else {
-        response.send(response)
+        response.send({status:true})
       }
     })
+    this.deleteMeetingFeedback(request)
+  }
+  /**Updates feedback instance in 'Feedback' table - The only thing the user can change is content */
+  updateFeedback(request, response) {
+    var query = 'UPDATE feedback SET content = ? WHERE feedback_id = ?'
+
+    var params = [request.body.content, request.body.feedback_id]
+    return this.connection.query(query, params, (err, result) => {
+      if (err) {
+        console.log(err)
+      } else {
+        response.send({status:true})
+      }
+    })
+  }
+  /**Inserts given position object into EmployeePosition table. Calls insertDepartmentPosition (above) to 
+   * add dept_id/position_id combination to departmentPosition table. */
+  insertPositions(request, response) {
+    var query = 'INSERT INTO EmployeePosition (position_id, position_title, currentEmployee, department_id) VALUES (?, ?, ?, ?)'
+    var params = [request.body.position_id, request.body.position_title, request.body.currentEmployee, request.body.department_id]
+     this.connection.query(query, params, (err, result) => {
+      if (err) {
+        console.log(err)
+      } else{
+        response.send({status:true})
+      }
+    })
+    this.insertDepartmentPosition(request)
+  }
+  /*Deletes department/position relationship using department_id or position_id*/
+  deleteDepartmentPosition(request,response) {
+    if (request.body.position_id>0) {
+    var query = 'DELETE FROM departmentPosition WHERE position_id = ?'
+    var params = [request.body.position_id]
+    this.connection.query(query, params, (err) => {
+      if (err) {console.log(err)}
+        else {response.send({status:true})}
+    })
+  }
+  else {
+    var query = 'DELETE FROM departmentPosition WHERE department_id = ?'
+    var params = [request.body.position_id]
+    this.connection.query(query, params, (err) => {
+      if (err) {console.log(err)}
+      else {response.send({status:true})}
+    })
+  }
+}
+  /**Delete position from EmployeePosition - calls deleteDepartmentPosition
+   * to remove unique combination of position_id/dept_id from table departmentPosition
+   */
+  deletePosition(request, response) {
+    var query = 'DELETE FROM EmployeePosition WHERE position_id = ?'
+    var params = [request.body.position_id]
+    this.connection.query(query, params, (err, result) => {
+      if (err) {console.log(err) }
+      else {response.send({status:true})}
+    })
+    this.deleteDepartmentPosition(request)
+    this.deleteMeetingPosition(request)
   }
   /*Returns all positions from 'EmployeePosition' table*/
   getPositions(response) {
@@ -246,14 +371,14 @@ class Driver {
     })
   }
   /**Increments the number of meetings under position - only called by insertMeeting */
-  insertMeetingPosition(request) {
+  insertMeetingPosition(request, response) {
     var query = 'INSERT  INTO meetingPositions VALUES(?,?)'
     var params = [request.position_id, request.meeting_id];
-    this.connection.query(query, params, (err, response) => {
+    this.connection.query(query, params, (err) => {
       if (err) {
         console.log(err)
       } else {
-        console.log(response);
+        response.send({status:true});
       }
     })
   }
@@ -265,8 +390,16 @@ class Driver {
         console.log(err)
       }
       else {
-        response.json(rows)
+        response.json({location: rows.map(mapLocation)});
       }
+    })
+  }
+  deleteLocation(request, response) {
+    var query = 'DELETE FROM Location WHERE location_id = ?'
+    var params = [request.body.location_id]
+    this.connection.query(query, params, (err) => {
+      if (err) {console.log(err)}
+      else{response.send({status:true})}
     })
   }
   /*Returns all user types from 'userType' table*/
@@ -277,20 +410,20 @@ class Driver {
         console.log(err)
       }
       else {
-        response.json(rows)
+        response.json({type: rows.map(mapTypes)});
       }
     })
   }
   /*Gets all departments from Department table*/
   getDepartments(request, response) {
-    var query = 'SELECT * FROM Department';
+    var query = "SELECT d.dept_id, d.dept_title, d.dept_short, COUNT(dp.dept_id) as openPositions " +
+    "FROM Department d LEFT JOIN departmentPosition dp ON d.dept_id = dp.dept_id group by d.dept_id"
     this.connection.query(query, (err, rows) => {
       if (err) {
         console.log(err)
       }
       else {
-        response.json(rows)
-        console.log(rows)
+        response.json({department: rows.map(mapDepartment)});
       }
     })
   }
@@ -303,29 +436,21 @@ class Driver {
         console.log(err)
       }
       else {
-        response.json(rows)
+        response.json({status:true})
       }
     })
   }
-  /*Purely for dev use - will not be used in after linked to frontend*/
-  toDate(date) {
-    date = date.toISOString();
-    date = date.substr(1, 19);
-    date = date.replace('T', ' ');
-    return (date);
-  }
-  //deleete User or ID method
-  deletemeetingUser(request, response){
-    const query= "DELETE FROM meetingUser Where meeting_id=? and u_id=?";
-    const params=[request.meeting_id, request.u_id];
-      this.connection.query(query,params,(error, result)=>{
-        if(error){
-          console.log(error);
-        }
-        else{
-          response.send("Succeed deleting user")//send a message to the string
-        }
+  /**Deletes department from Department table. 
+   * Calls deleteDepartmentPositions to delete all existing positions under the department
+   */
+  deleteDepartment(request, response) {
+    var query = "DELETE FROM Department where dept_id = ?"
+    var params = [request.body.dept_id]
+    this.connection.query(query, params, (err, results) => {
+      if (err) {console.log(err)}
+      else{response.send({status:true})}
     })
+    deleteDepartmentPositions(request);
   }
 }
 /*Maps Meeting columns for response.send() functionality*/

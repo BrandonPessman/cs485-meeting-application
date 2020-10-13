@@ -20,40 +20,55 @@ app.get('/type', (request, response) => {
 app.get('/meetings', (request,response) => {
     driver.newdriver.getAllMeetings(response);
 });
+app.post('/updateMeeting', (request,response) => {
+    driver.newdriver.updateMeeting(request,response);
+});
+app.post('/deleteMeeting', (request,response) => {
+    driver.newdriver.deleteMeeting(request,response);
+});
 //test success
 app.get('/users', (request, response) => {
     driver.newdriver.getAllUsers(response);
 });
+app.post('/deleteUser', (request, response) => {
+    driver.newdriver.deleteUser(request,response);
+})
 //test success
 //use e-mail and password to login
 app.get('/users/:email/:u_password', (request, response) => {
     driver.newdriver.getUser(request,response);
 })
+app.post('/updateUser', (request,response) => {
+    driver.newdriver.updateUser(request,response);
+});
 //test success
 app.get('/positions', (request, response) => {
     driver.newdriver.getPositions(response);
 })
+app.post('/deletePosition', (request,response) => {
+    driver.newdriver.deletePosition(request, response)
+});
 app.get('/locations', (request,response) => {
     driver.newdriver.getLocations(response)
-})
+});
 app.get('/meetingFeedback', (request, response) => {
     driver.newdriver.getMeetingFeedback(request, response);
-})
-app.get('/meetingUsers', (request, response) => {
-    driver.newdriver.getMeetingUsers(request, response);
-})
+});
 app.get('/department', (request, response) => {
     driver.newdriver.getDepartments(request, response);
 })
 //need fix
 app.post('/insertMeeting', (request, response) => {
-    driver.newdriver.insertMeeting(request, response);
+    driver.newdriver.insertMeetingPosition(request, response)
 });
 
 app.put('/user', (request, response) => {
     driver.newdirver.updateUser(request, response);
 })
 
-app.post('/deletemeetingUser', (request, response) => {
-    driver.newdriver.deletemeetingUser(request, response);
+app.post('/deleteMeetingUser', (request, response) => {
+    driver.newdriver.deleteMeetingUser(request, response);
+});
+app.post('/addMeetingUser', (requeset, response) => {
+    driver.newdriver.addMeetingUser(request,response);
 });
