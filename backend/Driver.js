@@ -314,6 +314,19 @@ class Driver {
     date = date.replace('T', ' ');
     return (date);
   }
+  //deleete User or ID method
+  deletemeetingUser(request, response){
+    const query= "DELETE FROM meetingUser Where meeting_id=? and u_id=?";
+    const params=[request.meeting_id, request.u_id];
+      this.connection.query(query,params,(error, result)=>{
+        if(error){
+          console.log(error);
+        }
+        else{
+          response.send("Succeed deleting user")//send a message to the string
+        }
+    })
+  }
 }
 /*Maps Meeting columns for response.send() functionality*/
 function mapMeeting(row) {
