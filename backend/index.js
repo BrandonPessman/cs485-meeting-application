@@ -53,3 +53,7 @@ app.post('/insertMeeting', (request, response) => {
 app.put('/user', (request, response) => {
     driver.newdirver.updateUser(request, response);
 })
+
+app.post('/deletemeetingUser', (request, response) => {
+    driver.newdriver.deletemeetingUser(request, response);
+});
