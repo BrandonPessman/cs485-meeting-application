@@ -1,7 +1,6 @@
 var MySQL = require('mysql')
 const moment = require('moment');
 const { response } = require('express');
-var datetime = require()
 
 class Driver {
   /*Establishes connection to mySQL database - Interview Tracker*/
@@ -51,7 +50,6 @@ class Driver {
       if (err) {console.log(err) }
       else {response.send({status:true})}
     })
-    this.deleteMeetingUser(request);
   }
   /*gets user from 'user' table using email and u_password col*/
   getUser(request, response) {
@@ -107,8 +105,8 @@ class Driver {
   }
   /*Deletes user in meeting using meeting_id & u_id*/
   deleteMeetingUser(request, response){
-    const query= "DELETE FROM meetingUser Where meeting_id=? and u_id=?";
-    const params=[request.meeting_id, request.u_id];
+    const query= "DELETE FROM meetingUser Where meeting_id=?";
+    const params=[request.body.meeting_id];
       this.connection.query(query,params,(error, result)=>{
         if(error){
           console.log(error);
@@ -119,17 +117,12 @@ class Driver {
     })
   }
   /*Adds each user in meeting to meetingCombo table - called by insertMeeting when meeting initialized.*/
-  addMeetingUser(request, response) {
+  addMeetingUser(user_id,meeting_id) {
     var query = 'INSERT INTO meetingUser VALUES (?,?)'
-    const params = [request.body.meeting_id, request.body.u_id];
-    this.connection.query(query, params, function (err, response) {
+    const params = [meeting_id,user_id];
+    this.connection.query(query, params, function (err, result) {
       if (err) {
         console.log(err);
-      }
-      else {
-        if (response != NULL) {
-          response.send({status:true});
-        }
       }
     })
   }
@@ -143,17 +136,13 @@ class Driver {
         console.log("Error message: " + error.message);
       }
       else {
-        var meeting_id = result.meeting_id;
-        var myMeeting = {meeting_id:meeting_id, position_id:request.body.position_id}
-        //response.send({ status: true, meeting_id: meeting_id, });
-        this.insertMeetingPosition(myMeeting,response)
+        var meeting_id = result.insertId;
         var users = request.body.users;
-        /*For each user in 'users' string call meetingCombo*/
         for (var i = 0; i < users.length; i++) {
           var user_id = parseInt(users[i]);
           this.addMeetingUser(user_id, meeting_id)
         }
-        response.send(result.meeting_id);
+        response.send({status:true});
       }
     });
   }
@@ -167,7 +156,7 @@ class Driver {
     })
   }
   /*Updates meeting in 'Meeting' table -- need to update*/
-  updateMeeting(id, location, start_time, end_time) {
+  updateMeeting(request,response) {
     var query = 'UPDATE Meeting SET meeting_title = ?, meeting_descr = ?, location_id = ?, start_date_time = ?, end_date_time = ? WHERE meeting_id = ?'
     var params = [request.body.meeting_title, request.body.meeting_descr, request.body.location_id, request.body.start_date_time, request.body.end_date_time, request.body.meeting_id]
     this.connection.query(query, params, (err, result)=> {
@@ -195,13 +184,13 @@ class Driver {
     }
   }
   /*Deletes all meeting/position relationships via meeting_id or position_id*/
-  deleteMeetingPosition(request,response) {
+  deleteMeetingPosition(request) {
     if (request.body.meeting_id >0) {
-      var query = 'DELETE FROM meetingPosition WHERE meeting_id = ?'
+      var query = 'DELETE FROM meetingPositions WHERE meeting_id = ?'
       var params = [request.body.meeting_id]
       this.connection.query(query, params, (err,result) => {
         if (err) {console.log(err)}
-        else{response.send({status:true})}
+        else{console.log({status:true})}
       })
     }
     else {
@@ -224,12 +213,11 @@ class Driver {
       if (err) {
         console.log(err);
       } else {
-        response.send({status:true});
+        this.deleteMeetingPosition(request);
+        this.deleteMeetingFeedback(request);
+        this.deleteMeetingUser(request,response);
       }
     })
-    this.deleteMeetingPosition(request)
-    this.deleteMeetingFeedback(request)
-    this.deleteMeetingUser(request)
   }
   /*Insert feedback & meeting into feedbackCombo
     only ever called by insertFeedback*/
