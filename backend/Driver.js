@@ -480,7 +480,8 @@ function mapDepartment(row) {
   return {
     dept_id: row.dept_id,
     dept_title: row.dept_title,
-    dept_short: row.dept_short
+    dept_short: row.dept_short,
+    openPosition: row.openPosition
   };
 }
 function mapUser(row) {
