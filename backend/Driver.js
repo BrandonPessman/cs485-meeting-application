@@ -26,8 +26,8 @@ class Driver {
   /*Inserts user to 'user' table*/
   insertUser(request, response) {
     var query =
-      "INSERT INTO user VALUES (?,?,?,?,?,?,?)"
-    var params = [NULL, request.body.email, request.body.phone_number, request.body.name, request.body.type, request.body.u_position]
+      "INSERT INTO user VALUES (?,?,?,?,?,?)"
+    var params = [null, request.body.email, request.body.u_password,request.body.phone_number, request.body.name, request.body.type]
     this.connection.query(query, params, (err, result) => {
       if (err) { console.log(err) }
       else { response.send({ status: true }); }
@@ -112,7 +112,7 @@ class Driver {
           console.log(error);
         }
         else{
-          response.send({status:true})//send a message to the string
+          response.send({status:true})
         }
     })
   }
@@ -184,7 +184,7 @@ class Driver {
     }
   }
   /*Deletes all meeting/position relationships via meeting_id or position_id*/
-  deleteMeetingPosition(request) {
+  deleteMeetingPosition(request,response) {
     if (request.body.meeting_id >0) {
       var query = 'DELETE FROM meetingPositions WHERE meeting_id = ?'
       var params = [request.body.meeting_id]
@@ -194,7 +194,7 @@ class Driver {
       })
     }
     else {
-      var query = 'DELETE FROM meetingPosition WHERE position_id = ?'
+      var query = 'DELETE FROM meetingPositions WHERE position_id = ?'
       var params = [request.body.position_id]
       this.connection.query(query, params, (err,result) => {
         if (err) {console.log(err)}
@@ -221,13 +221,12 @@ class Driver {
   }
   /*Insert feedback & meeting into feedbackCombo
     only ever called by insertFeedback*/
-  insertFeedbackCombo(query) {
-    this.connection.query(query, function (err, results) {
+  insertFeedbackCombo(request,feedback_id) {
+    var query="INSERT INTO feedbackCombo VALUES(?,?,?)";
+    var params=[feedback_id,request.body.meeting_id,request.body.author];
+    this.connection.query(query,params, function (err, result) {
       if (err) {
         console.log(err);
-      }
-      else{
-        console.log(results)
       }
     })
   }
@@ -235,16 +234,15 @@ class Driver {
   insertFeedback(request, response) {
     let now = moment().format("YYYY-MM-DD HH:mm:ss");
     var query =
-      "INSERT INTO Feedback (content, author, date_time_created, meeting_id) VALUES (?, ?, ?, ?, ?)"
-    var params = [request.content, request.author, now, request.meeting_id];
-    //Adds combination to insertFeedbackCombo
-    //this.insertFeedbackCombo(comboQuery)
-    this.connection.query(query, params, (err, response) => {
+      "INSERT INTO Feedback (content, author, date_time_created, meeting_id) VALUES (?, ?, ?, ?)"
+    var params = [request.body.content, request.body.author, now, request.body.meeting_id];
+    this.connection.query(query, params, (err, result) => {
       if (err) {
         console.log(err);
       } else {
-        var feedback_id = result.insertId
+        var feedback_id = result.insertId;
         response.send({ status: true, feedback_Id: feedback_id, });
+        this.insertFeedbackCombo(request,feedback_id);
       }
     })
   }
@@ -256,7 +254,7 @@ class Driver {
       if (err) {
         console.log(err)
       } else {
-        response.json({feedback: rows.map(mapFeedback)})
+        response.send({feedback: rows.map(mapFeedback)})
       }
     })
   }
@@ -318,15 +316,13 @@ class Driver {
     var params = [request.body.position_id]
     this.connection.query(query, params, (err) => {
       if (err) {console.log(err)}
-        else {response.send({status:true})}
     })
   }
   else {
     var query = 'DELETE FROM departmentPosition WHERE department_id = ?'
-    var params = [request.body.position_id]
+    var params = [request.body.department_id]
     this.connection.query(query, params, (err) => {
       if (err) {console.log(err)}
-      else {response.send({status:true})}
     })
   }
 }
@@ -338,10 +334,11 @@ class Driver {
     var params = [request.body.position_id]
     this.connection.query(query, params, (err, result) => {
       if (err) {console.log(err) }
-      else {response.send({status:true})}
+      else {
+        this.deleteDepartmentPosition(request,response);
+        this.deleteMeetingPosition(request,response);
+      }
     })
-    this.deleteDepartmentPosition(request)
-    this.deleteMeetingPosition(request)
   }
   /*Returns all positions from 'EmployeePosition' table*/
   getPositions(response) {
@@ -358,18 +355,6 @@ class Driver {
       }
     })
   }
-  /**Increments the number of meetings under position - only called by insertMeeting */
-  insertMeetingPosition(request, response) {
-    var query = 'INSERT  INTO meetingPositions VALUES(?,?)'
-    var params = [request.position_id, request.meeting_id];
-    this.connection.query(query, params, (err) => {
-      if (err) {
-        console.log(err)
-      } else {
-        response.send({status:true});
-      }
-    })
-  }
   /*Returns all locations from 'Location' table*/
   getLocations(response) {
     var query = 'SELECT * FROM Location';
@@ -378,7 +363,7 @@ class Driver {
         console.log(err)
       }
       else {
-        response.json({location: rows.map(mapLocation)});
+        response.send({location: rows.map(mapLocation)});
       }
     })
   }
@@ -453,17 +438,6 @@ function mapMeeting(row) {
     meeting_status: row.meeting_status,
     meeting_title: row.meeting_title,
     meeting_descr: row.meeting_descr,
-  };
-}
-/*Maps user columns for response.send() functionality*/
-function mapUsers(row) {
-  return {
-    u_id: row.u_id,
-    email: row.email,
-    u_password: row.u_password,
-    phone_number: row.phone_number,
-    name: row.name,
-    type: row.type
   };
 }
 /*Maps Feedback columns for response.send() functionality*/
