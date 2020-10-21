@@ -295,6 +295,65 @@ class Driver {
       }
     })
   }
+ /* insert Candidate to the Candidate table */
+insertCandidate (Candidate_id, id, users, meeting_id) {
+    var query =
+      "INSERT INTO Candidate (Candidate_id, u_id, users, meeting_id) VALUES (" +
+      Candidate_id +
+      "," +
+      id +
+      ", '" +
+      users +
+      "', '" +
+      meeting_id
+      "')"
+      this.connection.query(query, function (err, results) {
+        if (err) throw err;
+        console.log(results)
+      })
+    var users = users.split(",");
+    for (var i = 0; i<users.length; i++) {
+      var user_id = parseInt(users[i]);
+      this.meetingCombo(user_id, id);
+    }
+  }
+  /* Get the candidate from the Candidate Table */
+  getCandidate(Candidate_id) {
+    var query = 'SELECT * FROM Candidate WHERE Candidate_id = ' + Candidate_id
+    return this.connection.query(query, function (err, results) {
+      if (err) throw err;
+      console.log(results)
+    })
+  }
+  /* Get all the candidates from the table */
+  getAllCandidate(){
+    var query = 'SELECT * FROM Candidate'
+    return this.connection.query(query, (err, rows)=> {
+      if (err){
+        console.log(err)
+      }
+      response.send({
+        candidate:rows.map(mapCandidate)
+      })
+    })
+  }
+
+ /* Upadate the candidate information in the "Candidate" table */
+  updateCandidate({Candidate_id, id, users, meeting_id}){
+    var currentCandidate = getCandidate(Candidate_id)
+    var update = [Candidate_id, users, meeting_id]
+    var origin = ['Candidate_id', 'users', 'meeting_id']
+    for (var i = 0; i<update.length; i++) {
+      if (currentCandidate.original[i] === update[i]) {
+        var query = 'UPDATE Candidate SET ' + origin[i] + ' = ' + update[i] + 'WHERE Candidate_id = ' + Candidate_id
+        return this.connection.query(query, function (err, results) {
+        if (err) throw err
+        console.log(results)
+        })
+      }
+    }
+  }
+
   /**Inserts given position object into EmployeePosition table. Calls insertDepartmentPosition (above) to 
    * add dept_id/position_id combination to departmentPosition table. */
   insertPositions(request, response) {
@@ -482,6 +541,13 @@ function mapDepartment(row) {
     dept_title: row.dept_title,
     dept_short: row.dept_short,
     openPosition: row.openPosition
+  };
+}
+
+function mapCandidate(row) {
+  return{
+    Candidate_id : row.Candidate_id,
+    meeting_id : row.meeting_id
   };
 }
 function mapUser(row) {
