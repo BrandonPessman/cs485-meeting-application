@@ -58,6 +58,7 @@ CREATE TABLE Feedback (
 	MEETING_ID int,
 );
 
+
 CREATE TABLE EmployeePosition(
 	position_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 	title VARCHAR(50),
@@ -94,6 +95,12 @@ CREATE TABLE meetingUser (
 	meeting_id INT,
 	PRIMARY KEY(u_id, meeting_id)
 )
+CREATE TABLE Candidate (
+	Candidate_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	u_id INT,
+	meeting_id INT,
+	PRIMARY KEY(u_id, meeting_id)
+)
 
 SELECT * From user_box;
 SELECT * From user;
@@ -105,3 +112,5 @@ SELECT * From Location;
 SELECT * From FeedbackCombo;
 SELECT * From UserTypes;
 SELECT * From meetingUser;
+
+SELECT * FROM Candidate;
