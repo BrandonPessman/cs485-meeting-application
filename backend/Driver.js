@@ -575,6 +575,4 @@ function mapUser(row) {
 }
 
 var newdriver = new Driver();
-var loc = {start_date_time:'2020-10-05 08:00:00', end_date_time: '2020-10-05 09:00:00'}
-newdriver.getAvailableLocations(loc);
-newdriver.quit();
+exports.newdriver = newdriver;
