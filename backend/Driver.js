@@ -414,6 +414,17 @@ insertCandidate (Candidate_id, id, users, meeting_id) {
       }
     })
   }
+  /*Returns a list of locations available at the given time*/
+  getAvailableLocations(request,response) {
+    var query = 'SELECT loc.location_id, loc.name FROM Location loc LEFT JOIN meetingLocation ml ON ml.location_id = loc.location_id LEFT JOIN Meeting m on m.meeting_id = ml.meeting_id where start_date_time != ? AND end_date_time != ? GROUP BY loc.location_id'
+    var params = [request.body.start_date_time, request.body.end_date_time];
+    this.connection.query(query, params, (err, rows) => {
+      if (err) {console.log(err)}
+      else{
+        console.log(rows.map(mapLocation));
+      }
+    })
+  }
   /*Returns all locations from 'Location' table*/
   getLocations(response) {
     var query = 'SELECT * FROM Location';
@@ -564,4 +575,6 @@ function mapUser(row) {
 }
 
 var newdriver = new Driver();
-exports.newdriver = newdriver;
+var loc = {start_date_time:'2020-10-05 08:00:00', end_date_time: '2020-10-05 09:00:00'}
+newdriver.getAvailableLocations(loc);
+newdriver.quit();

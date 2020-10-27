@@ -29,6 +29,10 @@ app.get('/users/:email/:u_password', (request, response) => {
 app.get('/positions', (request, response) => {
     driver.newdriver.getPositions(response);
 })
+//new
+app.get('/availableLocations', (request,response) => {
+    driver.newdriver.getAvailableLocations(request,response)
+});
 app.get('/locations', (request,response) => {
     driver.newdriver.getLocations(response)
 });
