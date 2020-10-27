@@ -22,6 +22,10 @@ app.get('/meetings', (request,response) => {
 app.get('/users', (request, response) => {
     driver.newdriver.getAllUsers(response);
 });
+//new
+app.get('/userPositions', (request,response) => {
+    driver.newdriver.getUserPosition(request,response);
+});
 //use e-mail and password to login
 app.get('/users/:email/:u_password', (request, response) => {
     driver.newdriver.getUser(request,response);

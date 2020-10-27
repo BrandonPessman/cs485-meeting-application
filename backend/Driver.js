@@ -72,6 +72,19 @@ class Driver {
       }
     });
   }
+  getUserPosition(request, response){
+    const query= "SELECT * FROM EmployeePosition LEFT JOIN userPosition ON EmployeePosition.position_id = userPosition.position_id WHERE u_id = ?";
+    const params=[request.u_id, request.position_id];
+      this.connection.query(query, params, (error, rows)=>{
+        if(error){
+          console.log(error);
+        }
+        else{
+          //response.send({ userPosition: rows.map(mapuserPosition) });
+          console.log(rows);
+      }
+  })
+  }
   /*Returns string of user type from 'userTypes' table for requested User*/
   getUserType(request, response) {
     var query = 'SELECT type_descr FROM userTypes WHERE type_id = (SELECT type FROM user where u_id = ?)';
