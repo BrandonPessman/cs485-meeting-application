@@ -86,15 +86,15 @@ export default function UpcomingMeetings() {
             {data.map(inst => {
                 return (
                     <div>
-                        <Paper elevation={3} style={{ padding: '10px 30px 30px 30px', margin: '20px 0' }}>
-                            <Grid container spacing={12}>
+                      
+                            <Grid container spacing={12} style={{marginLeft: '20px', marginBottom: '20px'}}>
                                 <Grid item xs={12}>
                                     <h2>{inst.date}</h2>
                                 </Grid>
                                 {inst.meetings.map(meetings => {
                                     return (
-                                        <Grid item xs={4} style={{backgroundColor: 'lightgray', borderRadius: '4px', boxShadow: '4px 4px 10px rgba(0,0,0,.3)', padding: '10px', marginRight: '15px'}}>
-                                            <h4 style={{ fontWeight: '300', margin: '5px', borderBottom: 'dotted 1px rgba(0,0,0,.3)' }}>{meetings.title}<span style={{ float: 'right' }}>{meetings.starttime.getUTCHours()}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()} to {meetings.endtime.getUTCHours()}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()}</span></h4><Button size="small" variant='contained' color='secondary' onClick={handleView}>
+                                        <Grid item xs={4} style={{backgroundColor: 'white', borderRadius: '4px', boxShadow: '4px 4px 10px rgba(0,0,0,.3)', padding: '20px', marginRight: '15px'}}>
+                                            <h4 style={{ fontWeight: '300', margin: '5px', borderBottom: 'dotted 1px rgba(0,0,0,.3)' }}>{meetings.title}<span style={{ float: 'right' }}>{meetings.starttime.getUTCHours()}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()} to {meetings.endtime.getUTCHours()}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()}</span></h4><Button size="small" variant='contained' color='primary' onClick={handleView}>
                     View/Edit
             </Button>
                                         </Grid>
@@ -102,7 +102,7 @@ export default function UpcomingMeetings() {
                                 })
                                 }
                             </Grid>
-                        </Paper>
+                       
                     </div>
                 )
             })}

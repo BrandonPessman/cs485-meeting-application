@@ -2,13 +2,12 @@ import React from 'react'
 import './App.css'
 
 import Navigation from './components/Navigation'
-import SecondaryNavigation from './components/SecondaryNavigation'
 
 export default function ClippedDrawer () {
   return (
     <div>
       <Navigation />
-      <SecondaryNavigation />
+      
     </div>
   )
 }

@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./SecondaryNavigation.css";
 import MeetingScheduler from "./Tabs/MeetingScheduler";
 import UpcomingMeetings from "./Tabs/UpcomingMeetings";
 import PastMeetings from "./Tabs/PastMeetings";
 import Users from "./Tabs/Users";
 
-export default function ClippedDrawer() {
+export default function SecondaryNavigation({user}) {
   const [tab, setTab] = useState(0);
+  const [u] = useState(user)
 
   return (
     <>
@@ -37,11 +38,12 @@ export default function ClippedDrawer() {
               fontWeight: "600",
             }}
           >
-            <span style={{ fontWeight: "100" }}>Welcome,</span> Brandon Pessman
+            <span style={{ fontWeight: "100" }}>Welcome,</span> {u.name}
           </span>
         </h2>
-
-        <li
+ 
+        {u.type != 0 ? <>
+          <li
           className={
             tab === 0 ? "secondary-li secondary-li-active" : "secondary-li"
           }
@@ -50,6 +52,11 @@ export default function ClippedDrawer() {
             Management
           </a>
         </li>
+        </>
+        :
+        ''
+        }
+       
         <li
           className={
             tab === 1 ? "secondary-li secondary-li-active" : "secondary-li"
@@ -68,7 +75,9 @@ export default function ClippedDrawer() {
             Past Meetings
           </a>
         </li>
-        <li
+
+        {u.type != 0 ? <>
+          <li
           className={
             tab === 3 ? "secondary-li secondary-li-active" : "secondary-li"
           }
@@ -77,6 +86,11 @@ export default function ClippedDrawer() {
             Users
           </a>
         </li>
+        </>
+        :
+        ''
+        }
+
       </ul>
 
       <div style={{ padding: "10px 200px" }}>
