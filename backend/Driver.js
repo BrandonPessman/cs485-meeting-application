@@ -168,6 +168,17 @@ class Driver {
       else {response.send({ meeting: rows.map(mapMeeting) })}
     })
   }
+
+  /* get the meeting status from the meeting table */
+  getMeetingStatus(request, response){
+    var query = 'SELECT meeting_status FROM Meeting WHERE meeting_id = ?'
+    var params = [request.body.meeting_id]
+    return this.connection.query(query, params, (err, rows) => {
+      if (err) { console.log(err) }
+      else {response.send({ meeting: rows.map(mapMeeting) })}
+    })
+  }
+
   /*Updates meeting in 'Meeting' table -- need to update*/
   updateMeeting(request,response) {
     var query = 'UPDATE Meeting SET meeting_title = ?, meeting_descr = ?, location_id = ?, start_date_time = ?, end_date_time = ? WHERE meeting_id = ?'
@@ -177,6 +188,8 @@ class Driver {
       else{response.send({status:true})}
     })
   }
+
+  
   /*Deletes all meeting/feedback relationships via meeting_id or feedback_id*/
   deleteMeetingFeedback(request) {
     if (request.body.meeting_id>0) {
