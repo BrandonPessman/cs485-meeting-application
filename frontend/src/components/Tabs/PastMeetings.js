@@ -89,7 +89,7 @@ export default function UpcomingMeetings() {
                 </Grid>
                 {inst.meetings.map(meetings => {
                   return (
-                    <Grid item xs={12}>
+                    <Grid item xs={3} style={{backgroundColor: 'lightgray', borderRadius: '4px', boxShadow: '4px 4px 10px rgba(0,0,0,.3)', padding: '10px', marginRight: '15px'}}>
                       <h4 style={{ fontWeight: '300', margin: '5px', borderBottom: 'dotted 1px rgba(0,0,0,.3)' }}><span style={{ fontWeight: '600' }}>{meetings.candidate}</span> - {meetings.title}<span style={{ float: 'right' }}>{meetings.starttime.getUTCHours()}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()} to {meetings.endtime.getUTCHours()}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()} - {' '}<span style={{ fontWeight: '600' }}> {meetings.location}</span></span></h4>
                     </Grid>
                   )

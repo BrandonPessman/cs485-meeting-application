@@ -39,6 +39,10 @@ app.get('/department', (request, response) => {
     driver.newdriver.getDepartments(request, response);
 });
 
+app.get('/usersMeeting', (request, response) => {
+    driver.newdriver.getMeetingUsers(request, response)
+})
+
 app.post('/insertMeeting', (request, response) => {
     driver.newdriver.insertMeeting(request, response)
 });
