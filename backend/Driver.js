@@ -168,14 +168,14 @@ class Driver {
     })
   }
   getAllUserMeetings(request,response) {
-    var query = 'SELECT * FROM Meeting m LEFT JOIN meetingUser mu on mu.meeting_id = m.meeting_id WHERE mu.u_id = ?'
+    var query = 'SELECT m.meeting_id,m.meeting_title, m.meeting_descr, m.location_id, m.start_date_time, m.end_date_time, m.position_id FROM Meeting m LEFT JOIN meetingUser mu on mu.meeting_id = m.meeting_id WHERE mu.u_id = ?'
     var params = [request.u_id]
     return this.connection.query(query, params, (err, rows) => {
       if (err) { 
         console.log(err) 
       }
       else {
-        response.send({meeting: rows.map(mapMeeting)})
+        response.send({meeting: rows.map(mapMeeting)});
         }
     })
   }
@@ -620,4 +620,5 @@ function mapUserPosition(row){
 }
 
 var newdriver = new Driver();
-exports.newdriver = newdriver;
+newdriver.getAllUserMeetings({u_id:1});
+newdriver.quit();
