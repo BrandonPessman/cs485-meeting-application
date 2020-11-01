@@ -26,6 +26,9 @@ app.get('/users', (request, response) => {
 app.get('/userPositions', (request,response) => {
     driver.newdriver.getUserPosition(request,response);
 });
+app.get('/userMeetings', (request, response) => {
+    driver.newdriver.getAllUserMeetings(request,response);
+});
 //use e-mail and password to login
 app.get('/users/:email/:u_password', (request, response) => {
     driver.newdriver.getUser(request,response);
@@ -33,7 +36,6 @@ app.get('/users/:email/:u_password', (request, response) => {
 app.get('/positions', (request, response) => {
     driver.newdriver.getPositions(response);
 })
-//new
 app.get('/availableLocations', (request,response) => {
     driver.newdriver.getAvailableLocations(request,response)
 });

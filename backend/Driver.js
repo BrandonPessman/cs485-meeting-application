@@ -164,7 +164,19 @@ class Driver {
     var params = [request.body.meeting_id]
     return this.connection.query(query, params, (err, rows) => {
       if (err) { console.log(err) }
-      else {response.send({ meeting: rows.map(mapMeeting) })}
+      else {response.send({ meeting: rows.map(mapMeeting)})}
+    })
+  }
+  getAllUserMeetings(request,response) {
+    var query = 'SELECT * FROM Meeting m LEFT JOIN meetingUser mu on mu.meeting_id = m.meeting_id WHERE mu.u_id = ?'
+    var params = [request.u_id]
+    return this.connection.query(query, params, (err, rows) => {
+      if (err) { 
+        console.log(err) 
+      }
+      else {
+        response.send({meeting: rows.map(mapMeeting)})
+        }
     })
   }
 
