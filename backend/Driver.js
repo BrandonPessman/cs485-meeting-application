@@ -74,14 +74,13 @@ class Driver {
   }
   getUserPosition(request, response){
     const query= "SELECT * FROM EmployeePosition LEFT JOIN userPosition ON EmployeePosition.position_id = userPosition.position_id WHERE u_id = ?";
-    const params=[request.u_id, request.position_id];
+    const params=[request.body.u_id];
       this.connection.query(query, params, (error, rows)=>{
         if(error){
           console.log(error);
         }
         else{
-          //response.send({ userPosition: rows.map(mapuserPosition) });
-          console.log(rows);
+          response.send({ userPosition: rows.map(mapUserPosition) });
       }
   })
   }
@@ -165,7 +164,19 @@ class Driver {
     var params = [request.body.meeting_id]
     return this.connection.query(query, params, (err, rows) => {
       if (err) { console.log(err) }
-      else {response.send({ meeting: rows.map(mapMeeting) })}
+      else {response.send({ meeting: rows.map(mapMeeting)})}
+    })
+  }
+  getAllUserMeetings(request,response) {
+    var query = 'SELECT m.meeting_id,m.meeting_title, m.meeting_descr, m.location_id, m.start_date_time, m.end_date_time, m.position_id FROM Meeting m LEFT JOIN meetingUser mu on mu.meeting_id = m.meeting_id WHERE mu.u_id = ?'
+    var params = [request.u_id]
+    return this.connection.query(query, params, (err, rows) => {
+      if (err) { 
+        console.log(err) 
+      }
+      else {
+        response.send({meeting: rows.map(mapMeeting)});
+        }
     })
   }
 
@@ -442,12 +453,12 @@ insertCandidate (Candidate_id, id, users, meeting_id) {
   }
   /*Returns a list of locations available at the given time*/
   getAvailableLocations(request,response) {
-    var query = 'SELECT loc.location_id, loc.name FROM Location loc LEFT JOIN meetingLocation ml ON ml.location_id = loc.location_id LEFT JOIN Meeting m on m.meeting_id = ml.meeting_id where start_date_time != ? AND end_date_time != ? GROUP BY loc.location_id'
-    var params = [request.body.start_date_time, request.body.end_date_time];
+    var query = 'SELECT location_id, name FROM Location WHERE location_id NOT IN (SELECT loc.location_id FROM Location loc LEFT JOIN meetingLocation ml ON ml.location_id = loc.location_id LEFT JOIN Meeting m on m.meeting_id = ml.meeting_id WHERE (start_date_time>=? AND start_date_time<=?) OR (end_date_time>=? AND end_date_time<=?))';
+    var params = [request.body.start_date_time,request.body.start_date_time,request.body.end_date_time,request.body.end_date_time];
     this.connection.query(query, params, (err, rows) => {
       if (err) {console.log(err)}
       else{
-        console.log(rows.map(mapLocation));
+        response.send(rows.map(mapLocation));
       }
     })
   }
@@ -577,7 +588,7 @@ function mapDepartment(row) {
     dept_id: row.dept_id,
     dept_title: row.dept_title,
     dept_short: row.dept_short,
-    openPosition: row.openPosition
+    openPositions: row.openPositions
   };
 }
 
@@ -599,6 +610,15 @@ function mapUser(row) {
     type_desc: row.type_desc
   }
 }
+function mapUserPosition(row){
+  return {
+    u_id: row.u_id,
+    position_id: row.position_id,
+    position_title:row.position_title,
+    department_id:row.department_id
+  }
+}
 
 var newdriver = new Driver();
-exports.newdriver = newdriver;
+newdriver.getAllUserMeetings({u_id:1});
+newdriver.quit();
