@@ -1,7 +1,7 @@
 import React from 'react'
 import './App.css'
 
-import Navigation from './components/Navigation'
+import Navigation from './components/Navigation/Navigation'
 
 export default function ClippedDrawer () {
   return (

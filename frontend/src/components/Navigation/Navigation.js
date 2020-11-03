@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from "react";
 import "./Navigation.css";
 import SecondaryNavigation from './SecondaryNavigation'
-import Login from './Login/Login'
+import Login from '../Pages/Login/Login'
 import {
   BrowserRouter as Router,
   Switch,

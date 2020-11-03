@@ -1,5 +1,5 @@
 import React from 'react'
-import UsersTab from '../Users/UsersTab'
+import UsersTab from '../../Pages/Users/UsersTab'
 
 export default function Users() {
   return (

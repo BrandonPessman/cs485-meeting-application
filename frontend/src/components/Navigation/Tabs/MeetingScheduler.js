@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 
-import Departments from '../Scheduler/Department'
-import Positions from '../Scheduler/Positions'
-import Candidates from '../Scheduler/Candidates'
-import Meetings from '../Scheduler/Meetings'
-import Paper from '../Scheduler/Paper'
+import Departments from '../../Pages/Scheduler/Department'
+import Positions from '../../Pages/Scheduler/Positions'
+import Candidates from '../../Pages/Scheduler/Candidates'
+import Meetings from '../../Pages/Scheduler/Meetings'
+import Paper from '../../Utilities/Paper'
 
 export default function MeetingScheduler() {
   const [showPositions, setShowPositions] = useState(false)
