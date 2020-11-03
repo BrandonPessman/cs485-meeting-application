@@ -220,28 +220,8 @@ class Driver {
       })
     }
   }
-  /*Deletes all meeting/position relationships via meeting_id or position_id*/
-  deleteMeetingPosition(request,response) {
-    if (request.body.meeting_id >0) {
-      var query = 'DELETE FROM meetingPositions WHERE meeting_id = ?'
-      var params = [request.body.meeting_id]
-      this.connection.query(query, params, (err,result) => {
-        if (err) {console.log(err)}
-        else{console.log({status:true})}
-      })
-    }
-    else {
-      var query = 'DELETE FROM meetingPositions WHERE position_id = ?'
-      var params = [request.body.position_id]
-      this.connection.query(query, params, (err,result) => {
-        if (err) {console.log(err)}
-        else{response.send({status:true})}
-      })
-    }
-  }
   /*Deletes a Meeting entity
   *calls deleteMeetingUser to delete all meeting/User relationships
-  *calls deleteMeetingPosition to delete all meeting/Position relationships
   */
   deleteMeeting(request,response) {
     var query = 'DELETE FROM Meeting WHERE meeting_id = ?'
@@ -250,7 +230,6 @@ class Driver {
       if (err) {
         console.log(err);
       } else {
-        this.deleteMeetingPosition(request);
         this.deleteMeetingFeedback(request);
         this.deleteMeetingUser(request,response);
       }
@@ -432,28 +411,30 @@ insertCandidate (Candidate_id, id, users, meeting_id) {
       if (err) {console.log(err) }
       else {
         this.deleteDepartmentPosition(request,response);
-        this.deleteMeetingPosition(request,response);
       }
     })
   }
   /*Returns all positions from 'EmployeePosition' table*/
   getPositions(response) {
-    var query = 'SELECT EmployeePosition.position_id, EmployeePosition.position_title, ' +
-      'EmployeePosition.currentEmployee, EmployeePosition.department_id, EmployeePosition.vacant, ' +
-      'Count(EmployeePosition.position_id) as meeting_count FROM EmployeePosition LEFT JOIN meetingPositions ' +
-      'ON EmployeePosition.position_id = meetingPositions.position_id group by position_id';
+    var query = 'SELECT EmployeePosition.position_id, EmployeePosition.title, ' +
+      'EmployeePosition.currentEmployee, EmployeePosition.dept_id, EmployeePosition.vacant, ' +
+      'Count(EmployeePosition.position_id) as meeting_count FROM EmployeePosition LEFT JOIN Meeting ' +
+      'ON EmployeePosition.position_id = Meeting.position_id group by position_id';
     this.connection.query(query, (err, rows) => {
       if (err) {
         console.log(err)
       }
       else {
-        response.send({ meeting: rows.map(mapPosition) });
+        response.send({ positions: rows.map(mapPosition) });
       }
     })
   }
   /*Returns a list of locations available at the given time*/
   getAvailableLocations(request,response) {
-    var query = 'SELECT location_id, name FROM Location WHERE location_id NOT IN (SELECT loc.location_id FROM Location loc LEFT JOIN meetingLocation ml ON ml.location_id = loc.location_id LEFT JOIN Meeting m on m.meeting_id = ml.meeting_id WHERE (start_date_time>=? AND start_date_time<=?) OR (end_date_time>=? AND end_date_time<=?))';
+    var query = 'SELECT location_id, name FROM Location WHERE location_id NOT IN'+
+    '(SELECT loc.location_id FROM Location loc LEFT JOIN'+
+    ' Meeting m on m.location_id = loc.location_id WHERE (start_date_time>=? AND start_date_time<=?)'+
+    ' OR (end_date_time>=? AND end_date_time<=?))';
     var params = [request.body.start_date_time,request.body.start_date_time,request.body.end_date_time,request.body.end_date_time];
     this.connection.query(query, params, (err, rows) => {
       if (err) {console.log(err)}
@@ -569,9 +550,9 @@ function mapLocation(row) {
 function mapPosition(row) {
   return {
     position_id: row.position_id,
-    position_title: row.title,
+    title: row.title,
     currentEmployee: row.currentEmployee,
-    department_id: row.department_id,
+    deptid: row.department_id,
     vacant: row.vacant,
     meeting_count: row.meeting_count,
   };
