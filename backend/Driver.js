@@ -620,5 +620,4 @@ function mapUserPosition(row){
 }
 
 var newdriver = new Driver();
-newdriver.getAllUserMeetings({u_id:1});
-newdriver.quit();
+exports.newdriver = newdriver;
