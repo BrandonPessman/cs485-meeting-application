@@ -19,6 +19,9 @@ app.get('/type', (request, response) => {
 app.get('/meetings', (request,response) => {
     driver.newdriver.getAllMeetings(response);
 });
+app.get('/meetingsExtra', (request,response) => {
+    driver.newdriver.getAllMeetingsExtra(response);
+});
 app.get('/users', (request, response) => {
     driver.newdriver.getAllUsers(response);
 });

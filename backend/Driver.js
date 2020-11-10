@@ -127,6 +127,17 @@ class Driver {
       else { response.send(rows) }
     })
   }
+  getAllMeetingsExtra(response) {
+    const query = 'SELECT * FROM Meeting m LEFT JOIN Location l on m.location_id = l.location_id LEFT JOIN EmployeePosition ep on m.position_id = ep.position_id'
+    this.connection.query(query, (error, rows) => {
+      if (error) {
+        response.send({error:error.message});
+      }
+      else{
+        response.send({meeting: rows.map(mapMLE)});
+      }
+    })
+  }
   getAllMeetings(response) {
     const query = 'SELECT * FROM Meeting';
     this.connection.query(query, (error, rows) => {
@@ -561,6 +572,29 @@ insertCandidate (Candidate_id, id, users, meeting_id) {
     })
     deleteDepartmentPositions(request);
   }
+}
+/*Maps meeting,location&position information*/
+function mapMLE(row) {
+  return{
+    meeting_id: row.meeting_id,
+    location_id: row.location_id,
+    users: row.users,
+    start_date_time: row.start_date_time,
+    end_date_time: row.end_date_time,
+    meeting_length: row.meeting_length,
+    meeting_status: row.meeting_status,
+    meeting_title: row.meeting_title,
+    meeting_descr: row.meeting_descr,
+    location_id: row.location_id,
+    name: row.name,
+    available: row.available,
+    position_id: row.position_id,
+    title: row.title,
+    currentEmployee: row.currentEmployee,
+    deptid: row.department_id,
+    vacant: row.vacant,
+    meeting_count: row.meeting_count,
+  };
 }
 /*Maps Meeting columns for response.send() functionality*/
 function mapMeeting(row) {
