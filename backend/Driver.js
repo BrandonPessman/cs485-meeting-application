@@ -1,6 +1,8 @@
 var MySQL = require('mysql')
 const moment = require('moment');
 const { response } = require('express');
+var fs = require('fs');
+
 
 class Driver {
   /*Establishes connection to mySQL database - Interview Tracker*/
@@ -49,6 +51,27 @@ class Driver {
     this.connection.query(query, params, (err) => {
       if (err) {console.log(err) }
       else {response.send({status:true})}
+    })
+  }
+  /*Check user availability*/
+  getUserAvailability(request,response) {
+    var query = 'select m.meeting_title from Meeting m LEFT JOIN meetingUser mu on mu.meeting_id = m.meeting_id WHERE mu.u_id = ? and ' + 
+    '((start_date_time<=? AND start_date_time>=?)' +
+    ' OR (end_date_time<=? AND end_date_time<=?)' + 
+    'OR (start_date_time>=? AND end_date_time <=?))'
+    var params = [request.body.u_id,request.body.end_date_time, request.body.start_date_time,request.body.start_date_time,request.body.end_date_time,request.body.start_date_time,request.body.end_date_time]
+    var temp = this.connection.query(query, params, (err, rows) => {
+      if (err) {
+        console.log(err)
+      }  else{
+          console.log(rows);
+          if (rows.length >0){
+          response.send({Meeting:rows.map(mapMeeting), userAvailability:false, sql: temp.sql});
+          }
+          else{
+            response.send({userAvailability:true,sql:temp.sql});
+          }
+        }
     })
   }
   /*gets user from 'user' table using email and u_password col*/
@@ -138,25 +161,59 @@ class Driver {
       }
     })
   }
+  /*Insert new Meeting
+  meeting_length in minutes*/
   /*Insert new Meeting*/
   insertMeeting(request, response) {
-    const query = 'INSERT INTO Meeting (meeting_title, meeting_descr, location_id, start_date_time, end_date_time, position_id) VALUES (?,?,?,?,?,?)';
+    var start_time = Date.parse(request.body.start_date_time);
+    var end_time = Date.parse(request.body.end_date_time);
+    var diff = (end_time - start_time)/6000;
+    const query = 'INSERT INTO Meeting (meeting_title, meeting_descr, location_id, start_date_time, end_date_time, position_id, meeting_length) VALUES (?,?,?,?,?,?,?)';
     const params = [request.body.meeting_title, request.body.meeting_descr, request.body.location_id, request.body.start_date_time,
-    request.body.end_date_time, request.body.position_id];
+    request.body.end_date_time, request.body.position_id,diff];
     this.connection.query(query, params, (error, result) => {
       if (error) {
-        console.log("Error message: " + error.message);
+        response.send({error:error.message});
+        console.log(error);
       }
       else {
         var meeting_id = result.insertId;
         var users = request.body.users;
         for (var i = 0; i < users.length; i++) {
-          var user_id = parseInt(users[i]);
+          var user_id = parseInt(users[i].u_id);
           this.addMeetingUser(user_id, meeting_id)
         }
-        response.send({status:true});
+        response.send({status:true, meeting_id:result.insertId});
       }
     });
+  }
+  //returns meeting status based on current time compared to given start/end_date_time
+  getMeetingStatus(request,response) {
+    var query = 'SELECT start_date_time, end_date_time FROM Meeting where meeting_id = ?'
+    var params = [request.body.meeting_id]
+    this.connection.query(query, params, (error,rows)=> {
+      if (error) {
+        console.log(error);
+      }
+      else{
+        var meetings = rows.map(mapMeeting);
+        for (var i = 0; i<meetings.length; i++) {
+        var meeting = meetings[i];
+        var curr_date_time = new Date();
+        var status;
+        if (curr_date_time<meeting.start_date_time) {
+          status = 'Future Meeting';
+        }
+        else if (curr_date_time>meeting.start_date_time && curr_date_time<meeting.end_date_time)
+          status ='In Progress';
+        }
+        if (curr_date_time> meeting.end_date_time) {
+          status = 'Completed Meeting';
+        }
+        this.updateMeeting({meeting_id:request.body.meeting_id,meeting_status:status});
+        response.send({meeting_status:status});
+      }
+    })
   }
   /*gets meeting from 'Meeting' table using meeting_id*/
   getMeeting(request, response) {
@@ -164,7 +221,9 @@ class Driver {
     var params = [request.body.meeting_id]
     return this.connection.query(query, params, (err, rows) => {
       if (err) { console.log(err) }
-      else {response.send({ meeting: rows.map(mapMeeting)})}
+      else {
+        response.send({Meeting:rows.map(mapMeeting)})
+      }
     })
   }
   getAllUserMeetings(request,response) {
@@ -179,17 +238,6 @@ class Driver {
         }
     })
   }
-
-  /* get the meeting status from the meeting table */
-  getMeetingStatus(request, response){
-    var query = 'SELECT meeting_status FROM Meeting WHERE meeting_id = ?'
-    var params = [request.body.meeting_id]
-    return this.connection.query(query, params, (err, rows) => {
-      if (err) { console.log(err) }
-      else {response.send({ meeting: rows.map(mapMeeting) })}
-    })
-  }
-
   /*Updates meeting in 'Meeting' table -- need to update*/
   updateMeeting(request,response) {
     var query = 'UPDATE Meeting SET meeting_title = ?, meeting_descr = ?, location_id = ?, start_date_time = ?, end_date_time = ? WHERE meeting_id = ?'
@@ -425,7 +473,7 @@ insertCandidate (Candidate_id, id, users, meeting_id) {
         console.log(err)
       }
       else {
-        response.send({ positions: rows.map(mapPosition) });
+        response.send({ position: rows.map(mapPosition) });
       }
     })
   }
@@ -436,10 +484,10 @@ insertCandidate (Candidate_id, id, users, meeting_id) {
     ' Meeting m on m.location_id = loc.location_id WHERE (start_date_time>=? AND start_date_time<=?)'+
     ' OR (end_date_time>=? AND end_date_time<=?))';
     var params = [request.body.start_date_time,request.body.start_date_time,request.body.end_date_time,request.body.end_date_time];
-    this.connection.query(query, params, (err, rows) => {
+    var temp = this.connection.query(query, params, (err, rows) => {
       if (err) {console.log(err)}
       else{
-        response.send(rows.map(mapLocation));
+        response.send({location: rows.map(mapLocation), sql: temp.sql});
       }
     })
   }

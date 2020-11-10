@@ -19,6 +19,8 @@ import Modal from "@material-ui/core/Modal";
 import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const months = {
   0: "January",
@@ -211,15 +213,15 @@ const EnhancedTableToolbar = (props) => {
           {numSelected} selected
         </Typography>
       ) : (
-        <Typography
-          className={classes.title}
-          variant="h6"
-          id="tableTitle"
-          component="div"
-        >
-          Select a Meeting
-        </Typography>
-      )}
+          <Typography
+            className={classes.title}
+            variant="h6"
+            id="tableTitle"
+            component="div"
+          >
+            Select a Meeting
+          </Typography>
+        )}
 
       {/* {numSelected > 0 ? (
         <Tooltip title='Delete'>
@@ -265,7 +267,6 @@ const useStyles = makeStyles((theme) => ({
     width: 1,
   },
 }));
-
 export default function EnhancedTable({ setShowNextStep }) {
   const classes = useStyles();
   const [order, setOrder] = React.useState("asc");
@@ -277,8 +278,18 @@ export default function EnhancedTable({ setShowNextStep }) {
   const [newMeetingOpen, setNewMeetingOpen] = React.useState(false);
   const [users, setUsers] = useState([]);
   const [meetings, setMeetings] = useState([]);
-  const [usersMeeting, setUsersMeeting] = useState([]);
+  const [selectedUsers, setselectedUsers] = useState([]);
   const [locations, setLocations] = useState([])
+  const [availableLocations, setAvailableLocations] = useState([])
+  const [startDate, setStartDate] = useState([])
+  const [endDate, setEndDate] = useState([])
+  const [positions, setPositions] = useState([]);
+  const [warning, openWarning] = React.useState(false);
+  const [warningContent, setWarningContent] = useState([]);
+  const [chosenLocation, setChosenLocation] = useState([]);
+  const [chosenPosition, setChosenPosition] = useState([]);
+  const [chosenUsers, setChosenUsers] = useState([]);
+  
 
   useEffect(() => {
     axios.get("http://104.131.115.65:3443/users").then(function (response) {
@@ -288,31 +299,123 @@ export default function EnhancedTable({ setShowNextStep }) {
     axios.get("http://104.131.115.65:3443/meetings").then(function (response) {
       setMeetings(response.data.meeting);
     });
-
-    axios
-    .get("http://104.131.115.65:3443/locations")
-    .then(function (locationData) {
-     console.log(locationData)
-     setLocations(locationData.data.location)
+    axios.get("http://104.131.115.65:3443/positions").then(function (response) {
+      setPositions(response.data.positions);
     });
+    axios
+      .get("http://104.131.115.65:3443/locations")
+      .then(function (locationData) {
+        setLocations(locationData.data.location)
+      });
   }, []);
-
-  const handleAddUser = () => {
-    setUsersMeeting(usersMeeting.concat({user: document.getElementById("adding-user-textfield").value, role: 0}))
+  const handleStartDate = (event, newDate) => {
+    console.log(users);
+    setStartDate(document.getElementById("create-event-starttime").value);
+    console.log("Start Date" + document.getElementById("create-event-starttime").value);
+    if (startDate > endDate) {
+      setWarningContent("Invalid time combination.");
+      openWarning(true);
+      setTimeout(() => { openWarning(false); }, 15000);
+    }
   };
-
+  const handleEndDate = (event, newDate) => {
+    console.log("handleEndDate");
+    setEndDate(document.getElementById("create-event-endtime").value);
+    console.log("End date" + document.getElementById("create-event-endtime").value);
+    /*if (endDate>startDate) {
+      setWarningContent("Invalid time combination.");
+      openWarning(true);
+      setTimeout(() => { openWarning(false);}, 15000);
+    }*/
+    if (startDate != null) {
+      console.log("GetAvailableLocations");
+      const availableLocationData = { start_date_time: startDate, end_date_time: endDate };
+      console.log(availableLocationData);
+      if (startDate && endDate) {
+        axios
+          .get("http://104.131.115.65:3443/availableLocations", { data: availableLocationData })
+          .then(function (results) {
+            console.log(results)
+            setAvailableLocations(results.data)
+          });
+      }
+    }
+  };
+  const handleAddUser = () => {
+    var userVal = document.getElementById("adding-user-textfield").value;
+    if (userVal != "") {
+      var selectedUser = users.filter(user => {
+        return user.name === userVal;
+      })
+      const { u_id } = selectedUser[0];
+      setselectedUsers(selectedUsers.concat({user: userVal, role: 0}));
+      setChosenUsers(chosenUsers.concat({u_id:u_id}));
+      let userData = { u_id: u_id, start_date_time: startDate, end_date_time: endDate };
+      axios
+        .get("http://104.131.115.65:3443/userAvailability", { data: userData })
+        .then(function (results) {
+          console.log("results: " + results.data);
+          if (results.data.userAvailability == 0) {
+            setWarningContent("Availability conflict with user: " + userVal + ". They're attending " + results.data.meeting_title + " at that time.");
+            openWarning(true);
+            setTimeout(() => { openWarning(false); }, 30000);
+          }
+        });
+      userVal = null;
+    } else {
+      setWarningContent("No user selected.");
+      openWarning(true);
+      setTimeout(() => { openWarning(false); }, 2000);
+    }
+    console.log("selectedUsers: " + selectedUsers);
+  };
+  const handleChosenLocation = () => {
+    var locationVal = document.getElementById("create-event-location").value;
+    if (locationVal != "") {
+      console.log("handleChosenLocation");
+      var chosenLoc = availableLocations.filter(location => {
+        return location.name === locationVal;
+      })
+      const { location_id } = chosenLoc[0];
+      setChosenLocation(location_id);
+      console.log(location_id);
+    } else {
+      setWarningContent("No position chosen");
+      openWarning(true);
+      setTimeout(() => { openWarning(false); }, 2000);
+    }
+  }
+  const handleChosenPosition = () => {
+    var positionVal = document.getElementById("create-event-position").value;
+    if (positionVal != "") {
+      var chosenPos = positions.filter(position => {
+        return position.title === positionVal;
+      })
+      const { position_id } = chosenPos[0];
+      setChosenPosition(position_id);
+      console.log(position_id);
+    }
+    else {
+      setWarningContent("No position chosen");
+      openWarning(true);
+      setTimeout(() => { openWarning(false); }, 2000);
+    }
+  }
   const handleCreateMeeting = () => {
-    let obj = {
+    const newMeeting = {
       meeting_title: document.getElementById("create-event-title").value,
       meeting_descr: document.getElementById("create-event-desc").value,
-      location_id: document.getElementById("create-event-location").value,
-      start_date_time: document.getElementById("create-event-starttime").value,
-      end_date_time: document.getElementById("create-event-endtime").value,
-      position_id: "1",
-      users: usersMeeting,
+      location_id: chosenLocation,
+      start_date_time: startDate,
+      end_date_time: endDate,
+      position_id: chosenPosition,
+      users: chosenUsers,
     };
-    console.log(obj);
-    axios.post("http://104.131.115.65:3443/insertMeeting", obj);
+    console.log(newMeeting);
+    axios.post("http://104.131.115.65:3443/insertMeeting", newMeeting)
+      .then(result => {
+        console.log(result);
+      })
     setNewMeetingOpen(false);
   };
 
@@ -371,9 +474,9 @@ export default function EnhancedTable({ setShowNextStep }) {
 
   const handleDeleteUser = (event) => {
     const selectedIndex = event.nativeEvent.target.selectedIndex;
-    let list = usersMeeting.splice(selectedIndex, 1);
-    setUsersMeeting(list)
-    console.log(usersMeeting)
+    let list = selectedUsers.splice(selectedIndex, 1);
+    setselectedUsers(list)
+    console.log(selectedUsers)
   }
 
   return (
@@ -456,15 +559,34 @@ export default function EnhancedTable({ setShowNextStep }) {
         control={<Switch checked={dense} onChange={handleChangeDense} />}
         label='Dense padding'
       /> */}
+
       <Button
         variant="contained"
         color="secondary"
         onClick={() => {
           setNewMeetingOpen(true);
         }}
+
       >
         Create a Meeting
       </Button>
+      <Modal
+        open={warning}
+        onClose={() => {
+          openWarning(false);
+        }}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+      >
+        <Paper
+          container
+          xs={12}
+          style={{ margin: "50px auto", width: "300px", padding: "40px", background: "white", position: "fixed", top: "0", right: "0" }}
+        >
+          <h2>*Warning*</h2>
+          <p>{warningContent}</p>
+        </Paper>
+      </Modal>
       <Modal
         open={newMeetingOpen}
         onClose={() => {
@@ -503,7 +625,8 @@ export default function EnhancedTable({ setShowNextStep }) {
             id="create-event-starttime"
             label="Start Time"
             type="datetime-local"
-            defaultValue={new Date()}
+            value={startDate}
+            onChange={handleStartDate}
             InputLabelProps={{
               shrink: true,
             }}
@@ -513,7 +636,8 @@ export default function EnhancedTable({ setShowNextStep }) {
             id="create-event-endtime"
             label="End Time"
             type="datetime-local"
-            defaultValue={new Date()}
+            value={endDate}
+            onChange={handleEndDate}
             InputLabelProps={{
               shrink: true,
             }}
@@ -528,8 +652,8 @@ export default function EnhancedTable({ setShowNextStep }) {
           */}
           <Autocomplete
             id="create-event-location"
-            options={locations}
-            getOptionLabel={(option) => option.name}
+            options={availableLocations.map(l => ({ value: l.location_id, label: l.name }))}
+            getOptionLabel={(option) => String(option.label)}
             style={{ width: "100%", margin: "10px 0" }}
             renderInput={(params) => (
               <TextField
@@ -540,7 +664,38 @@ export default function EnhancedTable({ setShowNextStep }) {
               />
             )}
           />
-
+          <Button
+            id="create-location-button"
+            onClick={handleChosenLocation}
+            variant="contained"
+            color="primary"
+            style={{ width: "100%" }}
+          >
+            Add Location
+            </Button>
+          <Autocomplete
+            id="create-event-position"
+            options={positions}
+            getOptionLabel={(option) => option.title}
+            style={{ width: "100%", margin: "10px 0" }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Add a Position"
+                variant="outlined"
+                style={{ width: "100%" }}
+              />
+            )}
+          />
+          <Button
+            id="create-location-button"
+            onClick={handleChosenPosition}
+            variant="contained"
+            color="primary"
+            style={{ width: "100%" }}
+          >
+            Add Position
+            </Button>
           <Autocomplete
             id="adding-user-textfield"
             options={users}
@@ -565,12 +720,11 @@ export default function EnhancedTable({ setShowNextStep }) {
           </Button>
 
           <p>
-            Users:{" "} {usersMeeting.length == 0 ? "None" : "" }
-            {usersMeeting.map((u, i) => {
+            Users:{" "} {selectedUsers.length == 0 ? "None" : ""}
+            {selectedUsers.map((u, i) => {
               return <button key={i} onClick={handleDeleteUser}>{u.user}</button>;
             })}
           </p>
-
           <Button
             variant="contained"
             color="secondary"
@@ -585,6 +739,7 @@ export default function EnhancedTable({ setShowNextStep }) {
             style={{ float: "right", width: "45%" }}
             onClick={() => {
               setNewMeetingOpen(false);
+
             }}
           >
             Cancel

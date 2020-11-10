@@ -22,6 +22,9 @@ app.get('/meetings', (request,response) => {
 app.get('/users', (request, response) => {
     driver.newdriver.getAllUsers(response);
 });
+app.get('/userAvailability', (request,response) => {
+    driver.newdriver.getUserAvailability(request,response);
+});
 //new
 app.get('/userPositions', (request,response) => {
     driver.newdriver.getUserPosition(request,response);
@@ -48,7 +51,6 @@ app.get('/meetingFeedback', (request, response) => {
 app.get('/department', (request, response) => {
     driver.newdriver.getDepartments(request, response);
 });
-
 app.get('/usersMeeting', (request, response) => {
     driver.newdriver.getMeetingUsers(request, response)
 })
