@@ -296,9 +296,9 @@ class Driver {
   }
   /*Insert feedback & meeting into feedbackCombo
     only ever called by insertFeedback*/
-  insertFeedbackCombo(request,feedback_id) {
+  insertFeedbackCombo(request,feedback_id, meeting_id, author) {
     var query="INSERT INTO feedbackCombo VALUES(?,?,?)";
-    var params=[feedback_id,request.body.meeting_id,request.body.author];
+    var params=[feedback_id,meeting_id,author];
     this.connection.query(query,params, function (err, result) {
       if (err) {
         console.log(err);
@@ -310,20 +310,28 @@ class Driver {
     let now = moment().format("YYYY-MM-DD HH:mm:ss");
     var query =
       "INSERT INTO Feedback (content, author, date_time_created, meeting_id) VALUES (?, ?, ?, ?)"
-    var params = [request.body.content, request.body.author, now, request.body.meeting_id];
+    var params = [request.body.data.content, request.body.data.author, now, request.body.data.meeting_id];
     this.connection.query(query, params, (err, result) => {
       if (err) {
         console.log(err);
       } else {
-        var feedback_id = result.insertId;
-        response.send({ status: true, feedback_Id: feedback_id, });
-        this.insertFeedbackCombo(request,feedback_id);
+        /* NOT SURE WHAT THIS IS FOR SO COMMENTING IT OUT FOR NOW */
+
+        // var feedback_id = result.insertId;
+        // response.send({ status: true, feedback_Id: feedback_id, });
+        // query="INSERT INTO feedbackCombo (feedback_id, meeting_id, author) VALUES(?,?,?)";
+        // params=[feedback_id,request.body.data.meeting_id,request.body.data.author];
+        // this.connection.query(query,params, function (err, result) {
+        //   if (err) {
+        //     console.log(err);
+        //   }
+        // })
       }
     })
   }
   /*Get all feedback that exist in specific Meeting*/
   getMeetingFeedback(request, response) {
-    var query = 'SELECT * FROM Feedback WHERE feedback_id IN (SELECT feedback_id FROM feedbackCombo where meeting_id = ?)'
+    var query = 'SELECT * FROM Feedback WHERE meeting_id = ?'
     var params = [request.body.meeting_id]
     return this.connection.query(query, params, (err, rows) => {
       if (err) {

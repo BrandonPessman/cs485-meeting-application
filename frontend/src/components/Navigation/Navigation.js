@@ -2,6 +2,8 @@ import React, {useState, useEffect} from "react";
 import "./Navigation.css";
 import SecondaryNavigation from './SecondaryNavigation'
 import Login from '../Pages/Login/Login'
+import MeetingPage from '../Pages/MeetingPage/MeetingPage'
+import FeedbackPage from '../Pages/FeedbackPage/FeedbackPage'
 import {
   BrowserRouter as Router,
   Switch,
@@ -44,6 +46,12 @@ export default function ClippedDrawer() {
           </Route>
           <Route path="/dashboard">
             <SecondaryNavigation user={user} />
+          </Route>
+          <Route path="/meeting/:id">
+            <MeetingPage user={user} />
+          </Route>
+          <Route path="/feedback/:id">
+            <FeedbackPage user={user} />
           </Route>
         </Switch>
       </Router>

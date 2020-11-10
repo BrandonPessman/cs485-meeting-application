@@ -3,6 +3,7 @@ import Grid from '@material-ui/core/Grid'
 import Paper from '@material-ui/core/Paper'
 import axios from 'axios'
 import Button from '@material-ui/core/Button'
+import { useHistory } from "react-router-dom";
 
 const months = {
     0: 'January',
@@ -21,11 +22,12 @@ const months = {
 
 export default function UpcomingMeetings() {
     const [data, setData] = useState([])
+    let history = useHistory();
 
     useEffect(() => {
         let list = [];
 
-        axios.get('http://104.131.115.65:3443/meetings')
+        axios.get('http://localhost:3443/meetings')
             .then(function (response) {
                 let t = response.data.meeting;
 
@@ -36,6 +38,7 @@ export default function UpcomingMeetings() {
                     let added = false
               
                     let meeting = {
+                        meeting_id: z.meeting_id,
                         title: z.meeting_title,
                         starttime: new Date(z.start_date_time),
                         endtime: new Date(z.end_date_time),
@@ -69,8 +72,8 @@ export default function UpcomingMeetings() {
             })
     }, [])
 
-    const handleView = (event) => {
-
+    const handleView = (meetingId) => {
+        history.push("/meeting/" + meetingId.meeting_id);
     }
 
     return (
@@ -94,9 +97,9 @@ export default function UpcomingMeetings() {
                                 {inst.meetings.map(meetings => {
                                     return (
                                         <Grid item xs={4} style={{backgroundColor: 'white', borderRadius: '4px', boxShadow: '4px 4px 10px rgba(0,0,0,.3)', padding: '20px', marginRight: '15px'}}>
-                                            <h4 style={{ fontWeight: '300', margin: '5px', borderBottom: 'dotted 1px rgba(0,0,0,.3)' }}>{meetings.title}<span style={{ float: 'right' }}>{meetings.starttime.getUTCHours()}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()} to {meetings.endtime.getUTCHours()}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()}</span></h4><Button size="small" variant='contained' color='primary' onClick={handleView}>
-                    View/Edit
-            </Button>
+                                            <h4 style={{ fontWeight: '300', margin: '5px', borderBottom: 'dotted 1px rgba(0,0,0,.3)' }}>{meetings.title}<span style={{ float: 'right' }}>{meetings.starttime.getUTCHours()}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()} to {meetings.endtime.getUTCHours()}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()}</span></h4>
+                                            <Button size="small" variant='contained' color='primary' onClick={() => handleView(meetings)}>View/Edit</Button>
+                                            <Button size="small" variant='contained' color='secondary' onClick={() => history.push("/feedback/" + meetings.meeting_id)}>Add Feedback</Button>
                                         </Grid>
                                     )
                                 })

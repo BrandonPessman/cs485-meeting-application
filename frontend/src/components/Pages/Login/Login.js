@@ -14,7 +14,7 @@ export default function Login({setUser}) {
         const password = document.getElementById('login-password').value
 
         axios
-        .get(`http://104.131.115.65:3443/users/${username}/${password}`)
+        .get(`http://localhost:3443/users/${username}/${password}`)
         .then(function (response) {
             const user = response.data.user;
             if (user.length != 0) {

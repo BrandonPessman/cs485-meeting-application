@@ -48,16 +48,19 @@ app.get('/availableLocations', (request,response) => {
 app.get('/locations', (request,response) => {
     driver.newdriver.getLocations(response)
 });
-app.get('/meetingFeedback', (request, response) => {
-    driver.newdriver.getMeetingFeedback(request, response);
-});
 app.get('/department', (request, response) => {
     driver.newdriver.getDepartments(request, response);
 });
-app.get('/usersMeeting', (request, response) => {
+
+app.post('/meetingFeedback', (request, response) => {
+    driver.newdriver.getMeetingFeedback(request, response);
+});
+app.post('/getSpecificMeeting', (request, response) => {
+    driver.newdriver.getMeeting(request, response)
+})
+app.post('/usersMeeting', (request, response) => {
     driver.newdriver.getMeetingUsers(request, response)
 })
-
 app.post('/insertMeeting', (request, response) => {
     driver.newdriver.insertMeeting(request, response)
 });

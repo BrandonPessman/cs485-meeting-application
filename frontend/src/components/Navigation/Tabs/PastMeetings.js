@@ -3,6 +3,7 @@ import Grid from '@material-ui/core/Grid'
 import Paper from '@material-ui/core/Paper'
 import axios from 'axios'
 import Button from '@material-ui/core/Button'
+import { useHistory } from "react-router-dom";
 
 const months = {
   0: 'January',
@@ -21,11 +22,12 @@ const months = {
 
 export default function UpcomingMeetings() {
   const [data, setData] = useState([])
+  let history = useHistory();
 
   useEffect(() => {
     let list = [];
 
-    axios.get('http://104.131.115.65:3443/meetings')
+    axios.get('http://localhost:3443/meetings')
       .then(function (response) {
         let t = response.data.meeting;
 
@@ -36,6 +38,7 @@ export default function UpcomingMeetings() {
           let added = false
 
           let meeting = {
+            meeting_id: z.meeting_id,
             title: z.meeting_title,
             starttime: new Date(z.start_date_time),
             endtime: new Date(z.end_date_time),
@@ -69,6 +72,10 @@ export default function UpcomingMeetings() {
       })
   }, [])
 
+  const handleView = (meetingId) => {
+    history.push("/meeting/" + meetingId.meeting_id);
+}
+
   return (
     <div style={{ margin: '40px 0px' }}>
       <h2 style={{ marginBottom: '0', marginTop: '0', fontWeight: '300' }}>
@@ -82,21 +89,19 @@ export default function UpcomingMeetings() {
       {data.map(inst => {
         return (
           <div>
-            <Paper elevation={3} style={{ padding: '10px 30px 30px 30px', margin: '20px 0' }}>
-              <Grid container spacing={12}>
-                <Grid item xs={12}>
-                  <h2>{inst.date}</h2>
-                </Grid>
-                {inst.meetings.map(meetings => {
-                  return (
-                    <Grid item xs={3} style={{backgroundColor: 'lightgray', borderRadius: '4px', boxShadow: '4px 4px 10px rgba(0,0,0,.3)', padding: '10px', marginRight: '15px'}}>
-                      <h4 style={{ fontWeight: '300', margin: '5px', borderBottom: 'dotted 1px rgba(0,0,0,.3)' }}><span style={{ fontWeight: '600' }}>{meetings.candidate}</span> - {meetings.title}<span style={{ float: 'right' }}>{meetings.starttime.getUTCHours()}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()} to {meetings.endtime.getUTCHours()}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()} - {' '}<span style={{ fontWeight: '600' }}> {meetings.location}</span></span></h4>
-                    </Grid>
-                  )
-                })
-                }
+            <Grid container spacing={12} style={{marginLeft: '20px', marginBottom: '20px'}}>
+              <Grid item xs={12}>
+                <h2>{inst.date}</h2>
               </Grid>
-            </Paper>
+              {inst.meetings.map(meetings => {
+                return (
+                  <Grid item xs={4} style={{backgroundColor: 'white', borderRadius: '4px', boxShadow: '4px 4px 10px rgba(0,0,0,.3)', padding: '20px', marginRight: '15px'}}>
+                    <h4 style={{ fontWeight: '300', margin: '5px', borderBottom: 'dotted 1px rgba(0,0,0,.3)' }}>{meetings.title}<span style={{ float: 'right' }}>{meetings.starttime.getUTCHours()}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()} to {meetings.endtime.getUTCHours()}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()}</span></h4><Button size="small" variant='contained' color='primary' onClick={() => handleView(meetings)}>View/Edit</Button>
+                  </Grid>
+                )
+              })
+              }
+            </Grid>
           </div>
         )
       })}

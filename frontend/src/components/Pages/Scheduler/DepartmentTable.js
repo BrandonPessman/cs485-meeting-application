@@ -253,7 +253,7 @@ export default function EnhancedTable({ setShowNextStep }) {
   useEffect(() => {
     
     axios
-      .get("http://104.131.115.65:3443/department")
+      .get("http://localhost:3443/department")
       .then(function (response) {
         setData(response.data.department);
       });

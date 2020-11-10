@@ -292,18 +292,18 @@ export default function EnhancedTable({ setShowNextStep }) {
   
 
   useEffect(() => {
-    axios.get("http://104.131.115.65:3443/users").then(function (response) {
+    axios.get("http://localhost:3443/users").then(function (response) {
       setUsers(response.data.user);
     });
 
-    axios.get("http://104.131.115.65:3443/meetingsExtra").then(function (response) {
+    axios.get("http://localhost:3443/meetingsExtra").then(function (response) {
       setMeetings(response.data.meeting);
     });
-    axios.get("http://104.131.115.65:3443/positions").then(function (response) {
+    axios.get("http://localhost:3443/positions").then(function (response) {
       setPositions(response.data.positions);
     });
     axios
-      .get("http://104.131.115.65:3443/locations")
+      .get("http://localhost:3443/locations")
       .then(function (locationData) {
         setLocations(locationData.data.location)
       });
@@ -333,7 +333,7 @@ export default function EnhancedTable({ setShowNextStep }) {
       console.log(availableLocationData);
       if (startDate && endDate) {
         axios
-          .get("http://104.131.115.65:3443/availableLocations", { data: availableLocationData })
+          .get("http://localhost:3443/availableLocations", { data: availableLocationData })
           .then(function (results) {
             console.log(results)
             setAvailableLocations(results.data)
@@ -353,7 +353,7 @@ export default function EnhancedTable({ setShowNextStep }) {
       setChosenUsers(chosenUsers.concat({u_id:u_id}));
       let userData = { u_id: u_id, start_date_time: startDate, end_date_time: endDate };
       axios
-        .get("http://104.131.115.65:3443/userAvailability", { data: userData })
+        .get("http://localhost:3443/userAvailability", { data: userData })
         .then(function (results) {
           console.log("results: " + results.data);
           if (results.data.userAvailability == 0) {
@@ -413,7 +413,7 @@ export default function EnhancedTable({ setShowNextStep }) {
       users: chosenUsers,
     };
     console.log(newMeeting);
-    axios.post("http://104.131.115.65:3443/insertMeeting", newMeeting)
+    axios.post("http://localhost:3443/insertMeeting", newMeeting)
       .then(result => {
         console.log(result);
       })
