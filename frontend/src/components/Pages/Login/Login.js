@@ -44,6 +44,7 @@ export default function Login({setUser}) {
                     id="login-password"
                     variant="outlined"
                     size="small"
+                    type="password"
                     style={{
                     width: "100%",
                     marginBottom: "10px",

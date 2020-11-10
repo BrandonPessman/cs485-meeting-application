@@ -81,7 +81,7 @@ export default function FeedbackPage({user}) {
           {feedback.map(item => {
             return (
               <>
-                <div key={item.feedback_id} style={{backgroundColor: user.name == item.author ? 'rgba(0,0,255,.1)' : 'rgba(0,0,0,.05)', padding: '5px', borderRadius: '4px', margin: '5px'}}>
+                <div key={item.feedback_id} style={{backgroundColor: user.name == item.author ? 'rgba(0,0,255,.2)' : 'rgba(0,0,0,.05)', padding: '5px', borderRadius: '4px', margin: '5px'}}>
                 <h4 style={{padding: '0', margin: '0'}}>
                   @{item.author}
 

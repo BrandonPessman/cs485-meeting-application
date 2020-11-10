@@ -95,8 +95,9 @@ export default function UpcomingMeetings() {
               </Grid>
               {inst.meetings.map(meetings => {
                 return (
-                  <Grid item xs={4} style={{backgroundColor: 'white', borderRadius: '4px', boxShadow: '4px 4px 10px rgba(0,0,0,.3)', padding: '20px', marginRight: '15px'}}>
+                  <Grid item xs={6} style={{backgroundColor: 'white', borderRadius: '4px', boxShadow: '4px 4px 10px rgba(0,0,0,.3)', padding: '20px', marginRight: '15px'}}>
                     <h4 style={{ fontWeight: '300', margin: '5px', borderBottom: 'dotted 1px rgba(0,0,0,.3)' }}>{meetings.title}<span style={{ float: 'right' }}>{meetings.starttime.getUTCHours()}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()} to {meetings.endtime.getUTCHours()}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()}</span></h4><Button size="small" variant='contained' color='primary' onClick={() => handleView(meetings)}>View/Edit</Button>
+                    <Button size="small" variant='contained' color='secondary' onClick={() => history.push("/feedback/" + meetings.meeting_id)}>Add Feedback</Button>
                   </Grid>
                 )
               })
