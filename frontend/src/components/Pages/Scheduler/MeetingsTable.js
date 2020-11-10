@@ -53,11 +53,11 @@ function createData(title, location, startTime, endTime, date) {
   };
 }
 
-const rows = [
+/*const rows = [
   createData("Meeting with Dr. Johnson", "Phillips 116", 10, 10, new Date()),
   createData("Meeting with Dr. Tan", "Phillips 115", 5, 5, new Date()),
   createData("Research Talk to CS 252 Class", "Phillips 115", 5, 5, new Date()),
-];
+];*/
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -296,7 +296,7 @@ export default function EnhancedTable({ setShowNextStep }) {
       setUsers(response.data.user);
     });
 
-    axios.get("http://104.131.115.65:3443/meetings").then(function (response) {
+    axios.get("http://104.131.115.65:3443/meetingsExtra").then(function (response) {
       setMeetings(response.data.meeting);
     });
     axios.get("http://104.131.115.65:3443/positions").then(function (response) {
@@ -342,6 +342,7 @@ export default function EnhancedTable({ setShowNextStep }) {
     }
   };
   const handleAddUser = () => {
+    console.log(meetings);  
     var userVal = document.getElementById("adding-user-textfield").value;
     if (userVal != "") {
       var selectedUser = users.filter(user => {
@@ -469,7 +470,7 @@ export default function EnhancedTable({ setShowNextStep }) {
   const isSelected = (name) => selected.indexOf(name) !== -1;
 
   const emptyRows =
-    rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
+    rowsPerPage - Math.min(rowsPerPage, meetings.length - page * rowsPerPage);
 
 
   const handleDeleteUser = (event) => {
@@ -497,23 +498,23 @@ export default function EnhancedTable({ setShowNextStep }) {
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
+              rowCount={meetings.length}
             />
             <TableBody>
-              {stableSort(rows, getComparator(order, orderBy))
+              {stableSort(meetings, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  const isItemSelected = isSelected(row.title);
+                .map((meeting, index) => {
+                  const isItemSelected = isSelected(meeting.meeting_title);
                   const labelId = `enhanced-table-checkbox-${index}`;
 
                   return (
                     <TableRow
                       hover
-                      onClick={(event) => handleClick(event, row.title)}
+                      onClick={(event) => handleClick(event, meeting.meeting_title)}
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
-                      key={row.title}
+                      key={meeting.meeting_title}
                       selected={isItemSelected}
                     >
                       <TableCell padding="checkbox">
@@ -525,15 +526,15 @@ export default function EnhancedTable({ setShowNextStep }) {
                       <TableCell
                         component="th"
                         id={labelId}
-                        scope="row"
+                        scope="meeting"
                         padding="none"
                       >
-                        {row.title}
+                        {meeting.meeting_title}
                       </TableCell>
-                      <TableCell align="right">{row.location}</TableCell>
-                      <TableCell align="right">{row.date}</TableCell>
-                      <TableCell align="right">{row.startTime}</TableCell>
-                      <TableCell align="right">{row.endTime}</TableCell>
+                      <TableCell align="right">{meeting.name}</TableCell>
+                      <TableCell align="right">{meeting.start_date_time.split("T")[0]}</TableCell>
+                      <TableCell align="right">{meeting.start_date_time.split("T")[1].substr(0,5)}</TableCell>
+                      <TableCell align="right">{meeting.end_date_time.split("T")[1].substr(0,5)}</TableCell>
                     </TableRow>
                   );
                 })}
@@ -548,7 +549,7 @@ export default function EnhancedTable({ setShowNextStep }) {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={rows.length}
+          count={meetings.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onChangePage={handleChangePage}
