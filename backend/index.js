@@ -71,6 +71,11 @@ app.post('/insertFeedback',(request, response)=>{
     driver.newdriver.insertFeedback(request, response);
 });
 
+/*app.post('/insertFile', (request, response) => {
+    driver.newdriver.insertFile(request, response)
+});
+*/
+
 app.patch('/user', (request, response) => {
     driver.newdriver.updateUser(request, response);
 });
