@@ -568,6 +568,22 @@ insertCandidate (Candidate_id, id, users, meeting_id) {
       }
     })
   }
+  
+  //upload files method(From Tong)
+  /*insertFile(request, response){
+    const query= "INSERT INTO uploadFile (u_id) VALUES (?,?,?)";
+    const params=[request.body.u_id];
+    this.connection.query(query, params, (error, rows)=>{
+      if(error){
+        console.log(error);
+      }
+      else{
+        response.send({ uploadFile: rows.map(mapuploadFile) });
+    }
+    })
+  }
+  */
+  
   /**Deletes department from Department table. 
    * Calls deleteDepartmentPositions to delete all existing positions under the department
    */
