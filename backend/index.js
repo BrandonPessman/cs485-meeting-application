@@ -25,8 +25,14 @@ app.get('/meetingsExtra', (request,response) => {
 app.get('/users', (request, response) => {
     driver.newdriver.getAllUsers(response);
 });
-app.get('/userAvailability', (request,response) => {
+app.get('/candidates', (request,response) => {
+    driver.newdriver.getCandidates(request,response);
+});
+app.get('/userAvailability/:u_id/:start_date_time/:end_date_time', (request,response) => {
     driver.newdriver.getUserAvailability(request,response);
+});
+app.get('/userTypes', (request,response) => {
+    driver.newdriver.getUserTypes(request,response);
 });
 //new
 app.get('/userPositions', (request,response) => {
@@ -42,7 +48,7 @@ app.get('/users/:email/:u_password', (request, response) => {
 app.get('/positions', (request, response) => {
     driver.newdriver.getPositions(response);
 })
-app.get('/availableLocations', (request,response) => {
+app.get('/availableLocations/:start_date_time/:end_date_time', (request,response) => {
     driver.newdriver.getAvailableLocations(request,response)
 });
 app.get('/locations', (request,response) => {
@@ -70,7 +76,15 @@ app.post('/insertUser',(request, response)=>{
 app.post('/insertFeedback',(request, response)=>{
     driver.newdriver.insertFeedback(request, response);
 });
-
+app.post('/insertPosition',(request,response) => {
+    driver.newdriver.insertPosition(request,response);
+});
+app.post('/insertDepartmentPosition', (request,response) => {
+    driver.newdriver.insertDepartmentPosition(request,response);
+});
+app.post('/insertDepartment',(request,response) => {
+    driver.newdriver.insertDepartment(request,response);
+})
 /*app.post('/insertFile', (request, response) => {
     driver.newdriver.insertFile(request, response)
 });
@@ -87,12 +101,15 @@ app.patch('/updateUser', (request,response) => {
 });
 
 
-app.delete('/deletePosition', (request,response) => {
+app.delete('/deletePosition/:position_id', (request,response) => {
     driver.newdriver.deletePosition(request, response)
 });
 app.delete('/deleteUser', (request, response) => {
     driver.newdriver.deleteUser(request,response);
 });
-app.delete('/deleteMeeting', (request,response) => {
+app.delete('/meeting/:meeting_id', (request,response) => {
     driver.newdriver.deleteMeeting(request,response);
+});
+app.delete('/deleteDepartment/:dept_id', (request,response) => {
+    driver.newdriver.deleteDepartment(request,response);
 });

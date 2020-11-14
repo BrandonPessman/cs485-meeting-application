@@ -16,6 +16,10 @@ import Paper from "@material-ui/core/Paper";
 import Checkbox from "@material-ui/core/Checkbox";
 import Button from "@material-ui/core/Button";
 import axios from "axios";
+import Modal from "@material-ui/core/Modal";
+import Autocomplete from '@material-ui/lab/Autocomplete'
+import TextField from "@material-ui/core/TextField";
+
 // import IconButton from '@material-ui/core/IconButton'
 // import Tooltip from '@material-ui/core/Tooltip'
 // import FormControlLabel from '@material-ui/core/FormControlLabel'
@@ -75,12 +79,6 @@ const headCells = [
     numeric: true,
     disablePadding: false,
     label: "Short Name",
-  },
-  {
-    id: "upcomingMeetingTotal",
-    numeric: true,
-    disablePadding: false,
-    label: "Upcoming Meeting Total",
   },
   {
     id: "totalOpenPositions",
@@ -248,14 +246,18 @@ export default function EnhancedTable({ setShowNextStep }) {
   const [page, setPage] = React.useState(0);
   const [dense] = React.useState(true);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [data, setData] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [openNewDepartment, setOpenNewDepartment] = React.useState(false)
+  const [chosenShort, setChosenShort] = useState([])
+  const [chosenTitle, setChosenTitle] = useState([])
+
+
 
   useEffect(() => {
-    
     axios
       .get("http://localhost:3443/department")
       .then(function (response) {
-        setData(response.data.department);
+        setDepartments(response.data.department);
       });
   }, []);
 
@@ -264,7 +266,12 @@ export default function EnhancedTable({ setShowNextStep }) {
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
   };
-
+  const handleOpenNewDepartment = (event) => {
+    setOpenNewDepartment(true);
+  }
+  const handleCloseNewDepartment = (event) => {
+    setOpenNewDepartment(false);
+  }
   const handleSelectAllClick = (event) => {
     // if (event.target.checked) {
     //   const newSelecteds = rows.map(n => n.department)
@@ -274,7 +281,60 @@ export default function EnhancedTable({ setShowNextStep }) {
     setSelected([]);
     setShowNextStep(false);
   };
-
+  const handleShortChange = (event) => {
+    var short = document.getElementById("create-dept-short").value;
+    if (short != null) {
+      setChosenShort(short);
+    }
+    console.log(chosenShort);
+  }
+  const handleTitleChange = (event) => {
+    var title = document.getElementById("create-dept-title").value;
+    if (title != null) {
+      setChosenTitle(title);
+    }
+  }
+  const handleCreateDept = (event) => {
+    const dept = 
+    {
+      dept_title: chosenTitle,
+      dept_short: chosenShort,
+    }
+    console.log(dept);
+    if (chosenTitle.length>0 || chosenShort.length>0) {
+      axios
+        .post("http://localhost:3443/insertDepartment", dept)
+        .then(function (response) {
+          console.log(response);
+        });
+        axios
+        .get("http://localhost:3443/department")
+        .then(function (response) {
+          setDepartments(response.data.department);
+        });
+      setOpenNewDepartment(false);
+    }
+    else{
+      console.log("Invalid");
+    }
+  }
+  const handleDeleteDepartment = (event) => {
+    if (selected != "") {
+      var dept = departments.filter(department => {
+        return department.dept_title === selected;
+      });
+      const { dept_id } = dept[0];
+      axios.delete(`http://localhost:3443/deleteDepartment/${dept_id}`)
+      .then(result=> {
+        console.log("Delete result: " + result);
+      });
+    }
+    axios
+      .get("http://localhost:3443/department")
+      .then(function (response) {
+        setDepartments(response.data.department);
+      });
+  }
   const handleClick = (event, name, id) => {
     // SEND ID TO PARENT
 
@@ -316,7 +376,7 @@ export default function EnhancedTable({ setShowNextStep }) {
   const isSelected = (name) => selected.indexOf(name) !== -1;
 
   const emptyRows =
-    rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
+    rowsPerPage - Math.min(rowsPerPage, departments.length - page * rowsPerPage);
 
   return (
     <div className={classes.root}>
@@ -336,25 +396,25 @@ export default function EnhancedTable({ setShowNextStep }) {
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={data.length}
+              rowCount={departments.length}
             />
             <TableBody>
-              {stableSort(data, getComparator(order, orderBy))
+              {stableSort(departments, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  const isItemSelected = isSelected(row.dept_title);
+                .map((department, index) => {
+                  const isItemSelected = isSelected(department.dept_title);
                   const labelId = `enhanced-table-checkbox-${index}`;
 
                   return (
                     <TableRow
                       hover
                       onClick={(event) =>
-                        handleClick(event, row.dept_title, row.dept_id)
+                        handleClick(event, department.dept_title, department.dept_id)
                       }
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
-                      key={row.dept_id}
+                      key={department.dept_id}
                       selected={isItemSelected}
                     >
                       <TableCell padding="checkbox">
@@ -366,14 +426,13 @@ export default function EnhancedTable({ setShowNextStep }) {
                       <TableCell
                         component="th"
                         id={labelId}
-                        scope="row"
+                        scope="department"
                         padding="none"
                       >
-                        {row.dept_title}
+                        {department.dept_title}
                       </TableCell>
-                      <TableCell align="right">{row.dept_short}</TableCell>
-                      <TableCell align="right">{0}</TableCell>
-                      <TableCell align="right">{0}</TableCell>
+                      <TableCell align="right">{department.dept_short}</TableCell>
+                      <TableCell align="right">{department.openPositions}</TableCell>
                     </TableRow>
                   );
                 })}
@@ -388,7 +447,7 @@ export default function EnhancedTable({ setShowNextStep }) {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={data.length}
+          count={departments.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onChangePage={handleChangePage}
@@ -399,9 +458,67 @@ export default function EnhancedTable({ setShowNextStep }) {
         control={<Switch checked={dense} onChange={handleChangeDense} />}
         label='Dense padding'
       /> */}
-      <Button variant="contained" color="secondary">
+      <Button 
+      variant="contained" 
+      color="secondary"
+      onClick = { handleOpenNewDepartment }
+      >
         Create a Department
       </Button>
+      <Modal
+        open={ openNewDepartment }
+        onClose={() => {
+          setOpenNewDepartment(false);
+        }}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+      >
+        <Paper
+          container
+          xs={12}
+          style={{ margin: "50px auto", width: "300px", height: "300px", padding: "40px" }}
+        >
+          <h1>Create a Department</h1>
+        <TextField
+            label="Title"
+            id="create-dept-title"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange = { handleTitleChange }
+          />
+        <TextField
+            label="Short"
+            id="create-dept-short"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange = { handleShortChange }
+          />
+      <Button
+      variant = 'caontained'
+      color = 'default'
+      style={{ marginleft: '20px', float: 'center' }}
+      onClick = { handleCreateDept }
+      >
+        Create Department
+      </Button>
+      <Button 
+      variant="contained" 
+      color="secondary"
+      style={{ marginleft: '20px', float: 'right' }}
+      onClick = { handleCloseNewDepartment }
+      >
+        Cancel
+      </Button>
+        </Paper>
+      </Modal>
       <Button
         variant="contained"
         color="default"
@@ -415,6 +532,7 @@ export default function EnhancedTable({ setShowNextStep }) {
         color="default"
         disabled={selected.length > 0 ? false : true}
         style={{ marginLeft: "20px", float: "right" }}
+        onClick = { handleDeleteDepartment }
       >
         Delete Department
       </Button>

@@ -29,7 +29,7 @@ class Driver {
   insertUser(request, response) {
     var query =
       "INSERT INTO user VALUES (?,?,?,?,?,?)"
-    var params = [null, request.body.email, request.body.u_password,request.body.phone_number, request.body.name, request.body.type]
+    var params = [null, request.body.email, request.body.u_password, request.body.phone_number, request.body.name, request.body.type]
     this.connection.query(query, params, (err, result) => {
       if (err) { console.log(err) }
       else { response.send({ status: true }); }
@@ -38,10 +38,10 @@ class Driver {
   /*Updates user in 'user' table - need to change to make frontend-friendly*/
   updateUser(request, response) {
     var query = 'UPDATE user SET u_password=?, phone_number=?, name=?, type=? WHERE u_id = ?';
-    var params = [request.body.u_password, request.body.phone_number, request.body.name, request.body.type, request.body.u_id];
-    this.connection.query(query, params, (err) => {
+    var params = [request.body.u_password, request.body.phone_number, request.body.name, request.body.type_id, request.body.u_id];
+    var temp = this.connection.query(query, params, (err) => {
       if (err) { console.log(err) }
-      else { response.send({ status: true }); }
+      else { response.send({ status: true, sql: temp.sql }); }
     });
   }
   /*Deletes user in 'user' table - cascades to all instances of this user*/
@@ -49,29 +49,29 @@ class Driver {
     var query = 'DELETE FROM user WHERE u_id = ?'
     var params = [request.body.u_id];
     this.connection.query(query, params, (err) => {
-      if (err) {console.log(err) }
-      else {response.send({status:true})}
+      if (err) { console.log(err) }
+      else { response.send({ status: true }) }
     })
   }
   /*Check user availability*/
-  getUserAvailability(request,response) {
-    var query = 'select m.meeting_title from Meeting m LEFT JOIN meetingUser mu on mu.meeting_id = m.meeting_id WHERE mu.u_id = ? and ' + 
-    '((start_date_time<=? AND start_date_time>=?)' +
-    ' OR (end_date_time<=? AND end_date_time<=?)' + 
-    'OR (start_date_time>=? AND end_date_time <=?))'
-    var params = [request.body.u_id,request.body.end_date_time, request.body.start_date_time,request.body.start_date_time,request.body.end_date_time,request.body.start_date_time,request.body.end_date_time]
+  getUserAvailability(request, response) {
+    var query = 'select m.meeting_title from Meeting m LEFT JOIN meetingUser mu on mu.meeting_id = m.meeting_id WHERE mu.u_id = ? and ' +
+      '((start_date_time<=? AND start_date_time>=?)' +
+      ' OR (end_date_time<=? AND end_date_time<=?)' +
+      'OR (start_date_time>=? AND end_date_time <=?))'
+    var params = [request.params.u_id, request.params.end_date_time, request.params.start_date_time, request.params.start_date_time, request.params.end_date_time, request.params.start_date_time, request.params.end_date_time]
     var temp = this.connection.query(query, params, (err, rows) => {
       if (err) {
         console.log(err)
-      }  else{
-          console.log(rows);
-          if (rows.length >0){
-          response.send({Meeting:rows.map(mapMeeting), userAvailability:false, sql: temp.sql});
-          }
-          else{
-            response.send({userAvailability:true,sql:temp.sql});
-          }
+      } else {
+        console.log(rows);
+        if (rows.length > 0) {
+          response.send({ Meeting: rows.map(mapMeeting), userAvailability: false, sql: temp.sql });
         }
+        else {
+          response.send({ userAvailability: true, sql: temp.sql });
+        }
+      }
     })
   }
   /*gets user from 'user' table using email and u_password col*/
@@ -79,6 +79,14 @@ class Driver {
     var query = 'SELECT * FROM user LEFT JOIN userTypes ON user.type = userTypes.type_id WHERE email = ? and u_password=?';
     const params = [request.params.email, request.params.u_password];
     this.connection.query(query, params, (err, rows) => {
+      if (err) { console.log(err) }
+      else { response.send({ user: rows.map(mapUser) }); }
+    })
+  }
+  /*gets users by type =2, all candidates*/
+  getCandidates(request, response) {
+    var query = 'SELECT u.u_id,u.name, u.email, u.phone_number, count(mu.u_id) as meeting_count, u.type, ut.type_descr FROM user u, meetingUser mu, userTypes ut, Meeting m where u.u_id = mu.u_id and m.meeting_id = mu.meeting_id and ut.type_id = u.type and u.type = 2 group by u.u_id'
+    this.connection.query(query, (err, rows) => {
       if (err) { console.log(err) }
       else { response.send({ user: rows.map(mapUser) }); }
     })
@@ -95,17 +103,17 @@ class Driver {
       }
     });
   }
-  getUserPosition(request, response){
-    const query= "SELECT * FROM EmployeePosition LEFT JOIN userPosition ON EmployeePosition.position_id = userPosition.position_id WHERE u_id = ?";
-    const params=[request.body.u_id];
-      this.connection.query(query, params, (error, rows)=>{
-        if(error){
-          console.log(error);
-        }
-        else{
-          response.send({ userPosition: rows.map(mapUserPosition) });
+  getUserPosition(request, response) {
+    const query = "SELECT * FROM EmployeePosition LEFT JOIN userPosition ON EmployeePosition.position_id = userPosition.position_id WHERE u_id = ?";
+    const params = [request.body.u_id];
+    this.connection.query(query, params, (error, rows) => {
+      if (error) {
+        console.log(error);
       }
-  })
+      else {
+        response.send({ userPosition: rows.map(mapUserPosition) });
+      }
+    })
   }
   /*Returns string of user type from 'userTypes' table for requested User*/
   getUserType(request, response) {
@@ -131,10 +139,10 @@ class Driver {
     const query = 'SELECT * FROM Meeting m LEFT JOIN Location l on m.location_id = l.location_id LEFT JOIN EmployeePosition ep on m.position_id = ep.position_id'
     this.connection.query(query, (error, rows) => {
       if (error) {
-        response.send({error:error.message});
+        response.send({ error: error.message });
       }
-      else{
-        response.send({meeting: rows.map(mapMLE)});
+      else {
+        response.send({ meeting: rows.map(mapMLE) });
       }
     })
   }
@@ -150,22 +158,22 @@ class Driver {
     });
   }
   /*Deletes user in meeting using meeting_id & u_id*/
-  deleteMeetingUser(request, response){
-    const query= "DELETE FROM meetingUser Where meeting_id=?";
-    const params=[request.body.meeting_id];
-      this.connection.query(query,params,(error, result)=>{
-        if(error){
-          console.log(error);
-        }
-        else{
-          response.send({status:true})
-        }
+  deleteMeetingUser(request) {
+    const query = "DELETE FROM meetingUser Where meeting_id= ?";
+    const params = [request.meeting_id];
+    this.connection.query(query, params, (error, result) => {
+      if (error) {
+        console.log(error);
+      }
+      else {
+        console.log({ method: 'deleteMeetinguser', status: true })
+      }
     })
   }
   /*Adds each user in meeting to meetingCombo table - called by insertMeeting when meeting initialized.*/
-  addMeetingUser(user_id,meeting_id) {
+  addMeetingUser(user_id, meeting_id) {
     var query = 'INSERT INTO meetingUser VALUES (?,?)'
-    const params = [meeting_id,user_id];
+    const params = [user_id, meeting_id];
     this.connection.query(query, params, function (err, result) {
       if (err) {
         console.log(err);
@@ -178,13 +186,13 @@ class Driver {
   insertMeeting(request, response) {
     var start_time = Date.parse(request.body.start_date_time);
     var end_time = Date.parse(request.body.end_date_time);
-    var diff = (end_time - start_time)/6000;
+    var diff = Math.abs((end_time - start_time) / 6000);
     const query = 'INSERT INTO Meeting (meeting_title, meeting_descr, location_id, start_date_time, end_date_time, position_id, meeting_length) VALUES (?,?,?,?,?,?,?)';
     const params = [request.body.meeting_title, request.body.meeting_descr, request.body.location_id, request.body.start_date_time,
-    request.body.end_date_time, request.body.position_id,diff];
+    request.body.end_date_time, request.body.position_id, diff];
     this.connection.query(query, params, (error, result) => {
       if (error) {
-        response.send({error:error.message});
+        response.send({ error: error.message });
         console.log(error);
       }
       else {
@@ -194,35 +202,35 @@ class Driver {
           var user_id = parseInt(users[i].u_id);
           this.addMeetingUser(user_id, meeting_id)
         }
-        response.send({status:true, meeting_id:result.insertId});
+        response.send({ status: true, meeting_id: result.insertId });
       }
     });
   }
   //returns meeting status based on current time compared to given start/end_date_time
-  getMeetingStatus(request,response) {
+  getMeetingStatus(request, response) {
     var query = 'SELECT start_date_time, end_date_time FROM Meeting where meeting_id = ?'
     var params = [request.body.meeting_id]
-    this.connection.query(query, params, (error,rows)=> {
+    this.connection.query(query, params, (error, rows) => {
       if (error) {
         console.log(error);
       }
-      else{
+      else {
         var meetings = rows.map(mapMeeting);
-        for (var i = 0; i<meetings.length; i++) {
-        var meeting = meetings[i];
-        var curr_date_time = new Date();
-        var status;
-        if (curr_date_time<meeting.start_date_time) {
-          status = 'Future Meeting';
+        for (var i = 0; i < meetings.length; i++) {
+          var meeting = meetings[i];
+          var curr_date_time = new Date();
+          var status;
+          if (curr_date_time < meeting.start_date_time) {
+            status = 'Future Meeting';
+          }
+          else if (curr_date_time > meeting.start_date_time && curr_date_time < meeting.end_date_time)
+            status = 'In Progress';
         }
-        else if (curr_date_time>meeting.start_date_time && curr_date_time<meeting.end_date_time)
-          status ='In Progress';
-        }
-        if (curr_date_time> meeting.end_date_time) {
+        if (curr_date_time > meeting.end_date_time) {
           status = 'Completed Meeting';
         }
-        this.updateMeeting({meeting_id:request.body.meeting_id,meeting_status:status});
-        response.send({meeting_status:status});
+        this.updateMeeting({ meeting_id: request.body.meeting_id, meeting_status: status });
+        response.send({ meeting_status: status });
       }
     })
   }
@@ -233,73 +241,74 @@ class Driver {
     return this.connection.query(query, params, (err, rows) => {
       if (err) { console.log(err) }
       else {
-        response.send({Meeting:rows.map(mapMeeting)})
+        response.send({ Meeting: rows.map(mapMeeting) })
       }
     })
   }
-  getAllUserMeetings(request,response) {
+  getAllUserMeetings(request, response) {
     var query = 'SELECT m.meeting_id,m.meeting_title, m.meeting_descr, m.location_id, m.start_date_time, m.end_date_time, m.position_id FROM Meeting m LEFT JOIN meetingUser mu on mu.meeting_id = m.meeting_id WHERE mu.u_id = ?'
     var params = [request.u_id]
     return this.connection.query(query, params, (err, rows) => {
-      if (err) { 
-        console.log(err) 
+      if (err) {
+        console.log(err)
       }
       else {
-        response.send({meeting: rows.map(mapMeeting)});
-        }
+        response.send({ meeting: rows.map(mapMeeting) });
+      }
     })
   }
   /*Updates meeting in 'Meeting' table -- need to update*/
-  updateMeeting(request,response) {
+  updateMeeting(request, response) {
     var query = 'UPDATE Meeting SET meeting_title = ?, meeting_descr = ?, location_id = ?, start_date_time = ?, end_date_time = ? WHERE meeting_id = ?'
     var params = [request.body.meeting_title, request.body.meeting_descr, request.body.location_id, request.body.start_date_time, request.body.end_date_time, request.body.meeting_id]
-    this.connection.query(query, params, (err, result)=> {
-      if (err) {console.log(err)}
-      else{response.send({status:true})}
+    this.connection.query(query, params, (err, result) => {
+      if (err) { console.log(err) }
+      else { response.send({ status: true }) }
     })
   }
 
-  
+
   /*Deletes all meeting/feedback relationships via meeting_id or feedback_id*/
   deleteMeetingFeedback(request) {
-    if (request.body.meeting_id>0) {
+    if (request.meeting_id > 0) {
       var query = 'DELETE FROM feedbackCombo WHERE meeting_id = ?'
-      var params = [request.body.meeting_id]
-      this.connection.query(query, params, (err,result) => {
-        if (err) {console.log(err)}
-        else{console.log({status:true})}
+      var params = [request.meeting_id]
+      this.connection.query(query, params, (err, result) => {
+        if (err) { console.log(err) }
+        else { console.log({ status: true }) }
       })
     }
     else {
       var query = 'DELETE FROM feedbackCombo WHERE feedback_id = ?'
-      var params = [request.body.feedback_id]
-      this.connection.query(query, params, (err,result) => {
-        if (err) {console.log(err)}
-        else{console.log({status:true})}
+      var params = [request.feedback_id]
+      this.connection.query(query, params, (err, result) => {
+        if (err) { console.log(err) }
+        else { console.log({ status: true }) }
       })
     }
   }
   /*Deletes a Meeting entity
   *calls deleteMeetingUser to delete all meeting/User relationships
   */
-  deleteMeeting(request,response) {
+  deleteMeeting(request, response) {
     var query = 'DELETE FROM Meeting WHERE meeting_id = ?'
-    var params = [request.body.meeting_id]
-    this.connection.query(query, params, (err, result) => {
+    var params = [request.params.meeting_id]
+    var temp = this.connection.query(query, params, (err, result) => {
       if (err) {
         console.log(err);
       } else {
-        this.deleteMeetingFeedback(request);
-        this.deleteMeetingUser(request,response);
+        this.deleteMeetingFeedback({ meeting_id: request.params.meeting_id })
+        this.deleteMeetingUser({ meeting_id: request.params.meeting_id })
+        response.send({ status: true, sql: temp.sql });
       }
     })
   }
   /*Insert feedback & meeting into feedbackCombo
     only ever called by insertFeedback*/
-  insertFeedbackCombo(request,feedback_id, meeting_id, author) {
-    var query="INSERT INTO feedbackCombo VALUES(?,?,?)";
-    var params=[feedback_id,meeting_id,author];
-    this.connection.query(query,params, function (err, result) {
+  insertFeedbackCombo(request, feedback_id, meeting_id, author) {
+    var query = "INSERT INTO feedbackCombo VALUES(?,?,?)";
+    var params = [feedback_id, meeting_id, author];
+    this.connection.query(query, params, function (err, result) {
       if (err) {
         console.log(err);
       }
@@ -337,7 +346,7 @@ class Driver {
       if (err) {
         console.log(err)
       } else {
-        response.send({feedback: rows.map(mapFeedback)})
+        response.send({ feedback: rows.map(mapFeedback) })
       }
     })
   }
@@ -349,18 +358,18 @@ class Driver {
         console.log(err)
       }
       else {
-        response.json({feedback: rows.map(mapFeedback)})
+        response.json({ feedback: rows.map(mapFeedback) })
       }
     })
   }
-  deleteFeedback(request,response) {
+  deleteFeedback(request, response) {
     var query = 'DELETE FROM Feedback WHERE feedback_Id = ?'
     var params = [request.body.feedback_id]
     this.connection.query(query, params, (err) => {
       if (err) {
         console.log(err)
       } else {
-        response.send({status:true})
+        response.send({ status: true })
       }
     })
     this.deleteMeetingFeedback(request)
@@ -374,12 +383,12 @@ class Driver {
       if (err) {
         console.log(err)
       } else {
-        response.send({status:true})
+        response.send({ status: true })
       }
     })
   }
- /* insert Candidate to the Candidate table */
-insertCandidate (Candidate_id, id, users, meeting_id) {
+  /* insert Candidate to the Candidate table */
+  insertCandidate(Candidate_id, id, users, meeting_id) {
     var query =
       "INSERT INTO Candidate (Candidate_id, u_id, users, meeting_id) VALUES (" +
       Candidate_id +
@@ -389,49 +398,29 @@ insertCandidate (Candidate_id, id, users, meeting_id) {
       users +
       "', '" +
       meeting_id
-      "')"
-      this.connection.query(query, function (err, results) {
-        if (err) throw err;
-        console.log(results)
-      })
+    "')"
+    this.connection.query(query, function (err, results) {
+      if (err) throw err;
+      console.log(results)
+    })
     var users = users.split(",");
-    for (var i = 0; i<users.length; i++) {
+    for (var i = 0; i < users.length; i++) {
       var user_id = parseInt(users[i]);
       this.meetingCombo(user_id, id);
     }
   }
-  /* Get the candidate from the Candidate Table */
-  getCandidate(Candidate_id) {
-    var query = 'SELECT * FROM Candidate WHERE Candidate_id = ' + Candidate_id
-    return this.connection.query(query, function (err, results) {
-      if (err) throw err;
-      console.log(results)
-    })
-  }
-  /* Get all the candidates from the table */
-  getAllCandidate(){
-    var query = 'SELECT * FROM Candidate'
-    return this.connection.query(query, (err, rows)=> {
-      if (err){
-        console.log(err)
-      }
-      response.send({
-        candidate:rows.map(mapCandidate)
-      })
-    })
-  }
 
- /* Upadate the candidate information in the "Candidate" table */
-  updateCandidate({Candidate_id, id, users, meeting_id}){
+  /* Upadate the candidate information in the "Candidate" table */
+  updateCandidate({ Candidate_id, id, users, meeting_id }) {
     var currentCandidate = getCandidate(Candidate_id)
     var update = [Candidate_id, users, meeting_id]
     var origin = ['Candidate_id', 'users', 'meeting_id']
-    for (var i = 0; i<update.length; i++) {
+    for (var i = 0; i < update.length; i++) {
       if (currentCandidate.original[i] === update[i]) {
         var query = 'UPDATE Candidate SET ' + origin[i] + ' = ' + update[i] + 'WHERE Candidate_id = ' + Candidate_id
         return this.connection.query(query, function (err, results) {
-        if (err) throw err
-        console.log(results)
+          if (err) throw err
+          console.log(results)
         })
       }
     }
@@ -439,54 +428,83 @@ insertCandidate (Candidate_id, id, users, meeting_id) {
 
   /**Inserts given position object into EmployeePosition table. Calls insertDepartmentPosition (above) to 
    * add dept_id/position_id combination to departmentPosition table. */
-  insertPositions(request, response) {
-    var query = 'INSERT INTO EmployeePosition (position_id, position_title, currentEmployee, department_id) VALUES (?, ?, ?, ?)'
-    var params = [request.body.position_id, request.body.position_title, request.body.currentEmployee, request.body.department_id]
-     this.connection.query(query, params, (err, result) => {
+  insertPosition(request, response) {
+    var query = 'INSERT INTO EmployeePosition (title, dept_id) VALUES (?, ?)'
+    var params = [request.body.title, request.body.dept_id]
+    var dept_id = request.body.dept_id;
+    this.connection.query(query, params, (err, result) => {
       if (err) {
         console.log(err)
-      } else{
-        response.send({status:true})
+      } else {
+        var myDP = {
+          dept_id: dept_id,
+          position_id: result.insertId,
+        }
+        console.log(myDP);
+        this.insertDepartmentPosition(myDP);
+        response.send({ status: true, id: result.insertId })
       }
     })
-    this.insertDepartmentPosition(request)
+  }
+  insertDepartmentPosition(request) {
+    console.log(request.body);
+    var query = 'INSERT INTO departmentPosition VALUES (? ,? )'
+    var params = [request.dept_id, request.position_id]
+    this.connection.query(query, params, (err, result) => {
+      if (err) {
+        console.log(err)
+      } else {
+        console.log({ status: true })
+      }
+    })
   }
   /*Deletes department/position relationship using department_id or position_id*/
-  deleteDepartmentPosition(request,response) {
-    if (request.body.position_id>0) {
-    var query = 'DELETE FROM departmentPosition WHERE position_id = ?'
-    var params = [request.body.position_id]
-    this.connection.query(query, params, (err) => {
-      if (err) {console.log(err)}
-    })
+  deleteDepartmentPosition(request) {
+    if (request.position_id > 0) {
+      var query = 'DELETE FROM departmentPosition WHERE position_id = ?'
+      var params = [request.position_id]
+      this.connection.query(query, params, (err) => {
+        if (err) { console.log(err) }
+      })
+    }
+    else {
+      var query = 'DELETE FROM departmentPosition WHERE dept_id = ?'
+      var params = [request.department_id]
+      this.connection.query(query, params, (err) => {
+        if (err) { console.log(err) }
+      })
+    }
   }
-  else {
-    var query = 'DELETE FROM departmentPosition WHERE department_id = ?'
-    var params = [request.body.department_id]
-    this.connection.query(query, params, (err) => {
-      if (err) {console.log(err)}
-    })
-  }
-}
   /**Delete position from EmployeePosition - calls deleteDepartmentPosition
    * to remove unique combination of position_id/dept_id from table departmentPosition
    */
   deletePosition(request, response) {
     var query = 'DELETE FROM EmployeePosition WHERE position_id = ?'
-    var params = [request.body.position_id]
+    var params = [request.params.position_id]
     this.connection.query(query, params, (err, result) => {
-      if (err) {console.log(err) }
+      if (err) { console.log(err) }
       else {
-        this.deleteDepartmentPosition(request,response);
+        this.deleteDepartmentPosition({ position_id: request.params.position_id });
+      }
+    })
+  }
+  deletePositionByDept(request) {
+    var query = 'DELETE FROM EmployeePosition WHERE dept_id = ?'
+    var params = [request.dept_id]
+    this.connection.query(query, params, (err, result) => {
+      if (err) { console.log(err) }
+      else {
+        console.log({ status: true })
       }
     })
   }
   /*Returns all positions from 'EmployeePosition' table*/
   getPositions(response) {
-    var query = 'SELECT EmployeePosition.position_id, EmployeePosition.title, ' +
-      'EmployeePosition.currentEmployee, EmployeePosition.dept_id, EmployeePosition.vacant, ' +
-      'Count(EmployeePosition.position_id) as meeting_count FROM EmployeePosition LEFT JOIN Meeting ' +
-      'ON EmployeePosition.position_id = Meeting.position_id group by position_id';
+    var query = 'SELECT EmployeePosition.position_id, EmployeePosition.title, EmployeePosition.dept_id, ' +
+      'Count(Meeting.position_id) as meeting_count, Department.dept_title FROM EmployeePosition ' +
+      'LEFT JOIN Meeting ON EmployeePosition.position_id = Meeting.position_id ' +
+      'LEFT JOIN Department on Department.dept_id = EmployeePosition.dept_id ' +
+      'group by EmployeePosition.position_id'
     this.connection.query(query, (err, rows) => {
       if (err) {
         console.log(err)
@@ -497,16 +515,13 @@ insertCandidate (Candidate_id, id, users, meeting_id) {
     })
   }
   /*Returns a list of locations available at the given time*/
-  getAvailableLocations(request,response) {
-    var query = 'SELECT location_id, name FROM Location WHERE location_id NOT IN'+
-    '(SELECT loc.location_id FROM Location loc LEFT JOIN'+
-    ' Meeting m on m.location_id = loc.location_id WHERE (start_date_time>=? AND start_date_time<=?)'+
-    ' OR (end_date_time>=? AND end_date_time<=?))';
-    var params = [request.body.start_date_time,request.body.start_date_time,request.body.end_date_time,request.body.end_date_time];
+  getAvailableLocations(request, response) {
+    var query = 'select * from Location l where l.location_id not in ( select m.location_id from Meeting m where (end_date_time<? and end_date_time>?) or (start_date_time>? and start_date_time<?))'
+    var params = [request.params.end_date_time, request.params.start_date_time, request.params.start_date_time, request.params.end_date_time];
     var temp = this.connection.query(query, params, (err, rows) => {
-      if (err) {console.log(err)}
-      else{
-        response.send({location: rows.map(mapLocation), sql: temp.sql});
+      if (err) { console.log(err) }
+      else {
+        response.send({ location: rows.map(mapLocation), sql: temp.sql });
       }
     })
   }
@@ -518,7 +533,7 @@ insertCandidate (Candidate_id, id, users, meeting_id) {
         console.log(err)
       }
       else {
-        response.send({location: rows.map(mapLocation)});
+        response.send({ location: rows.map(mapLocation) });
       }
     })
   }
@@ -526,49 +541,49 @@ insertCandidate (Candidate_id, id, users, meeting_id) {
     var query = 'DELETE FROM Location WHERE location_id = ?'
     var params = [request.body.location_id]
     this.connection.query(query, params, (err) => {
-      if (err) {console.log(err)}
-      else{response.send({status:true})}
+      if (err) { console.log(err) }
+      else { response.send({ status: true }) }
     })
   }
   /*Returns all user types from 'userType' table*/
-  getUserTypes(response) {
+  getUserTypes(request, response) {
     var query = 'SELECT * FROM userTypes';
     this.connection.query(query, (err, rows) => {
       if (err) {
         console.log(err)
       }
       else {
-        response.json({type: rows.map(mapTypes)});
+        response.send({ type: rows.map(mapTypes) });
       }
     })
   }
   /*Gets all departments from Department table*/
   getDepartments(request, response) {
     var query = "SELECT d.dept_id, d.dept_title, d.dept_short, COUNT(dp.dept_id) as openPositions " +
-    "FROM Department d LEFT JOIN departmentPosition dp ON d.dept_id = dp.dept_id group by d.dept_id"
+      "FROM Department d LEFT JOIN departmentPosition dp ON d.dept_id = dp.dept_id group by d.dept_id"
     this.connection.query(query, (err, rows) => {
       if (err) {
         console.log(err)
       }
       else {
-        response.json({department: rows.map(mapDepartment)});
+        response.json({ department: rows.map(mapDepartment) });
       }
     })
   }
   /**Inserts a new department in Department table */
   insertDepartment(request, response) {
-    var query = "INSERT INTO Department (dept_id, dept_title, dept_short) VALUES (?,?,?)"
-    var params = [request.body.dept_id, request.body.dept_title, request.body.dept_short]
+    var query = "INSERT INTO Department (dept_title, dept_short) VALUES (?,?)"
+    var params = [request.body.dept_title, request.body.dept_short]
     this.connection.query(query, params, (err, results) => {
       if (err) {
         console.log(err)
       }
       else {
-        response.json({status:true})
+        response.json({ status: true })
       }
     })
   }
-  
+
   //upload files method(From Tong)
   /*insertFile(request, response){
     const query= "INSERT INTO uploadFile (u_id) VALUES (?,?,?)";
@@ -583,23 +598,24 @@ insertCandidate (Candidate_id, id, users, meeting_id) {
     })
   }
   */
-  
+
   /**Deletes department from Department table. 
    * Calls deleteDepartmentPositions to delete all existing positions under the department
    */
   deleteDepartment(request, response) {
     var query = "DELETE FROM Department where dept_id = ?"
-    var params = [request.body.dept_id]
+    var params = [request.params.dept_id]
     this.connection.query(query, params, (err, results) => {
-      if (err) {console.log(err)}
-      else{response.send({status:true})}
+      if (err) { console.log(err) }
+      else { response.send({ status: true }) }
     })
-    deleteDepartmentPositions(request);
+    this.deleteDepartmentPosition({ dept_id: request.params.dept_id })
+    this.deletePositionByDept({ dept_id: request.params.dept_id })
   }
 }
 /*Maps meeting,location&position information*/
 function mapMLE(row) {
-  return{
+  return {
     meeting_id: row.meeting_id,
     location_id: row.location_id,
     users: row.users,
@@ -660,6 +676,7 @@ function mapPosition(row) {
     currentEmployee: row.currentEmployee,
     deptid: row.department_id,
     vacant: row.vacant,
+    dept_title: row.dept_title,
     meeting_count: row.meeting_count,
   };
 }
@@ -680,9 +697,9 @@ function mapDepartment(row) {
 }
 
 function mapCandidate(row) {
-  return{
-    Candidate_id : row.Candidate_id,
-    meeting_id : row.meeting_id
+  return {
+    Candidate_id: row.Candidate_id,
+    meeting_id: row.meeting_id
   };
 }
 function mapUser(row) {
@@ -694,15 +711,16 @@ function mapUser(row) {
     name: row.name,
     type: row.type,
     u_position: row.u_position,
-    type_desc: row.type_desc
+    type_descr: row.type_descr,
+    meeting_count: row.meeting_count
   }
 }
-function mapUserPosition(row){
+function mapUserPosition(row) {
   return {
     u_id: row.u_id,
     position_id: row.position_id,
-    position_title:row.position_title,
-    department_id:row.department_id
+    position_title: row.position_title,
+    department_id: row.department_id
   }
 }
 

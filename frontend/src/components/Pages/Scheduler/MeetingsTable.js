@@ -268,6 +268,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 export default function EnhancedTable({ setShowNextStep }) {
+
   const classes = useStyles();
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("title");
@@ -289,7 +290,7 @@ export default function EnhancedTable({ setShowNextStep }) {
   const [chosenLocation, setChosenLocation] = useState([]);
   const [chosenPosition, setChosenPosition] = useState([]);
   const [chosenUsers, setChosenUsers] = useState([]);
-  
+
 
   useEffect(() => {
     axios.get("http://localhost:3443/users").then(function (response) {
@@ -300,7 +301,7 @@ export default function EnhancedTable({ setShowNextStep }) {
       setMeetings(response.data.meeting);
     });
     axios.get("http://localhost:3443/positions").then(function (response) {
-      setPositions(response.data.positions);
+      setPositions(response.data.position);
     });
     axios
       .get("http://localhost:3443/locations")
@@ -320,40 +321,32 @@ export default function EnhancedTable({ setShowNextStep }) {
   };
   const handleEndDate = (event, newDate) => {
     console.log("handleEndDate");
-    setEndDate(document.getElementById("create-event-endtime").value);
-    console.log("End date" + document.getElementById("create-event-endtime").value);
-    /*if (endDate>startDate) {
-      setWarningContent("Invalid time combination.");
-      openWarning(true);
-      setTimeout(() => { openWarning(false);}, 15000);
-    }*/
-    if (startDate != null) {
-      console.log("GetAvailableLocations");
-      const availableLocationData = { start_date_time: startDate, end_date_time: endDate };
-      console.log(availableLocationData);
-      if (startDate && endDate) {
-        axios
-          .get("http://localhost:3443/availableLocations", { data: availableLocationData })
-          .then(function (results) {
-            console.log(results)
-            setAvailableLocations(results.data)
-          });
-      }
+    const t = document.getElementById("create-event-endtime").value;
+    console.log("ENDDATE: " + t);
+    setEndDate(t);
+    if (startDate && endDate) {
+      console.log("Start date" + startDate + "end date" + t);
+      axios
+        .get(`http://localhost:3443/availableLocations/${startDate}/${t}`)
+        .then(function (results) {
+          console.log("result: " + results.data.sql)
+          setAvailableLocations(results.data.location)
+        }); 
     }
   };
   const handleAddUser = () => {
-    console.log(meetings);  
+    console.log(meetings);
     var userVal = document.getElementById("adding-user-textfield").value;
     if (userVal != "") {
       var selectedUser = users.filter(user => {
         return user.name === userVal;
       })
       const { u_id } = selectedUser[0];
-      setselectedUsers(selectedUsers.concat({user: userVal, role: 0}));
-      setChosenUsers(chosenUsers.concat({u_id:u_id}));
+      setselectedUsers(selectedUsers.concat({ user: userVal, role: 0 }));
+      setChosenUsers(chosenUsers.concat({ u_id: u_id }));
       let userData = { u_id: u_id, start_date_time: startDate, end_date_time: endDate };
       axios
-        .get("http://localhost:3443/userAvailability", { data: userData })
+        .get(`http://localhost:3443/userAvailability/${u_id}/${startDate}/${endDate}`)
         .then(function (results) {
           console.log("results: " + results.data);
           if (results.data.userAvailability == 0) {
@@ -412,14 +405,45 @@ export default function EnhancedTable({ setShowNextStep }) {
       position_id: chosenPosition,
       users: chosenUsers,
     };
+    if (endDate<=startDate) {
+      setWarningContent("Invalid time combination.");
+      openWarning(true);
+      setTimeout(() => { openWarning(false);}, 15000);
+    }else{
     console.log(newMeeting);
     axios.post("http://localhost:3443/insertMeeting", newMeeting)
       .then(result => {
         console.log(result);
-      })
-    setNewMeetingOpen(false);
+        if (result.data.error != null) {
+          setWarningContent("Some information needed, meeting not created");
+          openWarning(true);
+          setTimeout(() => { openWarning(false); }, 2000);
+        }
+        else{
+          setNewMeetingOpen(false);
+        }
+        });
+    axios.get("http://localhost:3443/meetingsExtra").then(function (response) {
+      setMeetings(response.data.meeting);
+    });
+  }
   };
-
+  const handleDeleteMeeting = () => {
+    if (selected != "") {
+      var selectedMeeting = meetings.filter(meeting => {
+        return meeting.meeting_title === selected;
+      })
+      const { meeting_id } = selectedMeeting[0];
+      console.log(meeting_id);
+      axios.delete(`http://localhost:3443/meeting/${meeting_id}`)
+        .then(result => {
+          console.log(result);
+        });
+      axios.get("http://localhost:3443/meetingsExtra").then(function (response) {
+        setMeetings(response.data.meeting);
+      });
+    }
+  };
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
@@ -533,8 +557,8 @@ export default function EnhancedTable({ setShowNextStep }) {
                       </TableCell>
                       <TableCell align="right">{meeting.name}</TableCell>
                       <TableCell align="right">{meeting.start_date_time.split("T")[0]}</TableCell>
-                      <TableCell align="right">{meeting.start_date_time.split("T")[1].substr(0,5)}</TableCell>
-                      <TableCell align="right">{meeting.end_date_time.split("T")[1].substr(0,5)}</TableCell>
+                      <TableCell align="right">{meeting.start_date_time.split("T")[1].substr(0, 5)}</TableCell>
+                      <TableCell align="right">{meeting.end_date_time.split("T")[1].substr(0, 5)}</TableCell>
                     </TableRow>
                   );
                 })}
@@ -760,6 +784,7 @@ export default function EnhancedTable({ setShowNextStep }) {
         color="default"
         disabled={selected.length > 0 ? false : true}
         style={{ marginLeft: "20px", float: "right" }}
+        onClick={handleDeleteMeeting}
       >
         Delete Meeting
       </Button>

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import clsx from 'clsx'
 import { makeStyles } from '@material-ui/core/styles' // light, withTheme
@@ -14,7 +14,11 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 import Paper from '@material-ui/core/Paper'
 import Checkbox from '@material-ui/core/Checkbox'
-import Button from '@material-ui/core/Button'
+import Button from '@material-ui/core/Button';
+import Modal from "@material-ui/core/Modal";
+import axios from "axios";
+import Autocomplete from '@material-ui/lab/Autocomplete'
+import TextField from "@material-ui/core/TextField";
 // import IconButton from '@material-ui/core/IconButton'
 // import Tooltip from '@material-ui/core/Tooltip'
 // import FormControlLabel from '@material-ui/core/FormControlLabel'
@@ -38,12 +42,12 @@ function createData(
   }
 }
 
-const rows = [
+/*const rows = [
   createData('39285', 'Associate Professor', 'Computer Science', 5, 10),
   createData('29395', 'Associate Professor', 'Computer Science', 3, 10),
   createData('84824', 'Associate Professor', 'Computer Science', 5, 10),
   createData('95021', 'Associate Professor', 'Computer Science', 3, 10),
-]
+]*/
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -73,28 +77,16 @@ function stableSort(array, comparator) {
 
 const headCells = [
   {
-    id: 'positionId',
+    id: 'positionTitle',
     numeric: false,
     disablePadding: true,
-    label: 'Job ID'
-  },
-  {
-    id: 'positionTitle',
-    numeric: true,
-    disablePadding: false,
     label: 'Position'
   },
   {
-    id: 'department',
+    id: 'department_name',
     numeric: true,
     disablePadding: false,
     label: 'Department'
-  },
-  {
-    id: 'totalCandidates',
-    numeric: true,
-    disablePadding: false,
-    label: 'Total Candidates'
   },
   {
     id: 'totalMeetings',
@@ -262,13 +254,87 @@ export default function EnhancedTable({ setShowNextStep }) {
   const [page, setPage] = React.useState(0)
   const [dense] = React.useState(true)
   const [rowsPerPage, setRowsPerPage] = React.useState(5)
+  const [positions, setPositions] = useState([])
+  const [newPosition, openNewPosition] = React.useState(false)
+  const [departments, setDepartments] = useState([])
+  const [chosenTitle, setChosenTitle] = useState([])
+  const [chosenDept, setChosenDept] = useState([])
 
+  useEffect(() => {
+    axios.get("http://localhost:3443/positions").then(function (response) {
+      console.log(response.data.position);
+      setPositions(response.data.position);
+    });
+    axios.get("http://localhost:3443/department").then(function (response) {
+      console.log(response.data.department);
+      setDepartments(response.data.department);
+    })
+  }, []);
+
+  const handleOpenPosition = (event) => {
+    openNewPosition(true);
+  }
+  const handleTitleChange = (event) => {
+    var title = document.getElementById("create-position-title").value;
+    if (title != null) {
+      setChosenTitle(title);
+    }
+    console.log(chosenTitle);
+  }
+  const handleDeptChange = (event) => {
+    var deptVal = document.getElementById("choose-position-dept").value;
+    if (deptVal != "") {
+      var dept = departments.filter(department => {
+        return department.dept_title === deptVal;
+      })
+      const { dept_id } = dept[0];
+      setChosenDept(dept_id);
+      console.log(chosenDept);
+    } 
+  }
+  const handleCreatePosition = () => {
+    const newPosition = {
+      title: chosenTitle,
+      dept_id: chosenDept,
+    };
+    console.log(newPosition);
+    if (chosenTitle.length>0 && chosenDept>0) {
+      axios.post("http://localhost:3443/insertPosition", newPosition)
+        .then(result => {
+          console.log(result);
+        })
+      openNewPosition(false);
+      axios.get("http://localhost:3443/positions").then(function (response) {
+        console.log(response.data.position);
+        setPositions(response.data.position);
+      });
+      axios.get("http://localhost:3443/department").then(function (response) {
+        console.log(response.data.department);
+        setDepartments(response.data.position);
+      })
+  }
+  };
+  const handleDeletePosition = () => {
+    if (selected != "") {
+      var pos = positions.filter(position => {
+        return position.title === selected;
+      });
+      const { position_id } = pos[0];
+      axios.delete(`http://localhost:3443/deletePosition/${position_id}`)
+      .then(result=> {
+        console.log("Delete result: " + result);
+      });
+    }
+    axios.get("http://localhost:3443/positions").then(function (response) {
+      console.log(response.data.position);
+      setPositions(response.data.position);
+    });
+  }
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc'
     setOrder(isAsc ? 'desc' : 'asc')
     setOrderBy(property)
   }
-
   const handleSelectAllClick = event => {
     // if (event.target.checked) {
     //   const newSelecteds = rows.map(n => n.positionId)
@@ -303,7 +369,6 @@ export default function EnhancedTable({ setShowNextStep }) {
     //   )
     // }
   }
-
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
   }
@@ -320,7 +385,7 @@ export default function EnhancedTable({ setShowNextStep }) {
   const isSelected = name => selected.indexOf(name) !== -1
 
   const emptyRows =
-    rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage)
+    rowsPerPage - Math.min(rowsPerPage, positions.length - page * rowsPerPage)
 
   return (
     <div className={classes.root}>
@@ -340,23 +405,23 @@ export default function EnhancedTable({ setShowNextStep }) {
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
+              rowCount={positions.length}
             />
             <TableBody>
-              {stableSort(rows, getComparator(order, orderBy))
+              {stableSort(positions, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  const isItemSelected = isSelected(row.positionId)
+                .map((position, index) => {
+                  const isItemSelected = isSelected(position.title)
                   const labelId = `enhanced-table-checkbox-${index}`
 
                   return (
                     <TableRow
                       hover
-                      onClick={event => handleClick(event, row.positionId)}
+                      onClick={event => handleClick(event, position.title)}
                       role='checkbox'
                       aria-checked={isItemSelected}
                       tabIndex={-1}
-                      key={row.positionId}
+                      key={position.title}
                       selected={isItemSelected}
                     >
                       <TableCell padding='checkbox'>
@@ -368,15 +433,13 @@ export default function EnhancedTable({ setShowNextStep }) {
                       <TableCell
                         component='th'
                         id={labelId}
-                        scope='row'
+                        scope='position'
                         padding='none'
                       >
-                        {row.positionId}
+                        {position.title}
                       </TableCell>
-                      <TableCell align='right'>{row.positionTitle}</TableCell>
-                      <TableCell align='right'>{row.department}</TableCell>
-                      <TableCell align='right'>{row.totalCandidates}</TableCell>
-                      <TableCell align='right'>{row.totalMeetings}</TableCell>
+                      <TableCell align='right'>{position.dept_title}</TableCell>
+                      <TableCell align='right'>{position.meeting_count}</TableCell>
                     </TableRow>
                   )
                 })}
@@ -391,7 +454,7 @@ export default function EnhancedTable({ setShowNextStep }) {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component='div'
-          count={rows.length}
+          count={positions.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onChangePage={handleChangePage}
@@ -402,9 +465,70 @@ export default function EnhancedTable({ setShowNextStep }) {
         control={<Switch checked={dense} onChange={handleChangeDense} />}
         label='Dense padding'
       /> */}
-      <Button variant='contained' color='secondary'>
+      <Button 
+        variant='contained' 
+        color='secondary'
+        onClick = { handleOpenPosition }
+        >
         Create a Position
       </Button>
+      <Modal
+        open={ newPosition }
+        onClose={() => {
+          openNewPosition(false);
+        }}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+      >
+        <Paper
+          container
+          xs={12}
+          style={{ margin: "50px auto", width: "300px", height: "300px", padding: "40px" }}
+        >
+          <h1>Create a Position</h1>
+        <TextField
+            label="Title"
+            id="create-position-title"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange = { handleTitleChange }
+          />
+        <Autocomplete
+            id="choose-position-dept"
+            options={ departments }
+            getOptionLabel={(option) => option.dept_title}
+            style={{ width: "100%", margin: "10px 0" }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Add a Department"
+                variant="outlined"
+                style={{ width: "100%" }}
+              />
+            )}
+          />
+        <Button
+        variant='contained'
+        color='default'
+        style={{ marginLeft: '20px', float: 'right' }}
+        onClick = { handleDeptChange }
+      >
+        Add Department
+      </Button>
+      <Button
+      variant = 'caontained'
+      color = 'default'
+      style={{ marginleft: '20px', float: 'right' }}
+      onClick = { handleCreatePosition }
+      >
+        Create Position
+      </Button>
+        </Paper>
+      </Modal>
       <Button
         variant='contained'
         color='default'
@@ -418,6 +542,7 @@ export default function EnhancedTable({ setShowNextStep }) {
         color='default'
         style={{ marginLeft: '20px', float: 'right' }}
         disabled={selected.length > 0 ? false : true}
+        onClick = { handleDeletePosition }
       >
         Delete Position
       </Button>

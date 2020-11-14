@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import clsx from 'clsx'
 import { makeStyles } from '@material-ui/core/styles' // lighten, withTheme
@@ -15,6 +15,11 @@ import Typography from '@material-ui/core/Typography'
 import Paper from '@material-ui/core/Paper'
 import Checkbox from '@material-ui/core/Checkbox'
 import Button from '@material-ui/core/Button'
+import Modal from "@material-ui/core/Modal";
+import axios from "axios";
+import Autocomplete from '@material-ui/lab/Autocomplete'
+import TextField from "@material-ui/core/TextField";
+
 // import IconButton from '@material-ui/core/IconButton'
 // import Tooltip from '@material-ui/core/Tooltip'
 // import FormControlLabel from '@material-ui/core/FormControlLabel'
@@ -26,10 +31,10 @@ function createData(name, email, positionId, documentsId, scheduleId) {
   return { name, email, positionId, documentsId, scheduleId }
 }
 
-const rows = [
+/*const rows = [
   createData('Steve Stevenson', 'steve@gmail.com', 48289, 14134, 29593),
   createData('Sarah Sally', 'sarah@gmail.com', 48489, 12134, 21593)
-]
+]*/
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -71,10 +76,10 @@ const headCells = [
     label: 'Email Address'
   },
   {
-    id: 'positionId',
+    id: 'phone_number',
     numeric: true,
     disablePadding: false,
-    label: 'Upcoming Meeting Total'
+    label: 'Phone Number'
   },
   {
     id: 'documentsId',
@@ -83,10 +88,10 @@ const headCells = [
     label: 'Documents'
   },
   {
-    id: 'scheduleId',
+    id: 'num_meetings',
     numeric: true,
     disablePadding: false,
-    label: 'Schedule'
+    label: 'Number of Meetings'
   }
 ]
 
@@ -248,6 +253,26 @@ export default function EnhancedTable({ setShowNextStep }) {
   const [page, setPage] = React.useState(0)
   const [dense] = React.useState(true)
   const [rowsPerPage, setRowsPerPage] = React.useState(5)
+  const [candidates, setCandidates] = useState([])
+  const [openEditCandidate, setOpenEditCandidate] = React.useState(false);
+  const [candidateName, setCandidateName] = useState([]);
+  const [candidateEmail, setCandidateEmail] = useState([]);
+  const [candidatePhoneNumber, setCandidatePhoneNumber] = useState([]);
+  const [candidateType, setCandidateType] = useState([]);
+  const [userTypes, setUserTypes] = useState([]);
+  const [candidateId, setCandidateId] = useState([]);
+  const [candidateTypeId, setCandidateTypeId] = useState([]);
+
+
+  useEffect(() => {
+    axios.get("http://localhost:3443/candidates").then(function (response) {
+      setCandidates(response.data.user);
+      console.log(response)
+    });
+    axios.get("http://localhost:3443/userTypes").then(function (response) {
+      setUserTypes(response.data.type);
+    });
+  }, []);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc'
@@ -264,15 +289,71 @@ export default function EnhancedTable({ setShowNextStep }) {
     setSelected([])
   }
 
-  const handleClick = (event, name) => {
-    const selectedIndex = selected.indexOf(name)
+  const handleEditCandidate = (event) => {
+    setOpenEditCandidate(true);
+  }
+  const handleNameChange = (event) => {
+    setCandidateName(document.getElementById("edit-candidate-name").value);
+  }
+  const handleEmailChange = (event) => {
+    setCandidateEmail(document.getElementById("edit-candidate-email").value);
+  }
+  const handlePhoneNumberChange = (event) => {
+    setCandidatePhoneNumber(document.getElementById("edit-candidate-number").value);
+  }
+  const handleSelectType = (event) => {
+    setCandidateType(document.getElementById("edit-candidate-type").value);
+  }
+  const handleUpdateCandidate = (event) => {
+    const selectedType = userTypes.filter(usertype => {
+      return usertype.type_descr === candidateType;
+    });
+    const { type_id } = selectedType[0];
+    setCandidateTypeId(type_id);
+    console.log("type_id: " + type_id);
+    const { u_password } = selected[0];
+    var updateCandidate = 
+    {
+      u_password: u_password,
+      u_id: candidateId,
+      name: candidateName,
+      email: candidateEmail,
+      phone_number: candidatePhoneNumber,
+      type_id: type_id,
+    }
+    axios.patch("http://localhost:3443/user", updateCandidate)
+    .then(function (response) {
+      console.log(response);
+    });
+    setOpenEditCandidate(false);
+    axios.get("http://localhost:3443/candidates").then(function (response) {
+      setCandidates(response.data.user);
+      console.log(response)
+    });
+  }
+  const handleClick = (event, chosenName) => {
+    const selectedIndex = selected.indexOf(chosenName)
 
-    if (selected === name) {
+    if (selected === chosenName) {
       setSelected([])
       setShowNextStep(false)
     } else {
-      setSelected(name)
       setShowNextStep(true)
+      const selectedCand = candidates.filter(candidate => {
+        return candidate.name === chosenName;
+      });
+      const { u_id } = selectedCand[0];
+      console.log("u_id: " + u_id);
+      setCandidateId(u_id);
+      const { name } = selectedCand[0];
+      setCandidateName(name);
+      const { email } = selectedCand[0];
+      setCandidateEmail(email);
+      const { phone_number } = selectedCand[0];
+      setCandidatePhoneNumber(phone_number);
+      const { type_descr } = selectedCand[0];
+      setCandidateType(type_descr);
+      setSelected(chosenName);
     }
 
     // if (selectedIndex === -1) {
@@ -287,7 +368,7 @@ export default function EnhancedTable({ setShowNextStep }) {
     //     selected.slice(selectedIndex + 1)
     //   )
     // }
-  }
+  };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
@@ -302,10 +383,10 @@ export default function EnhancedTable({ setShowNextStep }) {
   //     setDense(event.target.checked)
   //   }
 
-  const isSelected = name => selected.indexOf(name) !== -1
+  const isSelected = chosenName => selected.indexOf(chosenName) !== -1
 
   const emptyRows =
-    rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage)
+    rowsPerPage - Math.min(rowsPerPage, candidates.length - page * rowsPerPage)
 
   return (
     <div className={classes.root}>
@@ -325,23 +406,23 @@ export default function EnhancedTable({ setShowNextStep }) {
               orderBy={orderBy}
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
-              rowCount={rows.length}
+              rowCount={candidates.length}
             />
             <TableBody>
-              {stableSort(rows, getComparator(order, orderBy))
+              {stableSort(candidates, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  const isItemSelected = isSelected(row.name)
+                .map((candidate, index) => {
+                  const isItemSelected = isSelected(candidate.name)
                   const labelId = `enhanced-table-checkbox-${index}`
 
                   return (
                     <TableRow
                       hover
-                      onClick={event => handleClick(event, row.name)}
+                      onClick={event => handleClick(event, candidate.name)}
                       role='checkbox'
                       aria-checked={isItemSelected}
                       tabIndex={-1}
-                      key={row.name}
+                      key={candidate.name}
                       selected={isItemSelected}
                     >
                       <TableCell padding='checkbox'>
@@ -353,15 +434,15 @@ export default function EnhancedTable({ setShowNextStep }) {
                       <TableCell
                         component='th'
                         id={labelId}
-                        scope='row'
+                        scope='candidate'
                         padding='none'
                       >
-                        {row.name}
+                        {candidate.name}
                       </TableCell>
-                      <TableCell align='right'>{row.email}</TableCell>
-                      <TableCell align='right'>{row.positionId}</TableCell>
-                      <TableCell align='right'>{row.documentsId}</TableCell>
-                      <TableCell align='right'>{row.scheduleId}</TableCell>
+                      <TableCell align='right'>{candidate.email}</TableCell>
+                      <TableCell align='right'>{candidate.phone_number}</TableCell>
+                      <TableCell align='right'>{candidate.documentsId}</TableCell>
+                      <TableCell align='right'>{candidate.meeting_count}</TableCell>
                     </TableRow>
                   )
                 })}
@@ -376,7 +457,7 @@ export default function EnhancedTable({ setShowNextStep }) {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component='div'
-          count={rows.length}
+          count={candidates.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onChangePage={handleChangePage}
@@ -387,17 +468,102 @@ export default function EnhancedTable({ setShowNextStep }) {
         control={<Switch checked={dense} onChange={handleChangeDense} />}
         label='Dense padding'
       /> */}
-      <Button variant='contained' color='secondary'>
-        Add a Candidate
-      </Button>
       <Button
         variant='contained'
         color='default'
         disabled={selected.length > 0 ? false : true}
         style={{ marginLeft: '20px' }}
+        onClick={handleEditCandidate}
       >
         Edit Candidate
       </Button>
+      <Modal
+        open={openEditCandidate}
+        onClose={() => {
+          setOpenEditCandidate(false);
+        }}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+      >
+        <Paper
+          container
+          xs={12}
+          style={{ margin: "50px auto", width: "300px", height: "300px", padding: "40px" }}
+        >
+          <h1>{selected}</h1>
+          <TextField
+            label="Name"
+            id="edit-candidate-name"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            defaultValue = { selected }
+            onChange={handleNameChange}
+          />
+          <TextField
+            label="email"
+            id="edit-candidate-email"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            defaultValue={ candidateEmail }
+            onChange={handleEmailChange}
+          />
+          <TextField
+            label="phoneNumber"
+            id="edit-candidate-number"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange={handlePhoneNumberChange}
+            defaultValue = { candidatePhoneNumber }
+          />
+          <TextField
+            style={{
+              width: "100%",
+              maringBottom: "10px",
+              color: "black",
+            }}
+            disabled = { true }
+            value = { candidateType }
+            />
+          <Autocomplete
+            id="edit-candidate-type"
+            options={userTypes}
+            getOptionLabel={(option) => option.type_descr}
+            style={{ width: "100%", margin: "10px 0" }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label = "Change Type"
+                variant="outlined"
+                style={{ width: "100%" }}
+              />
+            )}
+          />
+          <Button
+            variant='contained'
+            color='default'
+            style={{ marginLeft: '20px', float: 'right' }}
+            onClick={ handleSelectType }
+          > Select Type</Button>
+          <Button
+            variant='contained'
+            color='default'
+            style={{ marginLeft: '20px', float: 'right' }}
+            onClick={ handleUpdateCandidate }
+          > Save Changes</Button>
+        </Paper>
+      </Modal>
       <Button
         variant='contained'
         color='default'
