@@ -3,6 +3,13 @@ const moment = require('moment');
 const { response } = require('express');
 var flstr = require('fs');
 
+//These 4 items below are use for the insertFile method
+/*var storage = require('storage');
+const CONNECTION_STRING = "CONNECTION_STRING";
+const BlobContainer = "CONTAINER";
+const BlobName = "Blob";
+*/
+
 class Driver {
   /*Establishes connection to mySQL database - Interview Tracker*/
   constructor() {
@@ -620,8 +627,27 @@ class Driver {
       }
     })
   }
-  //upload files method(From Tong)
+  
+  //Upload single files-convert from a file to binary using blob-This method is not working yet and I was still trying to figure out how these code work.
   /*insertFile(request, response){
+    //create container
+    var blobService = storage.createBlobService(CONNECTION_STRING);
+    blobService.createContainerIfNotExists(BlobContainer, function (error) {
+      if (error) {
+         console.log("error creating container");
+      }
+   });
+   //create block Blob Local File
+   blobService.createBlockBlobFromBrowserFile(BlobContainer, BlobName, function (error, result, response) {
+    if (error) {
+       alert('Upload failed');
+       console.log(error);
+    } else {
+       setTimeout(function () { // This prevent alert from stopping the UI progress update
+          alert('Upload successfully!');
+       }, 50);
+    }
+ });
     const path = req.file.path;
     const query= "INSERT INTO uploadFile (u_id) VALUES (?,?,?)";
     const params=[request.body.u_id];
@@ -635,6 +661,7 @@ class Driver {
     })
   }
   */
+  
   /**Deletes department from Department table. 
    * Calls deleteDepartmentPositions to delete all existing positions under the department
    */
