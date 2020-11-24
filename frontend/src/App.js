@@ -1,13 +1,15 @@
 import React from 'react'
 import './App.css'
+import { CookiesProvider } from 'react-cookie';
 
 import Navigation from './components/Navigation/Navigation'
 
 export default function ClippedDrawer () {
   return (
     <div>
-      <Navigation />
-      
+      <CookiesProvider>
+        <Navigation />
+      </CookiesProvider>
     </div>
   )
 }

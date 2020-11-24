@@ -1,6 +1,6 @@
 body {
   margin: 0 !important;
-  font-family: 'Ubuntu', sans-serif;
+  font-family: "Ubuntu", sans-serif;
   background-color: rgb(246, 246, 246);
 }
 
@@ -10,4 +10,8 @@ h3 {
 
 p {
   font-weight: 300;
+}
+
+a:hover {
+  cursor: pointer;
 }

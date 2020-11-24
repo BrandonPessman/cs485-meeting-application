@@ -9,10 +9,17 @@ import {
   Switch,
   Route
 } from "react-router-dom";
-
+import { useCookies } from 'react-cookie';
 
 export default function ClippedDrawer() {
   const [user, setUser] = useState({})
+  const [cookies, setCookie, removeCookie] = useCookies(['user']);
+
+  useEffect(() => {
+    if (cookies.user) {
+      setUser(cookies.user);
+    }
+  }, [])
 
   return (
     <>
@@ -40,7 +47,7 @@ export default function ClippedDrawer() {
 
         <Switch>
           <Route exact path="/">
-            <Login setUser={setUser} />
+            <Login setUser={setUser} setCookie={setCookie} />
           </Route>
           <Route path="/dashboard">
             <SecondaryNavigation user={user} />

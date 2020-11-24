@@ -7,7 +7,6 @@ import Users from "./Tabs/Users";
 
 export default function SecondaryNavigation({user}) {
   const [tab, setTab] = useState(user.type == 1 ? 0 : 1);
-  const [u] = useState(user)
 
   return (
     <>
@@ -38,17 +37,17 @@ export default function SecondaryNavigation({user}) {
               fontWeight: "600",
             }}
           >
-            <span style={{ fontWeight: "100" }}>Welcome,</span> {u.name}
+            <span style={{ fontWeight: "100" }}>Welcome,</span> {user.name}
           </span>
         </h2>
  
-        {u.type == 1 ? <>
+        {user.type == 1 ? <>
           <li
           className={
             tab === 0 ? "secondary-li secondary-li-active" : "secondary-li"
           }
         >
-          <a href="#management" onClick={() => setTab(0)}>
+          <a onClick={() => setTab(0)}>
             Management
           </a>
         </li>
@@ -62,7 +61,7 @@ export default function SecondaryNavigation({user}) {
             tab === 1 ? "secondary-li secondary-li-active" : "secondary-li"
           }
         >
-          <a href="#upcomingmeetings" onClick={() => setTab(1)}>
+          <a onClick={() => setTab(1)}>
             Upcoming Meetings
           </a>
         </li>
@@ -71,18 +70,18 @@ export default function SecondaryNavigation({user}) {
             tab === 2 ? "secondary-li secondary-li-active" : "secondary-li"
           }
         >
-          <a href="#pastmeetings" onClick={() => setTab(2)}>
+          <a onClick={() => setTab(2)}>
             Past Meetings
           </a>
         </li>
 
-        {u.type == 1 ? <>
+        {user.type == 1 ? <>
           <li
           className={
             tab === 3 ? "secondary-li secondary-li-active" : "secondary-li"
           }
         >
-          <a href="#users" onClick={() => setTab(3)}>
+          <a onClick={() => setTab(3)}>
             Users
           </a>
         </li>

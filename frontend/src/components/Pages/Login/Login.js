@@ -6,7 +6,7 @@ import axios from 'axios'
 import { useHistory } from "react-router-dom";
 
 
-export default function Login({setUser}) {
+export default function Login({setUser, setCookie}) {
     let history = useHistory();
 
     const handleClick = () => {
@@ -20,6 +20,7 @@ export default function Login({setUser}) {
             const user = response.data.user;
             if (user.length != 0) {
                 console.log(user)
+                setCookie('user', user[0], { path: '/' });
                 setUser(user[0])
                 history.push("/dashboard");
             }
