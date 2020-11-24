@@ -267,8 +267,6 @@ class Driver {
       else { response.send({ status: true }) }
     })
   }
-
-
   /*Deletes all meeting/feedback relationships via meeting_id or feedback_id*/
   deleteMeetingFeedback(request) {
     if (request.meeting_id > 0) {
@@ -411,7 +409,6 @@ class Driver {
       this.meetingCombo(user_id, id);
     }
   }
-
   /* Upadate the candidate information in the "Candidate" table */
   updateCandidate({ Candidate_id, id, users, meeting_id }) {
     var currentCandidate = getCandidate(Candidate_id)
@@ -514,6 +511,7 @@ class Driver {
       }
     })
   }
+  //Delete position from EmployeePosition
   deletePositionByDept(request) {
     var query = 'DELETE FROM EmployeePosition WHERE dept_id = ?'
     var params = [request.dept_id]
@@ -563,6 +561,7 @@ class Driver {
       }
     })
   }
+  //Delete location
   deleteLocation(request, response) {
     var query = 'DELETE FROM Location WHERE location_id = ?'
     var params = [request.body.location_id]
@@ -623,6 +622,7 @@ class Driver {
   }
   //upload files method(From Tong)
   /*insertFile(request, response){
+    const path = req.file.path;
     const query= "INSERT INTO uploadFile (u_id) VALUES (?,?,?)";
     const params=[request.body.u_id];
     this.connection.query(query, params, (error, rows)=>{
@@ -635,7 +635,6 @@ class Driver {
     })
   }
   */
-
   /**Deletes department from Department table. 
    * Calls deleteDepartmentPositions to delete all existing positions under the department
    */
@@ -725,6 +724,7 @@ function mapTypes(row) {
     type_descr: row.type_descr
   };
 }
+/*Maps department columns for response.send() functionality*/
 function mapDepartment(row) {
   return {
     dept_id: row.dept_id,
@@ -733,13 +733,14 @@ function mapDepartment(row) {
     openPositions: row.openPositions
   };
 }
-
+/*Maps candidate columns for response.send() functionality*/
 function mapCandidate(row) {
   return {
     Candidate_id: row.Candidate_id,
     meeting_id: row.meeting_id
   };
 }
+/*Maps user columns for response.send() functionality*/
 function mapUser(row) {
   return {
     u_id: row.u_id,
@@ -753,6 +754,7 @@ function mapUser(row) {
     meeting_count: row.meeting_count
   }
 }
+/*Maps user position columns for response.send() functionality*/
 function mapUserPosition(row) {
   return {
     u_id: row.u_id,
