@@ -4,12 +4,11 @@ import { useParams } from "react-router";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 export default function FeedbackPage({user}) {
   let { id } = useParams();
   let history = useHistory();
-  const location = useLocation();
 
   const [feedback, setFeedback] = useState([]);
 

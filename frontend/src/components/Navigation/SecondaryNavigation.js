@@ -3,6 +3,8 @@ import "./SecondaryNavigation.css";
 import MeetingScheduler from "./Tabs/MeetingScheduler";
 import UpcomingMeetings from "./Tabs/UpcomingMeetings";
 import PastMeetings from "./Tabs/PastMeetings";
+import MyFiles from './Tabs/MyFiles';
+import LastLocation from './Tabs/LastLocation';
 import Users from "./Tabs/Users";
 import { useHistory } from "react-router-dom";
 import Button from '@material-ui/core/Button'
@@ -176,7 +178,24 @@ export default function SecondaryNavigation({user, cookies}) {
         :
         ''
         }
-
+        <li
+          className={
+            tab === 5 ? "secondary-li secondary-li-active" : "secondary-li"
+          }
+        >
+          <a onClick={() => setTab(5)}>
+            My Files
+          </a>
+        </li>
+        <li
+          className={
+            tab === 4 ? "secondary-li secondary-li-active" : "secondary-li"
+          }
+        >
+          <a onClick={() => setTab(4)}>
+            Last Location
+          </a>
+        </li>
       </ul>
 
       <div style={{ padding: "10px 200px" }}>
@@ -184,6 +203,8 @@ export default function SecondaryNavigation({user, cookies}) {
         {tab === 1 ? <UpcomingMeetings user={user} cookies={cookies} /> : ""}
         {tab === 2 ? <PastMeetings user={user} cookies={cookies} /> : ""}
         {tab === 3 ? <Users /> : ""}
+        {tab === 4 ? <LastLocation /> : ""}
+        {tab === 5 ? <MyFiles /> : ""}
       </div>
     </>
   );
