@@ -5,11 +5,6 @@ pipeline {
         skipDefaultCheckout(true)
     }
     stages {
-        stage("Git Pull") {
-            steps {
-                sh "git pull"
-            }
-        }
         stage("NPM Install (Frontend)") {
             steps {
                 dir("frontend") {
