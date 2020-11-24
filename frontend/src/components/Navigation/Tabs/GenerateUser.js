@@ -20,7 +20,7 @@ export default function GenerateUser() {
             email,
             u_password: password,
             phone_number,
-            type: 3
+            type: 2
         }
         axios.post("http://localhost:3443/insertUser", data)
         handleReset();
