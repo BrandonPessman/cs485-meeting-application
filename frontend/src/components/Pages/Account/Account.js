@@ -5,10 +5,12 @@ import Button from "@material-ui/core/Button";
 import axios from 'axios'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import { useHistory } from "react-router-dom";
+import { useCookies } from 'react-cookie';
 
 
-export default function Login({user}) {
-    const [u] = useState(user)
+export default function Login() {
+    const [u, setUser] = useState({})
+    const [cookies, setCookie, removeCookie] = useCookies(['user']);
     const [accountName, setAccountName] = useState(u.name);
     const [accountEmail, setAccountEmail] = useState(u.email);
     const [accountPhoneNumber, setAccountPhoneNumber] = useState(u.phone_number);
