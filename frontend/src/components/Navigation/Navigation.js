@@ -34,9 +34,9 @@ export default function ClippedDrawer() {
           <li style={{ float: "right" }}>
           <a href="/" onClick={() => {removeCookie('user')}}>Logout</a>
         </li>
-        <li style={{ float: "right" }}>
+        {/* <li style={{ float: "right" }}>
           <a href="/">Help</a>
-        </li>
+        </li> */}
         <li style={{ float: "right" }}>
           <a href="/Account">Account</a>
         </li>
@@ -57,7 +57,7 @@ export default function ClippedDrawer() {
             <FeedbackPage user={user} />
           </Route>
           <Route path="/Account">
-            <Account user={user} />
+            <Account cookies={cookies} />
           </Route>
         </Switch>
       </Router>

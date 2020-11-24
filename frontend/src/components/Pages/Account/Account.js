@@ -7,13 +7,12 @@ import Autocomplete from '@material-ui/lab/Autocomplete'
 import { useHistory } from "react-router-dom";
 
 
-export default function Login({user}) {
-    const [u] = useState(user)
-    const [accountName, setAccountName] = useState(u.name);
-    const [accountEmail, setAccountEmail] = useState(u.email);
-    const [accountPhoneNumber, setAccountPhoneNumber] = useState(u.phone_number);
-    const [accountPassword, setAccountPassword] = useState(u.u_password);
-    const [accountType, setAccountType] = useState(u.type);
+export default function Login({cookies}) {
+    const [accountName, setAccountName] = useState(cookies.user.name);
+    const [accountEmail, setAccountEmail] = useState(cookies.user.email);
+    const [accountPhoneNumber, setAccountPhoneNumber] = useState(cookies.user.phone_number);
+    const [accountPassword, setAccountPassword] = useState(cookies.user.u_password);
+    const [accountType, setAccountType] = useState(cookies.user.type);
     const [accountTypeDescr, setAccountTypeDescr] = useState('');
     const [userTypes, setUserTypes] = useState([]);
     useEffect(() => {

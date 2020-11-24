@@ -146,7 +146,9 @@ export default function UpcomingMeetings({user, cookies}) {
                   </Grid>
                 )
             })}
-
+            {data && data.length == 0 ? 
+                <h4 style={{fontStyle: 'italic', fontWeight: '300'}}>You have no upcoming meetings. Please check back later.</h4>
+            : <></>}
         </div>
     )
 }

@@ -22,7 +22,7 @@ export default function Login({setUser, setCookie}) {
                 console.log(user)
                 setCookie('user', user[0], { path: '/' });
                 setUser(user[0])
-                history.push("/dashboard");
+                history.go(0)
             }
         });
     }
