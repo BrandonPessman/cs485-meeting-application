@@ -21,6 +21,10 @@ import Autocomplete from "@material-ui/lab/Autocomplete";
 import axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { useHistory } from "react-router-dom";
+/**import meetings from '../../Navigation/Tabs/MeetingScheduler';
+import setMeetings from '../../Navigation/Tabs/MeetingScheduler';
+import refreshPage from '../../Navigation/Tabs/MeetingScheduler';**/
 
 const months = {
   0: "January",
@@ -268,6 +272,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 export default function EnhancedTable({ setShowNextStep }) {
+  let history = useHistory();
 
   const classes = useStyles();
   const [order, setOrder] = React.useState("asc");
@@ -282,23 +287,28 @@ export default function EnhancedTable({ setShowNextStep }) {
   const [selectedUsers, setselectedUsers] = useState([]);
   const [locations, setLocations] = useState([])
   const [availableLocations, setAvailableLocations] = useState([])
-  const [startDate, setStartDate] = useState([])
-  const [endDate, setEndDate] = useState([])
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [positions, setPositions] = useState([]);
   const [warning, openWarning] = React.useState(false);
   const [warningContent, setWarningContent] = useState([]);
   const [chosenLocation, setChosenLocation] = useState([]);
   const [chosenPosition, setChosenPosition] = useState([]);
   const [chosenUsers, setChosenUsers] = useState([]);
+  const [chosenTitle, setChosenTitle] = useState('');
+  const [chosenDescr, setChosenDescr] = useState('');
+  const [chosenID, setChosenID] = useState('');
+  const [openEditMeeting, setOpenEditMeeting] = React.useState(false);
+  const [validDate, setValidDate] = React.useState(false);
+  const [selectedMeeting, setSelectedMeeting] = useState();
 
 
   useEffect(() => {
+    axios.get("http://localhost:3443/meetings").then(function (response) {
+      setMeetings(response.data.meeting);
+    });
     axios.get("http://localhost:3443/users").then(function (response) {
       setUsers(response.data.user);
-    });
-
-    axios.get("http://localhost:3443/meetingsExtra").then(function (response) {
-      setMeetings(response.data.meeting);
     });
     axios.get("http://localhost:3443/positions").then(function (response) {
       setPositions(response.data.position);
@@ -309,33 +319,66 @@ export default function EnhancedTable({ setShowNextStep }) {
         setLocations(locationData.data.location)
       });
   }, []);
+
+  const handleEditMeeting = (event) => {
+    history.push("/meeting/" + chosenID);
+  }
+  const handleTitleChange = (event, title) => {
+    if (title!= null) {
+      setChosenTitle(title);
+    } 
+  }
+  const handleDescrChange = (event, descr) => {
+    if (descr!= null) {
+      setChosenDescr(descr);
+    }
+  }
   const handleStartDate = (event, newDate) => {
+    if (newDate != null) {
+      setStartDate(newDate);
+    }else{
     console.log(users);
     setStartDate(document.getElementById("create-event-starttime").value);
-    console.log("Start Date" + document.getElementById("create-event-starttime").value);
-    if (startDate > endDate) {
-      setWarningContent("Invalid time combination.");
-      openWarning(true);
-      setTimeout(() => { openWarning(false); }, 15000);
+    setTimeout(() => { checkDates(event); }, 2000);
     }
   };
   const handleEndDate = (event, newDate) => {
+    setValidDate(true);
+    if (newDate != null) {
+      setEndDate(newDate);
+    }else{
     console.log("handleEndDate");
-    const t = document.getElementById("create-event-endtime").value;
+    const t= document.getElementById("create-event-endtime").value;
     console.log("ENDDATE: " + t);
-    setEndDate(t);
+    setEndDate(document.getElementById('create-event-endtime').value);
+    setTimeout(() => { checkDates(event); }, 2000);
+    }
+  };
+  const checkDates = (event) => {
+    console.log("CheckDates");
+    console.log("ED" + endDate)
+    console.log("SD" + startDate);
     if (startDate && endDate) {
-      console.log("Start date" + startDate + "end date" + t);
-      axios
-        .get(`http://localhost:3443/availableLocations/${startDate}/${t}`)
+      console.log("Both populated");
+        console.log("Start date is less.");
+        setValidDate(true);
+        axios
+        .get(`http://localhost:3443/availableLocations/${startDate}/${endDate}`)
         .then(function (results) {
           console.log("result: " + results.data.sql)
           setAvailableLocations(results.data.location)
-        }); 
+        });
+      /*}else{
+        console.log("Start date is more.")
+        setValidDate(false);
+        setWarningContent("Invalid time combination.");
+        openWarning(true);
+        setTimeout(() => { openWarning(false); }, 15000);
+      }*/
     }
-  };
+  }
   const handleAddUser = () => {
-    console.log(meetings);
+    console.log({ meetings });
     var userVal = document.getElementById("adding-user-textfield").value;
     if (userVal != "") {
       var selectedUser = users.filter(user => {
@@ -344,7 +387,7 @@ export default function EnhancedTable({ setShowNextStep }) {
       const { u_id } = selectedUser[0];
       setselectedUsers(selectedUsers.concat({ user: userVal, role: 0 }));
       setChosenUsers(chosenUsers.concat({ u_id: u_id }));
-      let userData = { u_id: u_id, start_date_time: startDate, end_date_time: endDate };
+      let userData = { u_id: u_id, start_date_time: startDate, end_date_time:endDate};
       axios
         .get(`http://localhost:3443/userAvailability/${u_id}/${startDate}/${endDate}`)
         .then(function (results) {
@@ -363,7 +406,10 @@ export default function EnhancedTable({ setShowNextStep }) {
     }
     console.log("selectedUsers: " + selectedUsers);
   };
-  const handleChosenLocation = () => {
+  const handleChosenLocation = (location_id) => {
+    if (location_id != null) {
+      setChosenLocation(location_id);
+    }else{
     var locationVal = document.getElementById("create-event-location").value;
     if (locationVal != "") {
       console.log("handleChosenLocation");
@@ -379,7 +425,9 @@ export default function EnhancedTable({ setShowNextStep }) {
       setTimeout(() => { openWarning(false); }, 2000);
     }
   }
-  const handleChosenPosition = () => {
+  }
+  const handleChosenPosition = (position_id) => {
+    if (position_id == null) {
     var positionVal = document.getElementById("create-event-position").value;
     if (positionVal != "") {
       var chosenPos = positions.filter(position => {
@@ -394,18 +442,21 @@ export default function EnhancedTable({ setShowNextStep }) {
       openWarning(true);
       setTimeout(() => { openWarning(false); }, 2000);
     }
+  } else{
+    setChosenPosition(position_id);
+  }
   }
   const handleCreateMeeting = () => {
     const newMeeting = {
-      meeting_title: document.getElementById("create-event-title").value,
-      meeting_descr: document.getElementById("create-event-desc").value,
+      meeting_title: chosenTitle,
+      meeting_descr: chosenDescr,
       location_id: chosenLocation,
       start_date_time: startDate,
       end_date_time: endDate,
       position_id: chosenPosition,
       users: chosenUsers,
     };
-    if (endDate<=startDate) {
+    if (endDate <= startDate) {
       setWarningContent("Invalid time combination.");
       openWarning(true);
       setTimeout(() => { openWarning(false);}, 15000);
@@ -414,14 +465,7 @@ export default function EnhancedTable({ setShowNextStep }) {
     axios.post("http://localhost:3443/insertMeeting", newMeeting)
       .then(result => {
         console.log(result);
-        if (result.data.error != null) {
-          setWarningContent("Some information needed, meeting not created");
-          openWarning(true);
-          setTimeout(() => { openWarning(false); }, 2000);
-        }
-        else{
-          setNewMeetingOpen(false);
-        }
+        setNewMeetingOpen(false);
         });
     axios.get("http://localhost:3443/meetingsExtra").then(function (response) {
       setMeetings(response.data.meeting);
@@ -454,29 +498,40 @@ export default function EnhancedTable({ setShowNextStep }) {
     setSelected([]);
     setShowNextStep(false);
   };
+  const handleClick = (event, selName, id) => {
+    const selectedIndex = selected.indexOf(selName);
 
-  const handleClick = (event, name) => {
-    const selectedIndex = selected.indexOf(name);
-
-    if (selected === name) {
+    if (selected === selName) {
       setSelected([]);
     } else {
-      setSelected(name);
+      setSelected(selName);
+      console.log(selName);
+      var chosenMeeting = meetings.filter(meeting => {
+        return meeting.meeting_id == id;
+      })
+      console.log("chosenMeeting: " + chosenMeeting);
+      const { meeting_id, start_date_time, end_date_time, meeting_title, meeting_descr, location_id, position_id } = chosenMeeting[0];
+      var chosenLoc = locations.filter(location => {
+        return location.location_id == location_id;
+      });
+      const { name } = chosenLoc[0];
+      console.log("position_id: " + position_id);
+      for (var i = 0; i<positions.length; i++) {
+        if (position_id == positions[i].position_id) {
+          setChosenPosition(positions[i].title);
+        }
+      }
+      setChosenLocation(name);
+      setChosenTitle(meeting_title);
+      setChosenDescr(meeting_descr);
+      setStartDate(start_date_time);
+      setEndDate(end_date_time) ;
+      setChosenID(meeting_id);
     }
 
-    // if (selectedIndex === -1) {
-    //   newSelected = newSelected.concat(selected, name)
-    // } else if (selectedIndex === 0) {
-    //   newSelected = newSelected.concat(selected.slice(1))
-    // } else if (selectedIndex === selected.length - 1) {
-    //   newSelected = newSelected.concat(selected.slice(0, -1))
-    // } else if (selectedIndex > 0) {
-    //   newSelected = newSelected.concat(
-    //     selected.slice(0, selectedIndex),
-    //     selected.slice(selectedIndex + 1)
-    //   )
-    // }
   };
+
+
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -534,7 +589,7 @@ export default function EnhancedTable({ setShowNextStep }) {
                   return (
                     <TableRow
                       hover
-                      onClick={(event) => handleClick(event, meeting.meeting_title)}
+                      onClick={(event) => handleClick(event, meeting.meeting_title, meeting.meeting_id)}
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
@@ -556,6 +611,7 @@ export default function EnhancedTable({ setShowNextStep }) {
                         {meeting.meeting_title}
                       </TableCell>
                       <TableCell align="right">{meeting.name}</TableCell>
+                      <TableCell align="right">{meeting.location_id}</TableCell>
                       <TableCell align="right">{meeting.start_date_time.split("T")[0]}</TableCell>
                       <TableCell align="right">{meeting.start_date_time.split("T")[1].substr(0, 5)}</TableCell>
                       <TableCell align="right">{meeting.end_date_time.split("T")[1].substr(0, 5)}</TableCell>
@@ -623,7 +679,7 @@ export default function EnhancedTable({ setShowNextStep }) {
         <Paper
           container
           xs={12}
-          style={{ margin: "50px auto", width: "300px", padding: "40px" }}
+          style={{ margin: "50px auto", height:"  550px", width: "300px", padding: "40px" }}
         >
           <h1>New Meeting</h1>
           <TextField
@@ -631,6 +687,7 @@ export default function EnhancedTable({ setShowNextStep }) {
             id="create-event-title"
             variant="outlined"
             size="small"
+            onChange = {(event) => handleTitleChange(event, document.getElementById('create-event-title').value)}
             style={{
               width: "100%",
               marginBottom: "10px",
@@ -641,6 +698,7 @@ export default function EnhancedTable({ setShowNextStep }) {
             id="create-event-desc"
             variant="outlined"
             size="small"
+            onChange = {(event) => handleDescrChange(event, document.getElementById('create-event-desc').value)}
             style={{
               width: "100%",
               marginBottom: "10px",
@@ -675,9 +733,10 @@ export default function EnhancedTable({ setShowNextStep }) {
                4. Clicking on users to remove them
                5. Have it so when you hit enter it adds a users
           */}
+          {validDate ? <div>
           <Autocomplete
             id="create-event-location"
-            options={availableLocations.map(l => ({ value: l.location_id, label: l.name }))}
+            options={locations.map(l => ({ value: l.location_id, label: l.name }))}
             getOptionLabel={(option) => String(option.label)}
             style={{ width: "100%", margin: "10px 0" }}
             renderInput={(params) => (
@@ -697,7 +756,8 @@ export default function EnhancedTable({ setShowNextStep }) {
             style={{ width: "100%" }}
           >
             Add Location
-            </Button>
+            </Button></div>:''
+            }
           <Autocomplete
             id="create-event-position"
             options={positions}
@@ -776,6 +836,7 @@ export default function EnhancedTable({ setShowNextStep }) {
         color="default"
         disabled={selected.length > 0 ? false : true}
         style={{ marginLeft: "20px" }}
+        onClick = { handleEditMeeting }
       >
         Edit Meeting
       </Button>

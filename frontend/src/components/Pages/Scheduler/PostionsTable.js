@@ -19,6 +19,7 @@ import Modal from "@material-ui/core/Modal";
 import axios from "axios";
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import TextField from "@material-ui/core/TextField";
+
 // import IconButton from '@material-ui/core/IconButton'
 // import Tooltip from '@material-ui/core/Tooltip'
 // import FormControlLabel from '@material-ui/core/FormControlLabel'
@@ -259,30 +260,35 @@ export default function EnhancedTable({ setShowNextStep }) {
   const [departments, setDepartments] = useState([])
   const [chosenTitle, setChosenTitle] = useState([])
   const [chosenDept, setChosenDept] = useState([])
+  const [chosenId, setChosenId] = useState()
+  const [editPosition, openEditPosition] = React.useState(false)
 
   useEffect(() => {
     axios.get("http://localhost:3443/positions").then(function (response) {
-      console.log(response.data.position);
       setPositions(response.data.position);
     });
     axios.get("http://localhost:3443/department").then(function (response) {
       console.log(response.data.department);
       setDepartments(response.data.department);
-    })
+    });
   }, []);
 
+  const handleEditPosition = (event) => {
+    openEditPosition(true);
+  }
   const handleOpenPosition = (event) => {
+    setChosenTitle(null);
+    setChosenDept(null);
     openNewPosition(true);
   }
-  const handleTitleChange = (event) => {
-    var title = document.getElementById("create-position-title").value;
+  const handleTitleChange = (event, title) => {
+    console.log("TITLE: " + title);
     if (title != null) {
       setChosenTitle(title);
     }
     console.log(chosenTitle);
   }
-  const handleDeptChange = (event) => {
-    var deptVal = document.getElementById("choose-position-dept").value;
+  const handleDeptChange = (event, deptVal) => {
     if (deptVal != "") {
       var dept = departments.filter(department => {
         return department.dept_title === deptVal;
@@ -330,6 +336,18 @@ export default function EnhancedTable({ setShowNextStep }) {
       setPositions(response.data.position);
     });
   }
+  const handleUpdatePosition = () => {
+    var updatePosition = {
+      title: chosenTitle,
+      dept_id: chosenDept,
+      position_id: chosenId,
+    }
+    axios.patch("http://localhost:3443/updatePosition", updatePosition)
+    .then(function (response) {
+      console.log(response);
+    });
+    openEditPosition(false);
+  }
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc'
     setOrder(isAsc ? 'desc' : 'asc')
@@ -345,29 +363,26 @@ export default function EnhancedTable({ setShowNextStep }) {
     setShowNextStep(false)
   }
 
-  const handleClick = (event, name) => {
+  const handleClick = (event, name, id) => {
     const selectedIndex = selected.indexOf(name)
 
     if (selected === name) {
       setSelected([])
       setShowNextStep(false)
     } else {
+      console.log("select id: " + id);
+      var pos = positions.filter(position => {
+        return position.position_id == id;
+      })
+      const { title } = pos[0];
+      setChosenTitle(title);
+      const { dept_title } = pos[0];
+      setChosenDept(dept_title);
+      const { position_id } = pos[0];
+      setChosenId(position_id);
       setSelected(name)
       setShowNextStep(true)
     }
-
-    // if (selectedIndex === -1) {
-    //   newSelected = newSelected.concat(selected, name)
-    // } else if (selectedIndex === 0) {
-    //   newSelected = newSelected.concat(selected.slice(1))
-    // } else if (selectedIndex === selected.length - 1) {
-    //   newSelected = newSelected.concat(selected.slice(0, -1))
-    // } else if (selectedIndex > 0) {
-    //   newSelected = newSelected.concat(
-    //     selected.slice(0, selectedIndex),
-    //     selected.slice(selectedIndex + 1)
-    //   )
-    // }
   }
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
@@ -417,7 +432,7 @@ export default function EnhancedTable({ setShowNextStep }) {
                   return (
                     <TableRow
                       hover
-                      onClick={event => handleClick(event, position.title)}
+                      onClick={event => handleClick(event, position.title, position.position_id)}
                       role='checkbox'
                       aria-checked={isItemSelected}
                       tabIndex={-1}
@@ -485,7 +500,7 @@ export default function EnhancedTable({ setShowNextStep }) {
           xs={12}
           style={{ margin: "50px auto", width: "300px", height: "300px", padding: "40px" }}
         >
-          <h1>Create a Position</h1>
+          <h1> Create a Position </h1>
         <TextField
             label="Title"
             id="create-position-title"
@@ -495,10 +510,10 @@ export default function EnhancedTable({ setShowNextStep }) {
               width: "100%",
               marginBottom: "10px",
             }}
-            onChange = { handleTitleChange }
+            onChange = {(event) => handleTitleChange(event, document.getElementById('create-position-title').value) }
           />
         <Autocomplete
-            id="choose-position-dept"
+            id="create-position-dept"
             options={ departments }
             getOptionLabel={(option) => option.dept_title}
             style={{ width: "100%", margin: "10px 0" }}
@@ -515,12 +530,12 @@ export default function EnhancedTable({ setShowNextStep }) {
         variant='contained'
         color='default'
         style={{ marginLeft: '20px', float: 'right' }}
-        onClick = { handleDeptChange }
+        onClick = { (event) => handleDeptChange(event, document.getElementById('create-position-dept').value) }
       >
         Add Department
       </Button>
       <Button
-      variant = 'caontained'
+      variant = 'contained'
       color = 'default'
       style={{ marginleft: '20px', float: 'right' }}
       onClick = { handleCreatePosition }
@@ -534,9 +549,78 @@ export default function EnhancedTable({ setShowNextStep }) {
         color='default'
         style={{ marginLeft: '20px' }}
         disabled={selected.length > 0 ? false : true}
+        onClick = { handleEditPosition }
       >
         Edit Position
       </Button>
+      <Modal
+        open={ editPosition }
+        onClose={() => {
+          openEditPosition(false);
+        }}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+      >
+        <Paper
+          container
+          xs={12}
+          style={{ margin: "50px auto", width: "300px", height: "400px", padding: "40px" }}
+        >
+          <h1>Edit Position</h1>
+          <h2> { chosenTitle } </h2>
+        <TextField
+            label="Title"
+            id="edit-position-title"
+            variant="outlined"
+            value = { chosenTitle }
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange = { (event) => handleTitleChange(event, document.getElementById('edit-position-title').value) }
+          />
+          <TextField
+            id="existing-dept-title"
+            value = { chosenDept }
+            style={{
+              width: "100%",
+              marginBottom: "10px"
+            }}
+            disabled = {true}
+            />
+        <Autocomplete
+            id="edit-position-dept"
+            options={ departments }
+            getOptionLabel={(option) => option.dept_title}
+            style={{ width: "100%", margin: "10px 0" }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Change Department"
+                variant="outlined"
+                style={{ width: "100%" }}
+              />
+            )}
+          />
+        <Button
+        variant='contained'
+        color='default'
+        style={{ marginLeft: '20px', float: 'right' }}
+        onClick = { (event) => handleDeptChange(event, document.getElementById('edit-position-dept').value) }
+      >
+        Save Department
+      </Button>
+      <Button
+      variant = 'caontained'
+      color = 'default'
+      style={{ marginleft: '20px', float: 'right' }}
+      onClick = { handleUpdatePosition }
+      >
+        Save Changes
+      </Button>
+        </Paper>
+      </Modal>
       <Button
         variant='contained'
         color='default'
