@@ -72,9 +72,6 @@ app.post('/getSpecificMeeting', (request, response) => {
 app.post('/usersMeeting', (request, response) => {
     driver.newdriver.getMeetingUsers(request, response)
 })
-app.post('/insertMeeting', (request, response) => {
-    driver.newdriver.insertMeeting(request, response)
-});
 app.post('/insertUser',(request, response)=>{
     driver.newdriver.insertUser(request, response);
 });
@@ -94,6 +91,9 @@ app.post('/insertDepartment',(request,response) => {
     driver.newdriver.insertFile(request, response)
 });
 */
+app.post('/meeting', (request,response) => {
+    driver.newdriver.insertMeeting(request,response);
+});
 
 app.patch('/user', (request, response) => {
     driver.newdriver.updateUser(request, response);

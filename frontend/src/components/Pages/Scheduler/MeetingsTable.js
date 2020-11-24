@@ -393,58 +393,37 @@ export default function EnhancedTable({ setShowNextStep }) {
         .then(function (results) {
           console.log("results: " + results.data);
           if (results.data.userAvailability == 0) {
-            setWarningContent("Availability conflict with user: " + userVal + ". They're attending " + results.data.meeting_title + " at that time.");
+            /*setWarningContent("Availability conflict with user: " + userVal + ". They're attending " + results.data.meeting_title + " at that time.");
             openWarning(true);
-            setTimeout(() => { openWarning(false); }, 30000);
+            setTimeout(() => { openWarning(false); }, 30000);*/
           }
         });
       userVal = null;
     } else {
-      setWarningContent("No user selected.");
+      /*setWarningContent("No user selected.");
       openWarning(true);
-      setTimeout(() => { openWarning(false); }, 2000);
+      setTimeout(() => { openWarning(false); }, 2000);*/
     }
     console.log("selectedUsers: " + selectedUsers);
   };
-  const handleChosenLocation = (location_id) => {
-    if (location_id != null) {
-      setChosenLocation(location_id);
-    }else{
-    var locationVal = document.getElementById("create-event-location").value;
-    if (locationVal != "") {
-      console.log("handleChosenLocation");
-      var chosenLoc = availableLocations.filter(location => {
-        return location.name === locationVal;
-      })
-      const { location_id } = chosenLoc[0];
-      setChosenLocation(location_id);
-      console.log(location_id);
-    } else {
-      setWarningContent("No position chosen");
-      openWarning(true);
-      setTimeout(() => { openWarning(false); }, 2000);
+  const handleChosenLocation = (event, location_name) => {
+    console.log("location_name: " + location_name)
+    var chosenLoc = locations.filter(location => {
+      return location.name === location_name;
+    })
+    const { location_id } = chosenLoc[0];
+    setChosenLocation(location_id);
+    console.log(location_id);
     }
-  }
-  }
-  const handleChosenPosition = (position_id) => {
-    if (position_id == null) {
-    var positionVal = document.getElementById("create-event-position").value;
-    if (positionVal != "") {
+  const handleChosenPosition = (event, position_title) => {
+    if (position_title != "") {
       var chosenPos = positions.filter(position => {
-        return position.title === positionVal;
+        return position.title === position_title;
       })
       const { position_id } = chosenPos[0];
       setChosenPosition(position_id);
       console.log(position_id);
     }
-    else {
-      setWarningContent("No position chosen");
-      openWarning(true);
-      setTimeout(() => { openWarning(false); }, 2000);
-    }
-  } else{
-    setChosenPosition(position_id);
-  }
   }
   const handleCreateMeeting = () => {
     const newMeeting = {
@@ -456,21 +435,15 @@ export default function EnhancedTable({ setShowNextStep }) {
       position_id: chosenPosition,
       users: chosenUsers,
     };
-    if (endDate <= startDate) {
-      setWarningContent("Invalid time combination.");
-      openWarning(true);
-      setTimeout(() => { openWarning(false);}, 15000);
-    }else{
-    console.log(newMeeting);
-    axios.post("http://localhost:3443/insertMeeting", newMeeting)
+    axios.post("http://localhost:3443/meeting", newMeeting)
       .then(result => {
         console.log(result);
         setNewMeetingOpen(false);
+        axios.get("http://localhost:3443/meetings")
+          .then(function (response) {
+          setMeetings(response.data.meeting);
         });
-    axios.get("http://localhost:3443/meetingsExtra").then(function (response) {
-      setMeetings(response.data.meeting);
-    });
-  }
+        });
   };
   const handleDeleteMeeting = () => {
     if (selected != "") {
@@ -483,7 +456,7 @@ export default function EnhancedTable({ setShowNextStep }) {
         .then(result => {
           console.log(result);
         });
-      axios.get("http://localhost:3443/meetingsExtra").then(function (response) {
+      axios.get("http://localhost:3443/meetings").then(function (response) {
         setMeetings(response.data.meeting);
       });
     }
@@ -709,7 +682,7 @@ export default function EnhancedTable({ setShowNextStep }) {
             label="Start Time"
             type="datetime-local"
             value={startDate}
-            onChange={handleStartDate}
+            onChange={(event) => handleStartDate(event, document.getElementById('create-event-starttime').value)}
             InputLabelProps={{
               shrink: true,
             }}
@@ -720,7 +693,7 @@ export default function EnhancedTable({ setShowNextStep }) {
             label="End Time"
             type="datetime-local"
             value={endDate}
-            onChange={handleEndDate}
+            onChange={(event) => handleEndDate(event, document.getElementById('create-event-endtime').value)}
             InputLabelProps={{
               shrink: true,
             }}
@@ -750,7 +723,7 @@ export default function EnhancedTable({ setShowNextStep }) {
           />
           <Button
             id="create-location-button"
-            onClick={handleChosenLocation}
+            onClick={ (event) => handleChosenLocation(event, document.getElementById('create-event-location').value)}
             variant="contained"
             color="primary"
             style={{ width: "100%" }}
@@ -774,7 +747,7 @@ export default function EnhancedTable({ setShowNextStep }) {
           />
           <Button
             id="create-location-button"
-            onClick={handleChosenPosition}
+            onClick={ (event) => handleChosenPosition(event, document.getElementById('create-event-position').value)}
             variant="contained"
             color="primary"
             style={{ width: "100%" }}
