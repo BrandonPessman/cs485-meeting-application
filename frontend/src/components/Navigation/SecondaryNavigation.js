@@ -1,13 +1,90 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./SecondaryNavigation.css";
 import MeetingScheduler from "./Tabs/MeetingScheduler";
 import UpcomingMeetings from "./Tabs/UpcomingMeetings";
 import PastMeetings from "./Tabs/PastMeetings";
 import Users from "./Tabs/Users";
+import { useHistory } from "react-router-dom";
+import Button from '@material-ui/core/Button'
+import Modal from "@material-ui/core/Modal";
+import axios from "axios";
+import Autocomplete from '@material-ui/lab/Autocomplete'
+import TextField from "@material-ui/core/TextField";
+import Paper from '@material-ui/core/Paper';
 
 export default function SecondaryNavigation({user}) {
+  let history = useHistory();
   const [tab, setTab] = useState(user.type == 1 ? 0 : 1);
+  const [chosenName, setChosenName] = useState(user.name);
+  const [chosenPassword, setChosenPassword] = useState(user.u_password);
+  const [chosenEmail, setChosenEmail] = useState(user.email);
+  const [chosenNumber, setChosenNumber] = useState(user.phone_number);
+  const [chosenType, setChosenType] = useState('');
+  const [chosenPosition, setChosenPosition] = useState([]);
+  const [chosenID, setChosenID] = useState(user.u_id)
+  const [openAccount, setOpenAccount] = React.useState(false);
+  const [users, setUsers] = useState([]);
+  const [userTypes, setUserTypes] = useState([]);
+  
+  useEffect(() => {
+    axios.get("http://localhost:3443/userTypes").then(function (response) {
+      setUserTypes(response.data.type);
+    });
+    axios.get("http://localhost:3443/users").then(function (response) {
+      setUsers(response.data.user);
+    })
+  }, []);
 
+  const handleCloseAccount = (event) => {
+    setOpenAccount(false);
+  }
+  const handleNameChange = (event, name) => {
+    setChosenName(name);
+  }
+  const handleEmailChange = (event, email) => {
+    setChosenEmail(email);
+  }
+  const handlePasswordChange = (event,password) =>{
+    setChosenPassword(password);
+  }
+  const handleSelectType = (event, type) => {
+    var chosType = userTypes.filter(type => {
+      return type.type_id = type;
+    })
+    const { type_descr } = chosType[0];
+    setChosenType(type_descr);
+  }
+  const handlePhoneNumberChange = (event, number) => {
+    setChosenNumber(number);
+  }
+  const handleSave = (event) => {
+    var myAccount = {
+      name: chosenName,
+      email: chosenEmail,
+      u_password: chosenPassword,
+      type: chosenType,
+      phone_number:chosenNumber,
+    }
+    axios.patch("http://localhost:3443/user", myAccount)
+      .then(function (response) {
+        console.log(response);
+      });
+  }
+  const handleOpenAccount = (event) => {
+    console.log(user + "\n");
+    console.log(user.email + "\n");
+    console.log(user.name + "\n");
+    console.log("chosenType: " + user.type);
+    var getType = userTypes.filter(type => {
+      return type.type_id = user.type;
+    })
+    const { type_descr } = getType[0];
+    setChosenType(type_descr);
+    setOpenAccount(true)
+  }
+  const handleManageAccount = (event) => {
+    history.push(`/Account/${user.u_id}`);
+  }
   return (
     <>
       <ul
@@ -27,6 +104,14 @@ export default function SecondaryNavigation({user}) {
           }}
         >
           Scheduling Center{" "}
+          <Button 
+            variant='contained'
+            color='default'
+            style={{ marginLeft: '20px', float: 'right' }}
+            onClick = { handleManageAccount }
+          >
+            Edit Account
+          </Button>
           <span
             style={{
               float: "right",
@@ -35,10 +120,12 @@ export default function SecondaryNavigation({user}) {
               fontSize: "14px",
               color: "rgb(27, 14, 83)",
               fontWeight: "600",
+              marginTop: '8px'
             }}
           >
             <span style={{ fontWeight: "100" }}>Welcome,</span> {user.name}
           </span>
+
         </h2>
  
         {user.type == 1 ? <>

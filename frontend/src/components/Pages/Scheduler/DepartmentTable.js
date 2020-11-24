@@ -247,9 +247,12 @@ export default function EnhancedTable({ setShowNextStep }) {
   const [dense] = React.useState(true);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [departments, setDepartments] = useState([]);
-  const [openNewDepartment, setOpenNewDepartment] = React.useState(false)
-  const [chosenShort, setChosenShort] = useState([])
-  const [chosenTitle, setChosenTitle] = useState([])
+  const [openNewDepartment, setOpenNewDepartment] = React.useState(false);
+  const [openEditDepartment, setOpenEditDepartment] = React.useState(false);
+  const [chosenShort, setChosenShort] = useState([]);
+  const [chosenTitle, setChosenTitle] = useState([]);
+  const [chosenID, setChosenID] = useState([]);
+  const [selectedDept, setSelectedDept] = useState([]);
 
 
 
@@ -267,10 +270,16 @@ export default function EnhancedTable({ setShowNextStep }) {
     setOrderBy(property);
   };
   const handleOpenNewDepartment = (event) => {
+    setChosenShort(null);
+    setChosenTitle(null);
+    setChosenID(null);
     setOpenNewDepartment(true);
   }
   const handleCloseNewDepartment = (event) => {
     setOpenNewDepartment(false);
+  }
+  const handleEditClick = (event) => {
+    setOpenEditDepartment(true);
   }
   const handleSelectAllClick = (event) => {
     // if (event.target.checked) {
@@ -281,38 +290,45 @@ export default function EnhancedTable({ setShowNextStep }) {
     setSelected([]);
     setShowNextStep(false);
   };
-  const handleShortChange = (event) => {
-    var short = document.getElementById("create-dept-short").value;
+  const handleShortChange = (event, short) => {
     if (short != null) {
       setChosenShort(short);
     }
     console.log(chosenShort);
   }
-  const handleTitleChange = (event) => {
-    var title = document.getElementById("create-dept-title").value;
+  const handleTitleChange = (event, title) => {
     if (title != null) {
       setChosenTitle(title);
     }
   }
-  const handleCreateDept = (event) => {
+  const handleDeptInfo = (event, updateType) => {
     const dept = 
     {
       dept_title: chosenTitle,
       dept_short: chosenShort,
+      dept_id: chosenID,
     }
     console.log(dept);
     if (chosenTitle.length>0 || chosenShort.length>0) {
+      if (updateType == 1) {
       axios
         .post("http://localhost:3443/insertDepartment", dept)
         .then(function (response) {
           console.log(response);
         });
+        setOpenNewDepartment(false);
+      }else if (updateType == 2) {
+        axios.patch( `http://localhost:3443/updateDepartment/${chosenTitle}/${chosenShort}/${chosenID}`)
+        .then(function (response) {
+          console.log(response);
+        });
+        setOpenEditDepartment(false);
+      }
         axios
         .get("http://localhost:3443/department")
         .then(function (response) {
           setDepartments(response.data.department);
         });
-      setOpenNewDepartment(false);
     }
     else{
       console.log("Invalid");
@@ -336,28 +352,24 @@ export default function EnhancedTable({ setShowNextStep }) {
       });
   }
   const handleClick = (event, name, id) => {
+    console.log("id: " + id);
     // SEND ID TO PARENT
-
     if (selected === name) {
       setSelected([]);
       setShowNextStep(false);
     } else {
-      setSelected(name);
+      const dept = departments.filter(department => {
+        return department.dept_id == id;
+      });
+      const { dept_title } = dept[0];
+      const { dept_short } = dept[0];
+      const { dept_id } = dept[0];
+      setSelected(dept_title);
+      setChosenTitle(dept_title);
+      setChosenShort(dept_short);
+      setChosenID(dept_id);
       setShowNextStep(true);
     }
-
-    // if (selectedIndex === -1) {
-    //   newSelected = newSelected.concat(selected, name)
-    // } else if (selectedIndex === 0) {
-    //   newSelected = newSelected.concat(selected.slice(1))
-    // } else if (selectedIndex === selected.length - 1) {
-    //   newSelected = newSelected.concat(selected.slice(0, -1))
-    // } else if (selectedIndex > 0) {
-    //   newSelected = newSelected.concat(
-    //     selected.slice(0, selectedIndex),
-    //     selected.slice(selectedIndex + 1)
-    //   )
-    // }
   };
 
   const handleChangePage = (event, newPage) => {
@@ -488,7 +500,7 @@ export default function EnhancedTable({ setShowNextStep }) {
               width: "100%",
               marginBottom: "10px",
             }}
-            onChange = { handleTitleChange }
+            onChange = {(event) => handleTitleChange(event, document.getElementById('create-dept-title').value)}
           />
         <TextField
             label="Short"
@@ -499,13 +511,13 @@ export default function EnhancedTable({ setShowNextStep }) {
               width: "100%",
               marginBottom: "10px",
             }}
-            onChange = { handleShortChange }
+            onChange = {(event) => handleShortChange(event, document.getElementById('create-dept-short').value) }
           />
       <Button
       variant = 'caontained'
       color = 'default'
       style={{ marginleft: '20px', float: 'center' }}
-      onClick = { handleCreateDept }
+      onClick = {(event) => handleDeptInfo(event, 1) }
       >
         Create Department
       </Button>
@@ -524,9 +536,66 @@ export default function EnhancedTable({ setShowNextStep }) {
         color="default"
         disabled={selected.length > 0 ? false : true}
         style={{ marginLeft: "20px" }}
+        onClick = { handleEditClick }
       >
         Edit Department
       </Button>
+      <Modal
+        open={ openEditDepartment }
+        onClose={() => {
+          setOpenEditDepartment(false);
+        }}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+      >
+        <Paper
+          container
+          xs={12}
+          style={{ margin: "50px auto", width: "300px", height: "300px", padding: "40px" }}
+        >
+          <h1>{ selected }</h1>
+        <TextField
+            label="Title"
+            id="edit-dept-title"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange = {(event) => handleTitleChange(event, document.getElementById('edit-dept-title').value) }
+            value = {chosenTitle}
+          />
+        <TextField
+            label="Short"
+            id="edit-dept-short"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange = {(event) => handleShortChange(event, document.getElementById('edit-dept-short').value) }
+            value = { chosenShort }
+          />
+      <Button
+      variant = 'caontained'
+      color = 'default'
+      style={{ marginleft: '20px', float: 'center' }}
+      onClick = {(event) => handleDeptInfo(event, 2) }
+      >
+        Save Changes
+      </Button>
+      <Button 
+      variant="contained" 
+      color="secondary"
+      style={{ marginleft: '20px', float: 'right' }}
+      onClick = { handleCloseNewDepartment }
+      >
+        Cancel
+      </Button>
+        </Paper>
+      </Modal>
       <Button
         variant="contained"
         color="default"

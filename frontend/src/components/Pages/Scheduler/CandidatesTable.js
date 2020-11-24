@@ -19,6 +19,9 @@ import Modal from "@material-ui/core/Modal";
 import axios from "axios";
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import TextField from "@material-ui/core/TextField";
+import candidates from '../../Navigation/Tabs/MeetingScheduler';
+import setCandidates from '../../Navigation/Tabs/MeetingScheduler';
+import refreshPage from '../../Navigation/Tabs/MeetingScheduler';
 
 // import IconButton from '@material-ui/core/IconButton'
 // import Tooltip from '@material-ui/core/Tooltip'
@@ -253,25 +256,26 @@ export default function EnhancedTable({ setShowNextStep }) {
   const [page, setPage] = React.useState(0)
   const [dense] = React.useState(true)
   const [rowsPerPage, setRowsPerPage] = React.useState(5)
-  const [candidates, setCandidates] = useState([])
   const [openEditCandidate, setOpenEditCandidate] = React.useState(false);
   const [candidateName, setCandidateName] = useState([]);
   const [candidateEmail, setCandidateEmail] = useState([]);
   const [candidatePhoneNumber, setCandidatePhoneNumber] = useState([]);
   const [candidateType, setCandidateType] = useState([]);
+  const [candidatePassword, setCandidatePassword] = useState([]);
   const [userTypes, setUserTypes] = useState([]);
   const [candidateId, setCandidateId] = useState([]);
   const [candidateTypeId, setCandidateTypeId] = useState([]);
+  const [openNewCandidate, setOpenNewCandidate] = React.useState(false);
+  const [candidates, setCandidates] = useState([]);
 
 
   useEffect(() => {
-    axios.get("http://localhost:3443/candidates").then(function (response) {
-      setCandidates(response.data.user);
-      console.log(response)
-    });
     axios.get("http://localhost:3443/userTypes").then(function (response) {
       setUserTypes(response.data.type);
     });
+    axios.get("http://localhost:3443/candidates").then(function (response) {
+      setCandidates(response.data.user);
+    })
   }, []);
 
   const handleRequestSort = (event, property) => {
@@ -292,46 +296,77 @@ export default function EnhancedTable({ setShowNextStep }) {
   const handleEditCandidate = (event) => {
     setOpenEditCandidate(true);
   }
-  const handleNameChange = (event) => {
-    setCandidateName(document.getElementById("edit-candidate-name").value);
+  const handleNameChange = (event, name) => {
+    setCandidateName(name);
+    console.log("name: " + name);
   }
-  const handleEmailChange = (event) => {
-    setCandidateEmail(document.getElementById("edit-candidate-email").value);
+  const handleEmailChange = (event,email) => {
+    setCandidateEmail(email);
   }
-  const handlePhoneNumberChange = (event) => {
-    setCandidatePhoneNumber(document.getElementById("edit-candidate-number").value);
+  const handlePhoneNumberChange = (event, number) => {
+    setCandidatePhoneNumber(number);
   }
-  const handleSelectType = (event) => {
-    setCandidateType(document.getElementById("edit-candidate-type").value);
-  }
-  const handleUpdateCandidate = (event) => {
+  const handleSelectType = (event, type) => {
+    console.log("type given: " + type);
+    setCandidateType(type);
     const selectedType = userTypes.filter(usertype => {
-      return usertype.type_descr === candidateType;
+      return usertype.type_descr === type;
     });
     const { type_id } = selectedType[0];
     setCandidateTypeId(type_id);
-    console.log("type_id: " + type_id);
-    const { u_password } = selected[0];
-    var updateCandidate = 
+    console.log("CandidateType: " + type_id);
+  }
+  const handlePasswordChange = (event, password) => {
+    setCandidatePassword(password);
+  }
+  const handleCandidateInfo = (event,insertType) => {
+    console.log("candidateTypeID: " + candidateTypeId);
+    var candidate = 
     {
-      u_password: u_password,
+      u_password: candidatePassword,
       u_id: candidateId,
       name: candidateName,
       email: candidateEmail,
       phone_number: candidatePhoneNumber,
-      type_id: type_id,
+      type: candidateTypeId,
     }
-    axios.patch("http://localhost:3443/user", updateCandidate)
-    .then(function (response) {
-      console.log(response);
-    });
-    setOpenEditCandidate(false);
+
+    if (insertType == 2) {
+      axios.patch("http://localhost:3443/user", candidate)
+      .then(function (response) {
+        console.log(response);
+      });
+      setOpenEditCandidate(false);
+    } else if (insertType == 1) {
+        axios.post("http://localhost:3443/insertuser", candidate)
+        .then(result => {
+          console.log(result);
+          });
+        setOpenNewCandidate(false);
+    }
     axios.get("http://localhost:3443/candidates").then(function (response) {
       setCandidates(response.data.user);
       console.log(response)
     });
   }
-  const handleClick = (event, chosenName) => {
+  const handleDeleteCandidate = (event) => {
+    axios.delete(`http://localhost:3443/deleteUser/${candidateId}`)
+      .then(result=> {
+        console.log("Delete result: " + result);
+      });
+      axios.get("http://localhost:3443/candidates").then(function (response) {
+        setCandidates(response.data.user);
+        console.log(response)
+      });
+  }
+  const handleOpenNewCandidate = (event) => {
+    setCandidateEmail(null);
+    setCandidateName(null);
+    setCandidatePhoneNumber(null);
+    setCandidateType(null);
+    setOpenNewCandidate(true);
+  }
+  const handleClick = (event, chosenName, id) => {
     const selectedIndex = selected.indexOf(chosenName)
 
     if (selected === chosenName) {
@@ -340,20 +375,18 @@ export default function EnhancedTable({ setShowNextStep }) {
     } else {
       setShowNextStep(true)
       const selectedCand = candidates.filter(candidate => {
-        return candidate.name === chosenName;
+        return candidate.u_id === id;
       });
-      const { u_id } = selectedCand[0];
+      const { u_id, name, email, phone_number, type_descr, password } = selectedCand[0];
       console.log("u_id: " + u_id);
       setCandidateId(u_id);
-      const { name } = selectedCand[0];
       setCandidateName(name);
-      const { email } = selectedCand[0];
       setCandidateEmail(email);
-      const { phone_number } = selectedCand[0];
       setCandidatePhoneNumber(phone_number);
-      const { type_descr } = selectedCand[0];
       setCandidateType(type_descr);
+      setCandidatePassword(password);
       setSelected(chosenName);
+      console.log("Password: " + candidatePassword);
     }
 
     // if (selectedIndex === -1) {
@@ -418,7 +451,7 @@ export default function EnhancedTable({ setShowNextStep }) {
                   return (
                     <TableRow
                       hover
-                      onClick={event => handleClick(event, candidate.name)}
+                      onClick={event => handleClick(event, candidate.name, candidate.u_id)}
                       role='checkbox'
                       aria-checked={isItemSelected}
                       tabIndex={-1}
@@ -468,6 +501,99 @@ export default function EnhancedTable({ setShowNextStep }) {
         control={<Switch checked={dense} onChange={handleChangeDense} />}
         label='Dense padding'
       /> */}
+      <Button 
+        variant='contained' 
+        color='secondary'
+        onClick = { handleOpenNewCandidate }
+        >
+        Create Candidate
+      </Button>
+      <Modal
+        open={openNewCandidate}
+        onClose={() => {
+          setOpenNewCandidate(false);
+        }}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+      >
+        <Paper
+          container
+          xs={12}
+          style={{ margin: "50px auto", width: "300px", height:"400px", padding: "40px" }}
+        >
+          <h1>Create Candidate</h1>
+          <TextField
+            label="Name"
+            id="create-candidate-name"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange={(event) => handleNameChange(event, document.getElementById('create-candidate-name').value)}
+          />
+          <TextField
+            label="email"
+            id="create-candidate-email"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange={(event) => handleEmailChange(event, document.getElementById('create-candidate-email').value)}
+          />
+          <TextField
+            label="Phone Number"
+            id="create-candidate-number"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange={(event) => handlePhoneNumberChange(event, document.getElementById('create-candidate-number').value)}
+          />
+          <TextField
+            label="Password"
+            id="create-candidate-password"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange={(event) => handlePasswordChange(event, document.getElementById('create-candidate-password').value)}
+          />
+          <Autocomplete
+            id="create-candidate-type"
+            options={userTypes}
+            getOptionLabel={(option) => option.type_descr}
+            style={{ width: "100%", margin: "10px 0" }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label = "Change Type"
+                variant="outlined"
+                style={{ width: "100%" }}
+              />
+            )}
+          />
+          <Button
+            variant='contained'
+            color='default'
+            style={{ marginLeft: '20px', float: 'right' }}
+            onClick={ (event) => handleSelectType(event, document.getElementById('create-candidate-type').value) }
+          > Select Type</Button>
+          <Button
+            variant='contained'
+            color='default'
+            style={{ marginLeft: '20px', float: 'center' }}
+            onClick={(event) => handleCandidateInfo(event, 1) }
+          > Create Candidate</Button>
+        </Paper>
+      </Modal>
       <Button
         variant='contained'
         color='default'
@@ -488,7 +614,7 @@ export default function EnhancedTable({ setShowNextStep }) {
         <Paper
           container
           xs={12}
-          style={{ margin: "50px auto", width: "300px", height: "300px", padding: "40px" }}
+          style={{ margin: "50px auto", width: "300px", height:"500px", padding: "40px" }}
         >
           <h1>{selected}</h1>
           <TextField
@@ -501,7 +627,7 @@ export default function EnhancedTable({ setShowNextStep }) {
               marginBottom: "10px",
             }}
             defaultValue = { selected }
-            onChange={handleNameChange}
+            onChange={(event) => handleNameChange(event, document.getElementById('edit-candidate-name').value)}
           />
           <TextField
             label="email"
@@ -513,10 +639,10 @@ export default function EnhancedTable({ setShowNextStep }) {
               marginBottom: "10px",
             }}
             defaultValue={ candidateEmail }
-            onChange={handleEmailChange}
+            onChange={(event) => handleEmailChange(event, document.getElementById('edit-candidate-email').value)}
           />
           <TextField
-            label="phoneNumber"
+            label="Phone Number"
             id="edit-candidate-number"
             variant="outlined"
             size="small"
@@ -524,10 +650,23 @@ export default function EnhancedTable({ setShowNextStep }) {
               width: "100%",
               marginBottom: "10px",
             }}
-            onChange={handlePhoneNumberChange}
+            onChange={(event) => handlePhoneNumberChange(event, document.getElementById('edit-candidate-number').value)}
             defaultValue = { candidatePhoneNumber }
           />
           <TextField
+            label="Password"
+            id="edit-candidate-password"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange={(event) => handlePasswordChange(event, document.getElementById('edit-candidate-password').value)}
+            defaultValue = { candidatePassword }
+          />
+          <TextField
+          label="Current Type "
             style={{
               width: "100%",
               maringBottom: "10px",
@@ -554,13 +693,13 @@ export default function EnhancedTable({ setShowNextStep }) {
             variant='contained'
             color='default'
             style={{ marginLeft: '20px', float: 'right' }}
-            onClick={ handleSelectType }
+            onClick={ (event) => handleSelectType(event, document.getElementById('edit-candidate-type').value) }
           > Select Type</Button>
           <Button
             variant='contained'
             color='default'
-            style={{ marginLeft: '20px', float: 'right' }}
-            onClick={ handleUpdateCandidate }
+            style={{ marginLeft: '20px', float: 'center' }}
+            onClick={ (event) => handleCandidateInfo(event, 2) }
           > Save Changes</Button>
         </Paper>
       </Modal>
@@ -569,6 +708,7 @@ export default function EnhancedTable({ setShowNextStep }) {
         color='default'
         disabled={selected.length > 0 ? false : true}
         style={{ marginLeft: '20px', float: 'right' }}
+        onClick = { handleDeleteCandidate }
       >
         Delete Candidate
       </Button>

@@ -1,8 +1,7 @@
 var MySQL = require('mysql')
 const moment = require('moment');
 const { response } = require('express');
-var fs = require('fs');
-
+var flstr = require('fs');
 
 class Driver {
   /*Establishes connection to mySQL database - Interview Tracker*/
@@ -28,11 +27,11 @@ class Driver {
   /*Inserts user to 'user' table*/
   insertUser(request, response) {
     var query =
-      "INSERT INTO user VALUES (?,?,?,?,?,?)"
-    var params = [null, request.body.email, request.body.u_password, request.body.phone_number, request.body.name, request.body.type]
-    this.connection.query(query, params, (err, result) => {
+      "INSERT INTO user (email, u_password, phone_number, name, type) VALUES (?,?,?,?,?)"
+    var params = [request.body.email, request.body.u_password, request.body.phone_number, request.body.name, request.body.type]
+    var temp = this.connection.query(query, params, (err, result) => {
       if (err) { console.log(err) }
-      else { response.send({ status: true }); }
+      else { response.send({ status: true, sql: temp.sql }); }
     });
   }
   /*Updates user in 'user' table - need to change to make frontend-friendly*/
@@ -47,11 +46,11 @@ class Driver {
   /*Deletes user in 'user' table - cascades to all instances of this user*/
   deleteUser(request, response) {
     var query = 'DELETE FROM user WHERE u_id = ?'
-    var params = [request.body.u_id];
+    var params = [request.params.u_id];
     this.connection.query(query, params, (err) => {
       if (err) { console.log(err) }
       else { response.send({ status: true }) }
-    })
+    });
   }
   /*Check user availability*/
   getUserAvailability(request, response) {
@@ -85,7 +84,7 @@ class Driver {
   }
   /*gets users by type =2, all candidates*/
   getCandidates(request, response) {
-    var query = 'SELECT u.u_id,u.name, u.email, u.phone_number, count(mu.u_id) as meeting_count, u.type, ut.type_descr FROM user u, meetingUser mu, userTypes ut, Meeting m where u.u_id = mu.u_id and m.meeting_id = mu.meeting_id and ut.type_id = u.type and u.type = 2 group by u.u_id'
+    var query = 'SELECT u.u_id,u.name, u.email, u.phone_number, u.u_password, count(mu.u_id) as meeting_count, u.type, ut.type_descr FROM user u LEFT JOIN meetingUser mu on mu.u_id = u.u_id LEFT JOIN userTypes ut on ut.type_id = u.type LEFT JOIN Meeting m on m.meeting_id = mu.meeting_id where u.type = 2 group by u.u_id'
     this.connection.query(query, (err, rows) => {
       if (err) { console.log(err) }
       else { response.send({ user: rows.map(mapUser) }); }
@@ -126,17 +125,19 @@ class Driver {
   }
   /*Gets all users from specific meeting user meeting_id - need to add left join for usertype string*/
   getMeetingUsers(request, response) {
-    var query = 'SELECT * FROM user U LEFT JOIN userTypes on U.type=userTypes.type_id WHERE U.u_id=ANY(SELECT u_id FROM meetingUser WHERE meeting_id=?)'
-    var params = [request.body.meeting_id]
+    var query = 'SELECT * FROM user U LEFT JOIN userTypes on U.type=userTypes.type_id WHERE U.u_id in (SELECT u_id FROM meetingUser WHERE meeting_id=?)'
+    var params = [request.params.meeting_id]
     this.connection.query(query, params, (err, rows) => {
       if (err) {
         console.log(err)
       }
-      else { response.send(rows) }
+      else { 
+        console.log(rows.map(mapUser));
+        response.send({user : rows.map(mapUser)}) }
     })
   }
   getAllMeetingsExtra(response) {
-    const query = 'SELECT * FROM Meeting m LEFT JOIN Location l on m.location_id = l.location_id LEFT JOIN EmployeePosition ep on m.position_id = ep.position_id'
+    const query = 'SELECT m.meeting_title, m.meeting_descr, m.meeting_id, m.location_id, m.position_id, m.start_date_time, m.end_date_time, m.meeting_length, l.name, ep.title, l.department_id FROM Meeting m LEFT JOIN Location l on m.location_id = l.location_id LEFT JOIN EmployeePosition ep on m.position_id = ep.position_id group by m.meeting_id'
     this.connection.query(query, (error, rows) => {
       if (error) {
         response.send({ error: error.message });
@@ -425,7 +426,31 @@ class Driver {
       }
     }
   }
-
+  /*Update the position */
+  updatePosition(request, response) {
+    var query = 'UPDATE EmployeePosition SET title = ?, dept_id = ? WHERE position_id = ?'
+    var params = [request.body.title, request.body.dept_id, request.body.position_id]
+    var temp = this.connection.query(query, params, (err, result) => {
+      if (err) {
+        console.log(err)
+      }else {
+        response.send({status:true, sql:temp.sql})
+        this.checkAndUpdate({dept_id: request.body.dept_id, position_id:request.body.position_id});
+      }
+    })
+  }
+  /*Check if dept_id changed, and if not, update*/
+  checkAndUpdate(request,response) {
+    var query = 'SELECT * FROM departmentPosition where dept_id = ? and position_id = ?'
+    var params = [request.body.dept_id, reqeust.body.position_id]
+    var temp = this.connection.query(query, params, (err, result) => {
+      if (err) {
+        console.log(err);
+      } else{
+        console.log(temp.sql);
+      }
+    })
+  }
   /**Inserts given position object into EmployeePosition table. Calls insertDepartmentPosition (above) to 
    * add dept_id/position_id combination to departmentPosition table. */
   insertPosition(request, response) {
@@ -507,7 +532,7 @@ class Driver {
       'group by EmployeePosition.position_id'
     this.connection.query(query, (err, rows) => {
       if (err) {
-        console.log(err)
+        response.send({error: err});
       }
       else {
         response.send({ position: rows.map(mapPosition) });
@@ -574,16 +599,27 @@ class Driver {
   insertDepartment(request, response) {
     var query = "INSERT INTO Department (dept_title, dept_short) VALUES (?,?)"
     var params = [request.body.dept_title, request.body.dept_short]
-    this.connection.query(query, params, (err, results) => {
+    var temp = this.connection.query(query, params, (err, results) => {
       if (err) {
         console.log(err)
       }
       else {
-        response.json({ status: true })
+        response.json({ status: true, sql: temp.sql })
       }
     })
   }
-
+  /**Update department */
+  updateDepartment(request,response){
+    var query = "UPDATE Department set dept_title = ?, dept_short = ? where dept_id = ?";
+    var params = [request.params.dept_title, request.params.dept_short, request.params.dept_id];
+    var temp = this.connection.query(query, params, (err, results) => {
+      if (err) {
+        response.send(err);
+      }else{
+        response.send({ status: true, sql:temp.sql })
+      }
+    })
+  }
   //upload files method(From Tong)
   /*insertFile(request, response){
     const query= "INSERT INTO uploadFile (u_id) VALUES (?,?,?)";
@@ -648,6 +684,7 @@ function mapMeeting(row) {
     meeting_status: row.meeting_status,
     meeting_title: row.meeting_title,
     meeting_descr: row.meeting_descr,
+    position_id: row.position_id,
   };
 }
 /*Maps Feedback columns for response.send() functionality*/
@@ -706,7 +743,7 @@ function mapUser(row) {
   return {
     u_id: row.u_id,
     email: row.email,
-    u_password: row.u_password,
+    password: row.u_password,
     phone_number: row.phone_number,
     name: row.name,
     type: row.type,

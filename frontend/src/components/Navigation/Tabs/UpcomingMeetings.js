@@ -132,6 +132,7 @@ export default function UpcomingMeetings({user}) {
                       return (
                           <Grid item xs={3} style={{backgroundColor: 'white', borderRadius: '4px', boxShadow: '4px 4px 10px rgba(0,0,0,.3)', padding: '20px', marginRight: '15px'}}>
                             <h4 style={{ fontWeight: '300', margin: '0px', borderBottom: 'dotted 1px rgba(0,0,0,.3)' }}>{meetings.title}</h4>
+                            <p>{new Date() < meetings.startDate ? "Status: In Progress": "Status: Not Started"}</p>
                             <p>Starting Time: <span style={{ float: 'right' }}>{meetings.starttime.getUTCHours()}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()}</span></p>
                             <p>End Time: <span style={{ float: 'right' }}>{meetings.endtime.getUTCHours()}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()}</span></p>
                             <Button size="small" variant='contained' color='primary' onClick={() => handleView(meetings)} style={{width: '50%'}}>Manage</Button>
