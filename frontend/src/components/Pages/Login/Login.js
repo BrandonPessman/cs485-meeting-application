@@ -62,9 +62,10 @@ export default function Login({setUser, setCookie}) {
                 </Button>
             </Paper>
             <center>
-                <p>
+                {/*<p>
                     Need to create an account? <a href="#">Click here.</a>
                 </p>
+                */} 
             </center>
     </>
   );
