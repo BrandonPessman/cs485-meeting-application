@@ -264,10 +264,10 @@ export default function EnhancedTable({ setShowNextStep }) {
   const [editPosition, openEditPosition] = React.useState(false)
 
   useEffect(() => {
-    axios.get("http://localhost:3443/positions").then(function (response) {
+    axios.get("http://104.131.115.65:3443/positions").then(function (response) {
       setPositions(response.data.position);
     });
-    axios.get("http://localhost:3443/department").then(function (response) {
+    axios.get("http://104.131.115.65:3443/department").then(function (response) {
       console.log(response.data.department);
       setDepartments(response.data.department);
     });
@@ -305,16 +305,16 @@ export default function EnhancedTable({ setShowNextStep }) {
     };
     console.log(newPosition);
     if (chosenTitle.length>0 && chosenDept>0) {
-      axios.post("http://localhost:3443/insertPosition", newPosition)
+      axios.post("http://104.131.115.65:3443/insertPosition", newPosition)
         .then(result => {
           console.log(result);
         })
       openNewPosition(false);
-      axios.get("http://localhost:3443/positions").then(function (response) {
+      axios.get("http://104.131.115.65:3443/positions").then(function (response) {
         console.log(response.data.position);
         setPositions(response.data.position);
       });
-      axios.get("http://localhost:3443/department").then(function (response) {
+      axios.get("http://104.131.115.65:3443/department").then(function (response) {
         console.log(response.data.department);
         setDepartments(response.data.position);
       })
@@ -326,12 +326,12 @@ export default function EnhancedTable({ setShowNextStep }) {
         return position.title === selected;
       });
       const { position_id } = pos[0];
-      axios.delete(`http://localhost:3443/deletePosition/${position_id}`)
+      axios.delete(`http://104.131.115.65:3443/deletePosition/${position_id}`)
       .then(result=> {
         console.log("Delete result: " + result);
       });
     }
-    axios.get("http://localhost:3443/positions").then(function (response) {
+    axios.get("http://104.131.115.65:3443/positions").then(function (response) {
       console.log(response.data.position);
       setPositions(response.data.position);
     });
@@ -342,7 +342,7 @@ export default function EnhancedTable({ setShowNextStep }) {
       dept_id: chosenDept,
       position_id: chosenId,
     }
-    axios.patch("http://localhost:3443/updatePosition", updatePosition)
+    axios.patch("http://104.131.115.65:3443/updatePosition", updatePosition)
     .then(function (response) {
       console.log(response);
     });

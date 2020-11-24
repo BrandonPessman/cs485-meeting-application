@@ -13,11 +13,11 @@ export default function FeedbackPage({user}) {
   const [feedback, setFeedback] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:3443/users")
+    axios.get("http://104.131.115.65:3443/users")
     .then(response => {
       let users = response.data.user
 
-      axios.post("http://localhost:3443/meetingFeedback/", {meeting_id: id})
+      axios.post("http://104.131.115.65:3443/meetingFeedback/", {meeting_id: id})
       .then(response => {
         for (let i = 0; i < response.data.feedback.length; i++) {
           for (let j = 0; j < users.length; j++) {
@@ -40,7 +40,7 @@ export default function FeedbackPage({user}) {
       meeting_id: id
     }
 
-    axios.post("http://localhost:3443/insertFeedback/", {data})
+    axios.post("http://104.131.115.65:3443/insertFeedback/", {data})
     history.go(0)
   } 
 

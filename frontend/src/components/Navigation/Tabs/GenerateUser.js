@@ -22,7 +22,7 @@ export default function GenerateUser() {
             phone_number,
             type: 2
         }
-        axios.post("http://localhost:3443/insertUser", data)
+        axios.post("http://104.131.115.65:3443/insertUser", data)
         handleReset();
         console.log(name + " " + email + " " + password)
     }

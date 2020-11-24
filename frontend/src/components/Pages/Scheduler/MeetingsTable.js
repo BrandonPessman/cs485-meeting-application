@@ -304,17 +304,17 @@ export default function EnhancedTable({ setShowNextStep }) {
 
 
   useEffect(() => {
-    axios.get("http://localhost:3443/meetings").then(function (response) {
+    axios.get("http://104.131.115.65:3443/meetings").then(function (response) {
       setMeetings(response.data.meeting);
     });
-    axios.get("http://localhost:3443/users").then(function (response) {
+    axios.get("http://104.131.115.65:3443/users").then(function (response) {
       setUsers(response.data.user);
     });
-    axios.get("http://localhost:3443/positions").then(function (response) {
+    axios.get("http://104.131.115.65:3443/positions").then(function (response) {
       setPositions(response.data.position);
     });
     axios
-      .get("http://localhost:3443/locations")
+      .get("http://104.131.115.65:3443/locations")
       .then(function (locationData) {
         setLocations(locationData.data.location)
       });
@@ -363,7 +363,7 @@ export default function EnhancedTable({ setShowNextStep }) {
         console.log("Start date is less.");
         setValidDate(true);
         axios
-        .get(`http://localhost:3443/availableLocations/${startDate}/${endDate}`)
+        .get(`http://104.131.115.65:3443/availableLocations/${startDate}/${endDate}`)
         .then(function (results) {
           console.log("result: " + results.data.sql)
           setAvailableLocations(results.data.location)
@@ -389,7 +389,7 @@ export default function EnhancedTable({ setShowNextStep }) {
       setChosenUsers(chosenUsers.concat({ u_id: u_id }));
       let userData = { u_id: u_id, start_date_time: startDate, end_date_time:endDate};
       axios
-        .get(`http://localhost:3443/userAvailability/${u_id}/${startDate}/${endDate}`)
+        .get(`http://104.131.115.65:3443/userAvailability/${u_id}/${startDate}/${endDate}`)
         .then(function (results) {
           console.log("results: " + results.data);
           if (results.data.userAvailability == 0) {
@@ -435,11 +435,11 @@ export default function EnhancedTable({ setShowNextStep }) {
       position_id: chosenPosition,
       users: chosenUsers,
     };
-    axios.post("http://localhost:3443/meeting", newMeeting)
+    axios.post("http://104.131.115.65:3443/meeting", newMeeting)
       .then(result => {
         console.log(result);
         setNewMeetingOpen(false);
-        axios.get("http://localhost:3443/meetings")
+        axios.get("http://104.131.115.65:3443/meetings")
           .then(function (response) {
           setMeetings(response.data.meeting);
         });
@@ -452,11 +452,11 @@ export default function EnhancedTable({ setShowNextStep }) {
       })
       const { meeting_id } = selectedMeeting[0];
       console.log(meeting_id);
-      axios.delete(`http://localhost:3443/meeting/${meeting_id}`)
+      axios.delete(`http://104.131.115.65:3443/meeting/${meeting_id}`)
         .then(result => {
           console.log(result);
         });
-      axios.get("http://localhost:3443/meetings").then(function (response) {
+      axios.get("http://104.131.115.65:3443/meetings").then(function (response) {
         setMeetings(response.data.meeting);
       });
     }

@@ -27,7 +27,7 @@ export default function UpcomingMeetings({user, cookies}) {
     useEffect(() => {
         let list = [];
         console.log(cookies.user)
-        axios.get("http://localhost:3443/userMeetings/" + cookies.user.u_id).then(res => {
+        axios.get("http://104.131.115.65:3443/userMeetings/" + cookies.user.u_id).then(res => {
             let d = res.data.meeting;
             let meetingIds = [d.length];
             for (let i = 0; i < d.length; i++) {
@@ -35,7 +35,7 @@ export default function UpcomingMeetings({user, cookies}) {
             }
             console.log(meetingIds);
 
-            axios.get('http://localhost:3443/meetings')
+            axios.get('http://104.131.115.65:3443/meetings')
             .then(function (response) {
                 let t = response.data.meeting;
                 console.log(t)

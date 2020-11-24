@@ -258,7 +258,7 @@ export default function EnhancedTable({ setShowNextStep }) {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3443/department")
+      .get("http://104.131.115.65:3443/department")
       .then(function (response) {
         setDepartments(response.data.department);
       });
@@ -312,20 +312,20 @@ export default function EnhancedTable({ setShowNextStep }) {
     if (chosenTitle.length>0 || chosenShort.length>0) {
       if (updateType == 1) {
       axios
-        .post("http://localhost:3443/insertDepartment", dept)
+        .post("http://104.131.115.65:3443/insertDepartment", dept)
         .then(function (response) {
           console.log(response);
         });
         setOpenNewDepartment(false);
       }else if (updateType == 2) {
-        axios.patch( `http://localhost:3443/updateDepartment/${chosenTitle}/${chosenShort}/${chosenID}`)
+        axios.patch( `http://104.131.115.65:3443/updateDepartment/${chosenTitle}/${chosenShort}/${chosenID}`)
         .then(function (response) {
           console.log(response);
         });
         setOpenEditDepartment(false);
       }
         axios
-        .get("http://localhost:3443/department")
+        .get("http://104.131.115.65:3443/department")
         .then(function (response) {
           setDepartments(response.data.department);
         });
@@ -340,13 +340,13 @@ export default function EnhancedTable({ setShowNextStep }) {
         return department.dept_title === selected;
       });
       const { dept_id } = dept[0];
-      axios.delete(`http://localhost:3443/deleteDepartment/${dept_id}`)
+      axios.delete(`http://104.131.115.65:3443/deleteDepartment/${dept_id}`)
       .then(result=> {
         console.log("Delete result: " + result);
       });
     }
     axios
-      .get("http://localhost:3443/department")
+      .get("http://104.131.115.65:3443/department")
       .then(function (response) {
         setDepartments(response.data.department);
       });

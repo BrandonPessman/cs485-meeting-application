@@ -17,7 +17,7 @@ export default function Login({cookies}) {
     const [userTypes, setUserTypes] = useState([]);
     useEffect(() => {
         axios
-        .get("http://localhost:3443/userTypes")
+        .get("http://104.131.115.65:3443/userTypes")
         .then(function (response) {
             setUserTypes(response.data.type);
         });
@@ -50,7 +50,7 @@ export default function Login({cookies}) {
                 type: accountType,
             };
             axios
-            .patch("http://localhost:3443/user", updateAccount)
+            .patch("http://104.131.115.65:3443/user", updateAccount)
             .then(function (response) {
                 console.log(response);
             });
