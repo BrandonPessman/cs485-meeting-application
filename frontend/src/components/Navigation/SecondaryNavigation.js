@@ -12,9 +12,9 @@ import Autocomplete from '@material-ui/lab/Autocomplete'
 import TextField from "@material-ui/core/TextField";
 import Paper from '@material-ui/core/Paper';
 
-export default function SecondaryNavigation({user}) {
+export default function SecondaryNavigation({user, cookies}) {
   let history = useHistory();
-  const [tab, setTab] = useState(user.type == 1 ? 0 : 1);
+  const [tab, setTab] = useState(cookies.user.type == 1 ? 0 : 1);
   const [chosenName, setChosenName] = useState(user.name);
   const [chosenPassword, setChosenPassword] = useState(user.u_password);
   const [chosenEmail, setChosenEmail] = useState(user.email);
@@ -181,8 +181,8 @@ export default function SecondaryNavigation({user}) {
 
       <div style={{ padding: "10px 200px" }}>
         {tab === 0 ? <MeetingScheduler /> : ""}
-        {tab === 1 ? <UpcomingMeetings user={user} /> : ""}
-        {tab === 2 ? <PastMeetings user={user} /> : ""}
+        {tab === 1 ? <UpcomingMeetings user={user} cookies={cookies} /> : ""}
+        {tab === 2 ? <PastMeetings user={user} cookies={cookies} /> : ""}
         {tab === 3 ? <Users /> : ""}
       </div>
     </>

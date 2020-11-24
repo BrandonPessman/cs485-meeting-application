@@ -32,7 +32,7 @@ export default function ClippedDrawer() {
 
         {Object.keys(user).length !== 0 && user.constructor === Object ? <>
           <li style={{ float: "right" }}>
-          <a href="/">Logout</a>
+          <a href="/" onClick={() => {removeCookie('user')}}>Logout</a>
         </li>
         <li style={{ float: "right" }}>
           <a href="#news">Help</a>
@@ -51,7 +51,7 @@ export default function ClippedDrawer() {
             <Login setUser={setUser} setCookie={setCookie} />
           </Route>
           <Route path="/dashboard">
-            <SecondaryNavigation user={user} />
+            <SecondaryNavigation user={user} cookies={cookies} />
           </Route>
           <Route path="/meeting/:id">
             <MeetingPage user={user} />

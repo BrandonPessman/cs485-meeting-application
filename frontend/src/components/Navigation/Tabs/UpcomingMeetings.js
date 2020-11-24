@@ -20,13 +20,14 @@ const months = {
     11: 'December'
 }
 
-export default function UpcomingMeetings({user}) {
+export default function UpcomingMeetings({user, cookies}) {
     const [data, setData] = useState([])
     let history = useHistory();
 
     useEffect(() => {
         let list = [];
-        axios.get("http://localhost:3443/userMeetings/" + user.u_id).then(res => {
+        console.log(cookies.user)
+        axios.get("http://localhost:3443/userMeetings/" + cookies.user.u_id).then(res => {
             let d = res.data.meeting;
             let meetingIds = [d.length];
             for (let i = 0; i < d.length; i++) {
@@ -55,7 +56,7 @@ export default function UpcomingMeetings({user}) {
                         date: ''
                     }
 
-                    if (user.type != 1) {
+                    if (cookies.user.type != 1) {
                         for (let q = 0; q < meetingIds.length; q++) {
                             if (meetingIds[q] == meeting.meeting_id) {
                                 if (new Date() < meeting.starttime) {
@@ -114,7 +115,7 @@ export default function UpcomingMeetings({user}) {
     return (
         <div style={{ margin: '40px 0px' }}>
             <h2 style={{ marginBottom: '0', marginTop: '0', fontWeight: '500' }}>
-                Upcoming Meetings - <span style={{fontWeight: '100', fontStyle: 'italic'}}>{user.type != 1 ? "Your Meetings" : "All Meetings"}</span>
+                Upcoming Meetings - <span style={{fontWeight: '100', fontStyle: 'italic'}}>{cookies.user.type != 1 ? "Your Meetings" : "All Meetings"}</span>
                 <span style={{ float: 'right' }}><Button variant='contained' color='secondary' onClick={() => { document.body.style.zoom = .75; window.print(); document.body.style.zoom = 1; }}>
                     Print Itinarary
             </Button></span>
@@ -136,7 +137,7 @@ export default function UpcomingMeetings({user}) {
                             <p>Starting Time: <span style={{ float: 'right' }}>{meetings.starttime.getUTCHours()}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()}</span></p>
                             <p>End Time: <span style={{ float: 'right' }}>{meetings.endtime.getUTCHours()}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()}</span></p>
                             <Button size="small" variant='contained' color='primary' onClick={() => handleView(meetings)} style={{width: '50%'}}>Manage</Button>
-                            {user.type == 1 ? <Button size="small" variant='contained' onClick={() => history.push("/feedback/" + meetings.meeting_id)} style={{width: '50%'}}>Feedback</Button> : <></>}
+                            {cookies.user.type == 1 ? <Button size="small" variant='contained' onClick={() => history.push("/feedback/" + meetings.meeting_id)} style={{width: '50%'}}>Feedback</Button> : <></>}
                           </Grid>
                       )
                     })
