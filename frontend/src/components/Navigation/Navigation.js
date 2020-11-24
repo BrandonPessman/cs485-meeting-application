@@ -7,13 +7,11 @@ import FeedbackPage from '../Pages/FeedbackPage/FeedbackPage'
 import {
   BrowserRouter as Router,
   Switch,
-  Route,
-  useLocation
+  Route
 } from "react-router-dom";
 
 
 export default function ClippedDrawer() {
-  const [logged, setLogged] = useState(false)
   const [user, setUser] = useState({})
 
   return (

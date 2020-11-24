@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./SecondaryNavigation.css";
 import MeetingScheduler from "./Tabs/MeetingScheduler";
 import UpcomingMeetings from "./Tabs/UpcomingMeetings";
@@ -6,7 +6,7 @@ import PastMeetings from "./Tabs/PastMeetings";
 import Users from "./Tabs/Users";
 
 export default function SecondaryNavigation({user}) {
-  const [tab, setTab] = useState(0);
+  const [tab, setTab] = useState(user.type == 1 ? 0 : 1);
   const [u] = useState(user)
 
   return (
@@ -42,7 +42,7 @@ export default function SecondaryNavigation({user}) {
           </span>
         </h2>
  
-        {u.type != 0 ? <>
+        {u.type == 1 ? <>
           <li
           className={
             tab === 0 ? "secondary-li secondary-li-active" : "secondary-li"
@@ -76,7 +76,7 @@ export default function SecondaryNavigation({user}) {
           </a>
         </li>
 
-        {u.type != 0 ? <>
+        {u.type == 1 ? <>
           <li
           className={
             tab === 3 ? "secondary-li secondary-li-active" : "secondary-li"
@@ -95,8 +95,8 @@ export default function SecondaryNavigation({user}) {
 
       <div style={{ padding: "10px 200px" }}>
         {tab === 0 ? <MeetingScheduler /> : ""}
-        {tab === 1 ? <UpcomingMeetings /> : ""}
-        {tab === 2 ? <PastMeetings /> : ""}
+        {tab === 1 ? <UpcomingMeetings user={user} /> : ""}
+        {tab === 2 ? <PastMeetings user={user} /> : ""}
         {tab === 3 ? <Users /> : ""}
       </div>
     </>

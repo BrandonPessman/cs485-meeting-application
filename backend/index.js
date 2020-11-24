@@ -38,7 +38,7 @@ app.get('/userTypes', (request,response) => {
 app.get('/userPositions', (request,response) => {
     driver.newdriver.getUserPosition(request,response);
 });
-app.get('/userMeetings', (request, response) => {
+app.get('/userMeetings/:u_id', (request, response) => {
     driver.newdriver.getAllUserMeetings(request,response);
 });
 //use e-mail and password to login

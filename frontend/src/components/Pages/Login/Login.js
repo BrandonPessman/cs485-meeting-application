@@ -16,6 +16,7 @@ export default function Login({setUser}) {
         axios
         .get(`http://localhost:3443/users/${username}/${password}`)
         .then(function (response) {
+            console.log(response)
             const user = response.data.user;
             if (user.length != 0) {
                 console.log(user)
