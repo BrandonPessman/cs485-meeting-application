@@ -35,23 +35,20 @@ export default function ClippedDrawer() {
           <a href="/" onClick={() => {removeCookie('user')}}>Logout</a>
         </li>
         <li style={{ float: "right" }}>
-          <a href="#news">Help</a>
+          <a href="/">Help</a>
         </li>
         <li style={{ float: "right" }}>
           <a href="/Account">Account</a>
         </li>
         <li className="active" style={{ float: "right" }}>
-          <a href="#about">Home</a>
+          <a href="/">Home</a>
         </li> 
         </> : ''}
       </ul>
 
         <Switch>
           <Route exact path="/">
-            <Login setUser={setUser} setCookie={setCookie} />
-          </Route>
-          <Route path="/dashboard">
-            <SecondaryNavigation user={user} cookies={cookies} />
+            { cookies.user ? <SecondaryNavigation user={user} cookies={cookies} /> : <Login setUser={setUser} setCookie={setCookie} /> }
           </Route>
           <Route path="/meeting/:id">
             <MeetingPage user={user} />

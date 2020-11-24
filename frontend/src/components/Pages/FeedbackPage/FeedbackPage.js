@@ -4,11 +4,12 @@ import { useParams } from "react-router";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 
 export default function FeedbackPage({user}) {
   let { id } = useParams();
   let history = useHistory();
+  const location = useLocation();
 
   const [feedback, setFeedback] = useState([]);
 
@@ -41,9 +42,7 @@ export default function FeedbackPage({user}) {
     }
 
     axios.post("http://localhost:3443/insertFeedback/", {data})
-      .then(response => {
-        console.log("Yay")
-      })
+    history.go(0)
   } 
 
   const handleDelete = (feedbackId) => {
@@ -78,10 +77,10 @@ export default function FeedbackPage({user}) {
             Submit Feedback
           </Button>
           <h1>Current Feedback</h1>
-          {feedback.map(item => {
+          {feedback.map((item,i) => {
             return (
               <>
-                <div key={item.feedback_id} style={{backgroundColor: user.name == item.author ? 'rgba(0,0,255,.2)' : 'rgba(0,0,0,.05)', padding: '5px', borderRadius: '4px', margin: '5px'}}>
+                <div key={"feedback-" + i} style={{backgroundColor: user.name == item.author ? 'rgba(0,0,255,.2)' : 'rgba(0,0,0,.05)', padding: '5px', borderRadius: '4px', margin: '5px'}}>
                 <h4 style={{padding: '0', margin: '0'}}>
                   @{item.author}
 
