@@ -13,6 +13,7 @@ import axios from "axios";
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import TextField from "@material-ui/core/TextField";
 import Paper from '@material-ui/core/Paper';
+import GenerateUser from './Tabs/GenerateUser';
 
 export default function SecondaryNavigation({user, cookies}) {
   let history = useHistory();
@@ -196,6 +197,20 @@ export default function SecondaryNavigation({user, cookies}) {
             Last Location
           </a>
         </li>
+        {user.type == 1 ? <>
+          <li
+          className={
+            tab === 6 ? "secondary-li secondary-li-active" : "secondary-li"
+          }
+        >
+          <a onClick={() => setTab(6)}>
+            Generate User
+          </a>
+        </li>
+        </>
+        :
+        ''
+        }
       </ul>
 
       <div style={{ padding: "10px 200px" }}>
@@ -205,6 +220,7 @@ export default function SecondaryNavigation({user, cookies}) {
         {tab === 3 ? <Users /> : ""}
         {tab === 4 ? <LastLocation /> : ""}
         {tab === 5 ? <MyFiles /> : ""}
+        {tab === 6 ? <GenerateUser /> : ""}
       </div>
     </>
   );
