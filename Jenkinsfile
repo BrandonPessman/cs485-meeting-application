@@ -5,6 +5,10 @@ pipeline {
         skipDefaultCheckout(true)
     }
     stages {
+        stage("Prep for per-dir Jenkinsfile") {
+            checkout(scm)
+            sh 'git clean -fdx'
+          }
         stage("NPM Install (Frontend)") {
             steps {
                 dir("frontend") {
