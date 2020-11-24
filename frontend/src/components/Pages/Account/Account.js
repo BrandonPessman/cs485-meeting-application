@@ -3,16 +3,17 @@ import Paper from '@material-ui/core/Paper'
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import axios from 'axios'
+import Autocomplete from '@material-ui/lab/Autocomplete'
 import { useHistory } from "react-router-dom";
 
 
-export default function Login({givenUser}) {
-    const [user] = useParams(givenUser);
-    const [accountName, setAccountName] = useState(user.name);
-    const [accountEmail, setAccountEmail] = useState(user.email);
-    const [accountPhoneNumber, setAccountPhoneNumber] = useState(user.phone_number);
-    const [accountPassword, setAccountPassword] = useState(user.u_password);
-    const [accountType, setAccountType] = useState(user.type);
+export default function Login({user}) {
+    const [u] = useState(user)
+    const [accountName, setAccountName] = useState(u.name);
+    const [accountEmail, setAccountEmail] = useState(u.email);
+    const [accountPhoneNumber, setAccountPhoneNumber] = useState(u.phone_number);
+    const [accountPassword, setAccountPassword] = useState(u.u_password);
+    const [accountType, setAccountType] = useState(u.type);
     const [accountTypeDescr, setAccountTypeDescr] = useState('');
     const [userTypes, setUserTypes] = useState([]);
     useEffect(() => {
@@ -22,18 +23,42 @@ export default function Login({givenUser}) {
             setUserTypes(response.data.type);
         });
   }, []);
-
+        const handleNameChange= (event, name) => {
+            setAccountName(name);
+        };
+        const handleEmailChange = (event, email) => {
+            setAccountEmail(email);
+        };
+        const handlePasswordChange = (event, password) => {
+            setAccountPassword(password);
+        };
+        const handlePhoneNumberChange = (event, number) => {
+            setAccountPhoneNumber(number);
+        };
+        const handleSelectType = (event, type) => {
+            var chosenType = userTypes.filter(type => {
+                return type.type_descr === type;
+            });
+            const { type_id } = chosenType[0];
+            setAccountType(type_id);
+        }
+        const handleSave = (event) => {
+            var updateAccount = {
+                name: accountName,
+                email: accountEmail,
+                phone_number: accountPhoneNumber,
+                password: accountPassword,
+                type: accountType,
+            };
+            axios
+            .patch("http://localhost:3443/user", updateAccount)
+            .then(function (response) {
+                console.log(response);
+            });
+        }
     return (
     <>
-        <Router>
-            <Paper elevation={3} style={{ padding: '10px 30px', width: '300px', margin: '100px auto 10px auto' }}>
                 <h2>Welcome, { accountName }</h2>
-                <Modal
-            open={openAccount}
-            onClose={handleCloseAccount}
-            aria-labelledby="simple-modal-title"
-            aria-describedby="simple-modal-description"
-            >
             <Paper
               container
               xs={12}
@@ -106,7 +131,7 @@ export default function Login({givenUser}) {
               options={userTypes}
               getOptionLabel={(option) => option.type_descr}
               style={{ width: "100%", margin: "10px 0" }}
-              defaultValue={chosenType}
+              defaultValue={accountTypeDescr}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -129,17 +154,6 @@ export default function Login({givenUser}) {
               onClick={ handleSave }
             > Save Changes</Button>
           </Paper>
-              </Modal>
-            </Paper>
-            <Switch>
-          <Route exact path="/">
-            <Login setUser={setUser} />
-          </Route>
-          <Route path="/Account/:u_id">
-            <Account givenUser={u_id} />
-          </Route>
-        </Switch>
-      </Router>
     </>
   );
 }

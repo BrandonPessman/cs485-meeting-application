@@ -59,7 +59,7 @@ export default function MeetingPage({ user }) {
             console.log(locationData.data)
               setLocations(locationData.data.location)
               for (let i = 0; i < locationData.data.location.length; i++) {
-                  
+                  console.log("location_id: " + initData.location_id);
                   if (initData.location_id == locationData.data.location[i].location_id) {
                       setChosenLocation(locationData.data.location[i].name)
                   }
@@ -219,7 +219,7 @@ export default function MeetingPage({ user }) {
         xs={12}
         style={{ margin: "50px auto", width: "600px", padding: "40px" }}
       >
-        <h1>Update Meeting</h1>
+        <h1>Edit Meeting</h1>
         <h2>{title}</h2>
         <TextField
           label="Title"

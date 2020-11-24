@@ -4,6 +4,7 @@ import SecondaryNavigation from './SecondaryNavigation'
 import Login from '../Pages/Login/Login'
 import MeetingPage from '../Pages/MeetingPage/MeetingPage'
 import FeedbackPage from '../Pages/FeedbackPage/FeedbackPage'
+import Account from '../Pages/Account/Account'
 import {
   BrowserRouter as Router,
   Switch,
@@ -30,7 +31,7 @@ export default function ClippedDrawer() {
           <a href="#news">Help</a>
         </li>
         <li style={{ float: "right" }}>
-          <a href="#contact">Account</a>
+          <a href="/Account">Account</a>
         </li>
         <li className="active" style={{ float: "right" }}>
           <a href="#about">Home</a>
@@ -50,6 +51,9 @@ export default function ClippedDrawer() {
           </Route>
           <Route path="/feedback/:id">
             <FeedbackPage user={user} />
+          </Route>
+          <Route path="/Account">
+            <Account user={user} />
           </Route>
         </Switch>
       </Router>
