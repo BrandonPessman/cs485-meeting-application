@@ -63,6 +63,8 @@ app.get('/department', (request, response) => {
 app.get('/meetingStatus', (request,response) => {
     driver.newdriver.getMeetingStatus(request,response);
 });
+
+
 app.post('/meetingFeedback', (request, response) => {
     driver.newdriver.getMeetingFeedback(request, response);
 });
@@ -86,6 +88,9 @@ app.post('/insertDepartmentPosition', (request,response) => {
 });
 app.post('/insertDepartment',(request,response) => {
     driver.newdriver.insertDepartment(request,response);
+})
+app.post('/insertMeetingUser',(request,response) => {
+    driver.newdriver.addMeetingUser(request,response);
 })
 /*app.post('/insertFile', (request, response) => {
     driver.newdriver.insertFile(request, response)
@@ -112,6 +117,9 @@ app.patch('/updatePosition', (request,response) => {
 });
 
 
+app.delete('/deleteUserMeeting/:u_id/:meeting_id', (request,response) => {
+    driver.newdriver.deleteUserMeeting(request,response);
+});
 app.delete('/deletePosition/:position_id', (request,response) => {
     driver.newdriver.deletePosition(request, response)
 });

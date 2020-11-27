@@ -107,14 +107,6 @@ export default function SecondaryNavigation({user, cookies}) {
           }}
         >
           Scheduling Center{" "}
-          <Button 
-            variant='contained'
-            color='default'
-            style={{ marginLeft: '20px', float: 'right' }}
-            onClick = { handleManageAccount }
-          >
-            Edit Account
-          </Button>
           <span
             style={{
               float: "right",

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer } from "react";
 import axios from 'axios'
 import { useParams } from "react-router";
 import Paper from "@material-ui/core/Paper";
@@ -20,7 +20,7 @@ export default function MeetingPage({ user }) {
   const [warning, openWarning] = React.useState(false);
   const [warningContent, setWarningContent] = useState([]);
   const [chosenLocation, setChosenLocation] = useState("");
-  const [chosenPosition, setChosenPosition] = useState({});
+  const [chosenPosition, setChosenPosition] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("")
   const [availableLocations, setAvailableLocations] = useState([]);
@@ -34,8 +34,10 @@ export default function MeetingPage({ user }) {
     axios
     .get(`http://104.131.115.65:3443/meetingUser/${meeting_id}`)
     .then(function (userData) {
-        console.log("DATA: " + userData.data.user)
         setSelectedUsers(userData.data.user)
+        for (var i = 0; i<userData.data.user.length; i++) {
+          
+        }
         axios
         .post(`http://104.131.115.65:3443/getSpecificMeeting/`, {meeting_id: id})
         .then(function (meetingResponse) {
@@ -64,16 +66,21 @@ export default function MeetingPage({ user }) {
                       setChosenLocation(locationData.data.location[i].name)
                   }
               }
-            });
-            axios.get("http://104.131.115.65:3443/positions").then(function (response) {
-              setPositions(response.data.positions);
-              for (let i = 0; i<response.data.position.length; i++) {
-                if (initData.position_id == response.data.position[i].position_id) {
-                  setChosenPosition(response.data.position[i].title)
+              axios
+              .get("http://104.131.115.65:3443/positions")
+              .then(function (positionData) {
+              console.log(positionData.data)
+                setPositions(positionData.data.position)
+                console.log("id: " + initData.position_id);
+                for (let i = 0; i < positionData.data.position.length; i++) {
+                    if (initData.position_id == positionData.data.position[i].position_id) {
+                        console.log("title: " + positionData.data.position[i].title);
+                        setChosenPosition(positionData.data.position[i].title);
+                    }
                 }
-              }
-              });
+            });
         });
+    });
     });
 
     axios.get("http://104.131.115.65:3443/users").then(function (response) {
@@ -85,12 +92,20 @@ export default function MeetingPage({ user }) {
       });
 }, [])
 
-  const handleDeleteUser = (event) => {
-    const selectedIndex = event.nativeEvent.target.selectedIndex;
-    let list = selectedUsers.splice(selectedIndex, 1);
-    setSelectedUsers(list)
-    console.log(selectedUsers)
-  }
+  const handleDeleteUser = (event, u_id) => {
+    var meeting_id = id;
+    axios.delete(`http://104.131.115.65:3443/deleteUserMeeting/${u_id}/${meeting_id}`)
+    .then(function (response) {
+      console.log(response);
+      axios
+      .get(`http://104.131.115.65:3443/meetingUser/${ id }`)
+      .then(function (userData) {
+          setSelectedUsers(userData.data.user)
+          for (var i = 0; i<userData.data.user.length; i++) {
+          }
+    });
+  });
+}
 
   const handleStartDate = (event, newDate) => {
     console.log(users);
@@ -125,33 +140,28 @@ export default function MeetingPage({ user }) {
       }
     }
   };
-  const handleAddUser = () => {
-    var userVal = document.getElementById("adding-user-textfield").value;
-    if (userVal != "") {
-      var selectedUser = users.filter(user => {
-        return user.name === userVal;
-      })
-      const { u_id } = selectedUser[0];
-      setSelectedUsers(selectedUsers.concat({ user: userVal, role: 0 }));
-      setChosenUsers(chosenUsers.concat({ u_id: u_id }));
-      let userData = { u_id: u_id, start_date_time: startDate, end_date_time: endDate };
-      axios
-        .get("http://104.131.115.65:3443/userAvailability", { data: userData })
-        .then(function (results) {
-          console.log("results: " + results.data);
-          if (results.data.userAvailability == 0) {
-            setWarningContent("Availability conflict with user: " + userVal + ". They're attending " + results.data.meeting_title + " at that time.");
-            openWarning(true);
-            setTimeout(() => { openWarning(false); }, 30000);
-          }
-        });
-      userVal = null;
-    } else {
-      setWarningContent("No user selected.");
-      openWarning(true);
-      setTimeout(() => { openWarning(false); }, 2000);
-    }
-    console.log("selectedUsers: " + selectedUsers);
+  const handleAddUser = (event, clickedName) => {
+      console.log("name: " + clickedName);
+      for (var i = 0; i<users.length; i++) {
+        console.log("Incremented name: " + users[i].name);
+        console.log("Incremented id: " + users[i].u_id);
+        const selID = users[i].u_id;
+        if (users[i].name === clickedName) {
+          var meetingUser = { u_id: selID, meeting_id: id};
+          axios
+          .post("http://104.131.115.65:3443/insertMeetingUser", meetingUser)
+          .then(function (results) {
+            console.log(results);
+            axios
+            .get(`http://104.131.115.65:3443/meetingUser/${ id }`)
+            .then(function (userData) {
+                setSelectedUsers(userData.data.user)
+                for (var i = 0; i<userData.data.user.length; i++) {
+                }
+            });
+          });
+        }
+      }
   };
   const handleChosenLocation = () => {
     var locationVal = document.getElementById("create-event-location").value;
@@ -190,6 +200,7 @@ export default function MeetingPage({ user }) {
     if (chosenLocation === locations[i].name) {
         setChosenLocation(locations[i].location_id);
     }
+  
   }
   /*
   
@@ -289,7 +300,7 @@ export default function MeetingPage({ user }) {
           renderInput={(params) => (
             <TextField
               {...params}
-              label="Add a Location"
+              label="Select Different Location"
               variant="outlined"
               defaultValue={chosenLocation}
               style={{ width: "100%" }}
@@ -308,7 +319,7 @@ export default function MeetingPage({ user }) {
         <TextField
           disabled={true}
           id="existing-position"
-          value={chosenPosition}
+          value={ chosenPosition }
           InputLabelProps={{
             shrink: true,
           }}
@@ -322,7 +333,7 @@ export default function MeetingPage({ user }) {
           renderInput={(params) => (
             <TextField
               {...params}
-              label="Add a Position"
+              label="Select Different Position"
               variant="outlined"
               style={{ width: "100%" }}
             />
@@ -341,10 +352,10 @@ export default function MeetingPage({ user }) {
           Users:{" "} {selectedUsers.length == 0 ? "None" : ""}
           {selectedUsers.map((u, i) => {
             return <button 
-            variant = 'contained'x
+            variant = 'contained'
             color = 'default'
             style={{ width: "45%" }}
-            key={i} onClick={handleDeleteUser}>{u.name}</button>;
+            key={i} onClick={(event) => handleDeleteUser(event, u.u_id)}>{u.name}</button>;
           })}
         </p>
         <Autocomplete
@@ -366,7 +377,7 @@ export default function MeetingPage({ user }) {
           variant="contained"
           color="primary"
           style={{ width: "100%" }}
-          onClick={handleAddUser}
+          onClick={(event) => handleAddUser(event, document.getElementById('adding-user-textfield').value)}
         >
           Add User
           </Button>

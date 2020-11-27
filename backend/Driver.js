@@ -51,12 +51,23 @@ class Driver {
     });
   }
   /*Deletes user in 'user' table - cascades to all instances of this user*/
-  deleteUser(request, response) {
+  deleteUser(request) {
     var query = 'DELETE FROM user WHERE u_id = ?'
     var params = [request.params.u_id];
     this.connection.query(query, params, (err) => {
       if (err) { console.log(err) }
-      else { response.send({ status: true }) }
+      else { 
+        this.deleteUserFromMeeting({u_id:request.params.u_id});
+        response.send({ status: true });
+      }
+    });
+  }
+  deleteUserFromMeeting(request,response) {
+    var query = 'DELETE FROM meetingUser WHERE u_id = ?'
+    var params = [request.u_id];
+    this.connection.query(query, params, (err, result) => {
+      if (err) { console.log(err) }
+      else {console.log({status:true})}
     });
   }
   /*Check user availability*/
@@ -165,7 +176,7 @@ class Driver {
       }
     });
   }
-  /*Deletes user in meeting using meeting_id & u_id*/
+  /*Deletes user in meeting using meeting_id*/
   deleteMeetingUser(request) {
     const query = "DELETE FROM meetingUser Where meeting_id= ?";
     const params = [request.meeting_id];
@@ -178,13 +189,28 @@ class Driver {
       }
     })
   }
+  /*Deletes user in meeting using u_id*/
+  deleteUserMeeting(request,response) {
+    const query = "DELETE FROM meetingUser where u_id =? and meeting_id = ?";
+    const params = [request.params.u_id, request.params.meeting_id]
+    this.connection.query(query, params, (err,result) => {
+      if (err) {
+        response.send({error: err});
+      }
+      else{
+        response.send({ status:true });
+      }
+    });
+  }
   /*Adds each user in meeting to meetingCombo table - called by insertMeeting when meeting initialized.*/
-  addMeetingUser(user_id, meeting_id) {
+  addMeetingUser(request,response) {
     var query = 'INSERT INTO meetingUser VALUES (?,?)'
-    const params = [user_id, meeting_id];
+    const params = [request.body.u_id, request.body.meeting_id];
     this.connection.query(query, params, function (err, result) {
       if (err) {
-        console.log(err);
+        response.send({error:err});
+      }else{
+        response.send({status:true});
       }
     })
   }
