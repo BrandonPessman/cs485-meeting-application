@@ -232,7 +232,7 @@ export default function MeetingPage({ user }) {
       start_date_time: startDate,
       end_date_time: endDate,
     }
-    axios.patch("http://localhost:3443/updateMeeting", newMeeting)
+    axios.patch("http://104.131.115.65:3443/updateMeeting", newMeeting)
     .then(function (response) {
       console.log(response);
       setUpdateState(false);
