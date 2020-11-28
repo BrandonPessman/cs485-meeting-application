@@ -364,8 +364,6 @@ export default function EnhancedTable({ setShowNextStep }) {
   }
 
   const handleClick = (event, name, id) => {
-    const selectedIndex = selected.indexOf(name)
-
     if (selected === name) {
       setSelected([])
       setShowNextStep(false)
@@ -379,8 +377,9 @@ export default function EnhancedTable({ setShowNextStep }) {
       const { dept_title } = pos[0];
       setChosenDept(dept_title);
       const { position_id } = pos[0];
+      //const selectedIndex = selected.indexOf(title)
       setChosenId(position_id);
-      setSelected(name)
+      setSelected(title)
       setShowNextStep(true)
     }
   }

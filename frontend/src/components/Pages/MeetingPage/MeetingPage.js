@@ -21,13 +21,16 @@ export default function MeetingPage({ user }) {
   const [warningContent, setWarningContent] = useState([]);
   const [chosenLocation, setChosenLocation] = useState("");
   const [chosenPosition, setChosenPosition] = useState("");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("")
+  const [chosenTitle, setChosenTitle] = useState("");
+  const [chosenId, setChosenId] = useState("");
+  const [chosenDescription, setChosenDescription] = useState("")
   const [availableLocations, setAvailableLocations] = useState([]);
+  const [updateState, setUpdateState] = React.useState(false);
 
   let history = useHistory();
 
   useEffect(() => {
+
     console.log(user)
     var meeting_id = id;
     axios
@@ -51,8 +54,8 @@ export default function MeetingPage({ user }) {
 
             setStartDate(start);
             setEndDate(end);
-            setTitle(initData.meeting_title);
-            setDescription(initData.meeting_descr);
+            setChosenTitle(initData.meeting_title);
+            setChosenDescription(initData.meeting_descr);
             console.log("looking")
             axios
             .get("http://104.131.115.65:3443/locations")
@@ -96,10 +99,10 @@ export default function MeetingPage({ user }) {
         setPositions(response.data.positions);
       });
 }, [])
-
+  const noClick = (event) => {}
   const handleDeleteUser = (event, u_id) => {
     var meeting_id = id;
-    axios.delete(`http://localhost:3443/deleteUserMeeting/${u_id}/${meeting_id}`)
+    axios.delete(`http://104.131.115.65:3443/deleteUserMeeting/${u_id}/${meeting_id}`)
     .then(function (response) {
       console.log(response);
       axios
@@ -110,6 +113,9 @@ export default function MeetingPage({ user }) {
   });
 }
 
+  const handleUpdateState = (event) => {
+    setUpdateState(true);
+  }
   const handleStartDate = (event, newDate) => {
     console.log(users);
     setStartDate(document.getElementById("create-event-starttime").value);
@@ -120,6 +126,13 @@ export default function MeetingPage({ user }) {
       setTimeout(() => { openWarning(false); }, 15000);
     }
   };
+  const handleTitleChange = (event, title) => {
+    setChosenTitle(title);
+  }
+  const handleDescriptionChange = (event, descr) => {
+    setChosenDescription(descr);
+
+  }
   const handleEndDate = (event, newDate) => {
     console.log("handleEndDate");
     setEndDate(document.getElementById("create-event-endtime").value);
@@ -150,7 +163,7 @@ export default function MeetingPage({ user }) {
         if (users[i].name === clickedName) {
           var meetingUser = { u_id: selID, meeting_id: id};
           axios
-          .post("http://localhost:3443/insertMeetingUser", meetingUser)
+          .post("http://104.131.115.65:3443/insertMeetingUser", meetingUser)
           .then(function (results) {
             console.log(results);
             axios
@@ -197,48 +210,58 @@ export default function MeetingPage({ user }) {
     }
   }
   const handleUpdateMeeting = () => {
+  var locationId;
+  var positionId;
   for (let i = 0; i < locations.length; i++) {   
     if (chosenLocation === locations[i].name) {
-        setChosenLocation(locations[i].location_id);
+        locationId = locations[i].location_id;
     }
   
-  }
-  /*
-  
+  }  
   for (let i = 0; i<positions.length; i++) {
     if (chosenPosition === positions[i].title) {
-      setChosenPosition(positions[i].position_id);
+      positionId = positions[i].position_id;
     }
-  }*/
+  }
     const newMeeting = {
-      meeting_title: title,
-      meeting_descr: description,
-      location_id: chosenLocation,
-      position_id: chosenPosition,
+      meeting_id: id,
+      meeting_title: chosenTitle,
+      meeting_descr: chosenDescription,
+      location_id: locationId,
+      position_id: positionId,
       start_date_time: startDate,
       end_date_time: endDate,
     }
-    axios.patch("http://104.131.115.65:3443/updateMeeting", newMeeting)
+    axios.patch("http://localhost:3443/updateMeeting", newMeeting)
     .then(function (response) {
       console.log(response);
+      setUpdateState(false);
     });
   };
 
   return (
-    <>{title === "" || description === "" ? '' || startDate === "" || endDate === "" || chosenLocation === "" :
+    <>{chosenTitle === "" || chosenDescription === "" ? '' || startDate === "" || endDate === "" || chosenLocation === "" :
       <Paper
         container
         xs={12}
         style={{ margin: "50px auto", width: "600px", padding: "40px" }}
       >
-        <h1>Edit Meeting</h1>
-        <h2>{title}</h2>
+        <Button 
+          variant="contained"
+          color="primary"
+          disabled = {updateState ? true : false}
+          style = {{ width: "75%" }}
+          onClick = { handleUpdateState }
+          > Edit Meeting </Button>
+        <h2>{chosenTitle}</h2>
         <TextField
           label="Title"
           id="create-event-title"
           variant="outlined"
           size="small"
-          defaultValue={title}
+          defaultValue={chosenTitle}
+          onChange = {(event) => {handleTitleChange(event, document.getElementById('create-event-title').value)}}
+          disabled = {updateState ? false : true}
           style={{
             width: "100%",
             marginBottom: "10px",
@@ -248,7 +271,9 @@ export default function MeetingPage({ user }) {
           label="Description"
           id="create-event-desc"
           variant="outlined"
-          defaultValue={description}
+          defaultValue={chosenDescription}
+          disabled = {updateState ? false : true }
+          onChange = {(event) => {handleDescriptionChange(event, document.getElementById('create-event-desc').value)}}
           size="small"
           style={{
             width: "100%",
@@ -260,6 +285,7 @@ export default function MeetingPage({ user }) {
           label="Start Time"
           type="datetime-local"
           defaultValue={startDate}
+          disabled = {updateState ? false: true }
           onChange={handleStartDate}
           InputLabelProps={{
             shrink: true,
@@ -271,6 +297,7 @@ export default function MeetingPage({ user }) {
           label="End Time"
           type="datetime-local"
           defaultValue={endDate}
+          disabled = {updateState ? false : true}
           onChange={handleEndDate}
           InputLabelProps={{
             shrink: true,
@@ -293,7 +320,7 @@ export default function MeetingPage({ user }) {
           }}
           style={{ margin: "10px 0", width: "100%" }}
         />
-        <Autocomplete
+        {updateState ? <div><Autocomplete
           id="create-event-location"
           options={availableLocations.map(l => ({ value: l.location_id, label: l.name }))}
           getOptionLabel={(option) => String(option.label)}
@@ -316,7 +343,7 @@ export default function MeetingPage({ user }) {
           style={{ width: "100%" }}
         >
           Add Location
-            </Button>
+            </Button></div> : ''}
         <TextField
           disabled={true}
           id="existing-position"
@@ -326,7 +353,7 @@ export default function MeetingPage({ user }) {
           }}
           style={{ margin: "10px 0", width: "100%" }}
         />
-        <Autocomplete
+        {updateState ? <div><Autocomplete
           id="create-event-position"
           options={positions}
           getOptionLabel={(option) => option.title}
@@ -348,7 +375,7 @@ export default function MeetingPage({ user }) {
           style={{ width: "100%" }}
         >
           Add Position
-            </Button>
+            </Button></div> : ''}
         <p>
           Users:{" "} {selectedUsers.length == 0 ? "None" : ""}
           {selectedUsers.map((u, i) => {
@@ -356,10 +383,10 @@ export default function MeetingPage({ user }) {
             variant = 'contained'
             color = 'default'
             style={{ width: "45%" }}
-            key={i} onClick={(event) => handleDeleteUser(event, u.u_id)}>{u.name}</button>;
+            key={i} onClick={updateState ? (event) => handleDeleteUser(event, u.u_id) : noClick}>{u.name}</button>;
           })}
         </p>
-        <Autocomplete
+        {updateState ? <div><Autocomplete
           id="adding-user-textfield"
           options={users}
           getOptionLabel={(option) => option.name}
@@ -381,14 +408,15 @@ export default function MeetingPage({ user }) {
           onClick={(event) => handleAddUser(event, document.getElementById('adding-user-textfield').value)}
         >
           Add User
-          </Button>
-        <Button
+          </Button></div> : ''}
+        <div><Button
           variant="contained"
           color="secondary"
-          style={{ width: "45%" }}
+          disabled = {updateState ? false: true}
+          style={{ float: "left", width: "45%"}}
           onClick={handleUpdateMeeting}
         >
-          Update
+          Save Changes
           </Button>
         <Button
           variant="contained"
@@ -399,7 +427,7 @@ export default function MeetingPage({ user }) {
           }}
         >
           Cancel
-          </Button>
+          </Button></div>
       </Paper>
     }
     </>

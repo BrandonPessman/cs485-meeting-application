@@ -295,9 +295,9 @@ class Driver {
   updateMeeting(request, response) {
     var query = 'UPDATE Meeting SET meeting_title = ?, meeting_descr = ?, location_id = ?, start_date_time = ?, end_date_time = ? WHERE meeting_id = ?'
     var params = [request.body.meeting_title, request.body.meeting_descr, request.body.location_id, request.body.start_date_time, request.body.end_date_time, request.body.meeting_id]
-    this.connection.query(query, params, (err, result) => {
+    var temp = this.connection.query(query, params, (err, result) => {
       if (err) { console.log(err) }
-      else { response.send({ status: true }) }
+      else { response.send({ status: true, sql:temp.sql }) }
     })
   }
   /*Deletes all meeting/feedback relationships via meeting_id or feedback_id*/
