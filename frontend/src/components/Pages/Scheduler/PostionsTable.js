@@ -308,16 +308,16 @@ export default function EnhancedTable({ setShowNextStep }) {
       axios.post("http://104.131.115.65:3443/insertPosition", newPosition)
         .then(result => {
           console.log(result);
+          axios.get("http://104.131.115.65:3443/positions").then(function (response) {
+            console.log(response.data.position);
+            setPositions(response.data.position);
+          });
         })
       openNewPosition(false);
-      axios.get("http://104.131.115.65:3443/positions").then(function (response) {
-        console.log(response.data.position);
-        setPositions(response.data.position);
-      });
       axios.get("http://104.131.115.65:3443/department").then(function (response) {
         console.log(response.data.department);
         setDepartments(response.data.position);
-      })
+      });
   }
   };
   const handleDeletePosition = () => {
@@ -397,6 +397,13 @@ export default function EnhancedTable({ setShowNextStep }) {
   //   }
 
   const isSelected = name => selected.indexOf(name) !== -1
+
+  const handleCloseEditPosition = (event) => {
+    openEditPosition(false);
+  }
+  const handleCloseNewPosition = (event) => {
+    openNewPosition(false);
+  }
 
   const emptyRows =
     rowsPerPage - Math.min(rowsPerPage, positions.length - page * rowsPerPage)
@@ -536,10 +543,18 @@ export default function EnhancedTable({ setShowNextStep }) {
       <Button
       variant = 'contained'
       color = 'default'
-      style={{ marginleft: '20px', float: 'right' }}
+      style={{ marginleft: '20px', float: 'left' }}
       onClick = { handleCreatePosition }
       >
         Create Position
+      </Button>
+      <Button 
+      variant="contained" 
+      color="secondary"
+      style={{ marginleft: '20px', float: 'right' }}
+      onClick = { handleCloseNewPosition }
+      >
+        Cancel
       </Button>
         </Paper>
       </Modal>
@@ -613,10 +628,18 @@ export default function EnhancedTable({ setShowNextStep }) {
       <Button
       variant = 'caontained'
       color = 'default'
-      style={{ marginleft: '20px', float: 'right' }}
+      style={{ marginleft: '20px', float: 'left' }}
       onClick = { handleUpdatePosition }
       >
         Save Changes
+      </Button>
+      <Button 
+      variant="contained" 
+      color="secondary"
+      style={{ marginleft: '20px', float: 'right' }}
+      onClick = { handleCloseEditPosition }
+      >
+        Cancel
       </Button>
         </Paper>
       </Modal>

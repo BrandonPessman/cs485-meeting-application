@@ -435,15 +435,15 @@ export default function EnhancedTable({ setShowNextStep }) {
       position_id: chosenPosition,
       users: chosenUsers,
     };
-    axios.post("http://104.131.115.65:3443/meeting", newMeeting)
+    axios.post("http://localhost:3443/meeting", newMeeting)
       .then(result => {
         console.log(result);
         setNewMeetingOpen(false);
-        axios.get("http://104.131.115.65:3443/meetings")
-          .then(function (response) {
-          setMeetings(response.data.meeting);
         });
-        });
+    axios.get("http://104.131.115.65:3443/meetings")
+      .then(function (response) {
+      setMeetings(response.data.meeting);
+    });
   };
   const handleDeleteMeeting = () => {
     if (selected != "") {
@@ -455,10 +455,10 @@ export default function EnhancedTable({ setShowNextStep }) {
       axios.delete(`http://104.131.115.65:3443/meeting/${meeting_id}`)
         .then(result => {
           console.log(result);
-        });
-      axios.get("http://104.131.115.65:3443/meetings").then(function (response) {
-        setMeetings(response.data.meeting);
+          axios.get("http://104.131.115.65:3443/meetings").then(function (response) {
+          setMeetings(response.data.meeting);
       });
+        });
     }
   };
   const handleRequestSort = (event, property) => {
@@ -652,7 +652,7 @@ export default function EnhancedTable({ setShowNextStep }) {
         <Paper
           container
           xs={12}
-          style={{ margin: "50px auto", height:"  550px", width: "300px", padding: "40px" }}
+          style={{ margin: "50px auto", height:"auto", width: "300px", padding: "40px" }}
         >
           <h1>New Meeting</h1>
           <TextField

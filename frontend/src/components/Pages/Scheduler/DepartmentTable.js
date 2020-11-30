@@ -278,6 +278,9 @@ export default function EnhancedTable({ setShowNextStep }) {
   const handleCloseNewDepartment = (event) => {
     setOpenNewDepartment(false);
   }
+  const handleCloseEditDepartment = (event) => {
+    setOpenEditDepartment(false);
+  }
   const handleEditClick = (event) => {
     setOpenEditDepartment(true);
   }
@@ -595,7 +598,7 @@ export default function EnhancedTable({ setShowNextStep }) {
       variant="contained" 
       color="secondary"
       style={{ marginleft: '20px', float: 'right' }}
-      onClick = { handleCloseNewDepartment }
+      onClick = { handleCloseEditDepartment }
       >
         Cancel
       </Button>

@@ -205,12 +205,12 @@ class Driver {
   /*Adds each user in meeting to meetingCombo table - called by insertMeeting when meeting initialized.*/
   addMeetingUser(request,response) {
     var query = 'INSERT INTO meetingUser VALUES (?,?)'
-    const params = [request.body.u_id, request.body.meeting_id];
-    this.connection.query(query, params, function (err, result) {
+    const params = [request.u_id, request.meeting_id];
+    var temp = this.connection.query(query, params, function (err, result) {
       if (err) {
-        response.send({error:err});
+        console.log(err);
       }else{
-        response.send({status:true});
+        console.log({status:true, sql: temp.sql});
       }
     })
   }
@@ -224,9 +224,9 @@ class Driver {
     const query = 'INSERT INTO Meeting (meeting_title, meeting_descr, location_id, start_date_time, end_date_time, position_id, meeting_length) VALUES (?,?,?,?,?,?,?)';
     const params = [request.body.meeting_title, request.body.meeting_descr, request.body.location_id, request.body.start_date_time,
     request.body.end_date_time, request.body.position_id, diff];
-    this.connection.query(query, params, (error, result) => {
+    var temp = this.connection.query(query, params, (error, result) => {
       if (error) {
-        response.send({ error: error.message });
+        response.send({ error: error.message, sql:temp.sql });
         console.log(error);
       }
       else {

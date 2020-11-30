@@ -11,16 +11,23 @@ export default function Login({cookies}) {
     const [accountName, setAccountName] = useState(cookies.user.name);
     const [accountEmail, setAccountEmail] = useState(cookies.user.email);
     const [accountPhoneNumber, setAccountPhoneNumber] = useState(cookies.user.phone_number);
-    const [accountPassword, setAccountPassword] = useState(cookies.user.u_password);
+    const [accountPassword, setAccountPassword] = useState(cookies.user.password);
     const [accountType, setAccountType] = useState(cookies.user.type);
     const [accountTypeDescr, setAccountTypeDescr] = useState('');
     const [userTypes, setUserTypes] = useState([]);
     useEffect(() => {
+      console.log("useEffect");
         axios
         .get("http://104.131.115.65:3443/userTypes")
         .then(function (response) {
+            console.log(response.data);
             setUserTypes(response.data.type);
-        });
+            var chosenType = response.data.type.filter(type => {
+              return type.type_id == cookies.user.type;
+            })
+            const { type_descr } = chosenType[0];
+            setAccountTypeDescr(type_descr)
+          });
   }, []);
         const handleNameChange= (event, name) => {
             setAccountName(name);
@@ -117,7 +124,7 @@ export default function Login({cookies}) {
               id="existing-candidate-type"
               variant="outlined"
               size="small"
-              value={ accountType }
+              value={ accountTypeDescr }
               style={{
                 width: "100%",
                 marginBottom: "10px",

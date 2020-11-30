@@ -292,7 +292,12 @@ export default function EnhancedTable({ setShowNextStep }) {
     // }
     setSelected([])
   }
-
+  const handleCloseEditPosition = (event) => {
+    setOpenEditCandidate(false);
+  }
+  const handleCloseNewCandidate = (event) => {
+    setOpenNewCandidate(false);
+  }
   const handleEditCandidate = (event) => {
     setOpenEditCandidate(true);
   }
@@ -592,6 +597,14 @@ export default function EnhancedTable({ setShowNextStep }) {
             style={{ marginLeft: '20px', float: 'center' }}
             onClick={(event) => handleCandidateInfo(event, 1) }
           > Create Candidate</Button>
+          <Button 
+            variant="contained" 
+            color="secondary"
+            style={{ marginleft: '20px', float: 'right' }}
+            onClick = { handleCloseNewCandidate }
+            >
+              Cancel
+          </Button>
         </Paper>
       </Modal>
       <Button
@@ -701,6 +714,14 @@ export default function EnhancedTable({ setShowNextStep }) {
             style={{ marginLeft: '20px', float: 'center' }}
             onClick={ (event) => handleCandidateInfo(event, 2) }
           > Save Changes</Button>
+          <Button 
+            variant="contained" 
+            color="secondary"
+            style={{ marginleft: '20px', float: 'right' }}
+            onClick = { handleCloseEditPosition }
+            >
+              Cancel
+          </Button>
         </Paper>
       </Modal>
       <Button
