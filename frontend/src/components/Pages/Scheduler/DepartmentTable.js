@@ -315,20 +315,25 @@ export default function EnhancedTable({ setShowNextStep }) {
         .post("http://104.131.115.65:3443/insertDepartment", dept)
         .then(function (response) {
           console.log(response);
+          axios
+          .get("http://104.131.115.65:3443/department")
+          .then(function (response) {
+            setDepartments(response.data.department);
+          });
         });
         setOpenNewDepartment(false);
       }else if (updateType == 2) {
         axios.patch( `http://104.131.115.65:3443/updateDepartment/${chosenTitle}/${chosenShort}/${chosenID}`)
         .then(function (response) {
           console.log(response);
+          axios
+          .get("http://104.131.115.65:3443/department")
+          .then(function (response) {
+            setDepartments(response.data.department);
+          });
         });
         setOpenEditDepartment(false);
       }
-        axios
-        .get("http://104.131.115.65:3443/department")
-        .then(function (response) {
-          setDepartments(response.data.department);
-        });
     }
     else{
       console.log("Invalid");
