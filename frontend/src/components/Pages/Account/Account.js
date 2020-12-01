@@ -6,15 +6,20 @@ import axios from 'axios'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import { useHistory } from "react-router-dom";
 import { useCookies } from 'react-cookie';
+import Modal from "@material-ui/core/Modal";
 
 export default function Login({cookies}) {
+    let history = useHistory();
+    const [removeCookie] = useCookies(['user']);
     const [accountName, setAccountName] = useState(cookies.user.name);
     const [accountEmail, setAccountEmail] = useState(cookies.user.email);
     const [accountPhoneNumber, setAccountPhoneNumber] = useState(cookies.user.phone_number);
     const [accountPassword, setAccountPassword] = useState(cookies.user.password);
     const [accountType, setAccountType] = useState(cookies.user.type);
+    const [accountID, setAccountID] = useState(cookies.user.u_id);
     const [accountTypeDescr, setAccountTypeDescr] = useState('');
     const [userTypes, setUserTypes] = useState([]);
+    const [openCheck, setOpenCheck] = React.useState(false);
     useEffect(() => {
       console.log("useEffect");
         axios
@@ -62,6 +67,24 @@ export default function Login({cookies}) {
                 console.log(response);
             });
         }
+
+        const checkForDelete = (event) => {
+          setOpenCheck(true);
+        }
+        const handleDeleteAccount = (event) => {
+          axios
+          .delete(`http://104.131.115.65:3443/deleteUser/${accountID}`, )
+          .then(function (response) {
+            console.log(response);
+            setOpenCheck(false);
+            removeCookie('user')
+            history.push("/login");
+          })
+        }
+        const handleCloseCheck = (event) => {
+          setOpenCheck(false);
+        }
+
     return (
     <>
                 <h2>Welcome, { accountName }</h2>
@@ -159,7 +182,42 @@ export default function Login({cookies}) {
               style={{ marginLeft: '20px', float: 'center' }}
               onClick={ handleSave }
             > Save Changes</Button>
+            <br></br><br></br>
+            <Button
+            variant="contained" 
+            color="secondary"
+            style={{marginLeft:'25%', float:'center', width:"50%" }}
+            onClick = { checkForDelete }
+            >Delete my Account</Button>
           </Paper>
+          <Modal
+            open={ openCheck }
+            onClose={() => {
+              setOpenCheck(false);
+            }}
+            aria-labelledby="simple-modal-title"
+            aria-describedby="simple-modal-description"
+          >
+            <Paper
+              container
+              xs={12}
+              style={{ margin: "50px auto", width: "300px", height: "auto", padding: "40px" }}
+            >
+            Are you sure you want to delete your account? <br></br>This is an irreversible action, and your account will have to be created by an Interviewer admin.<br></br><br></br>
+              <div><Button
+              variant="contained"
+              color="secondary"
+              style={{ marginleft: '20px', float: 'left' }}
+              onClick={ handleDeleteAccount }
+              >Delete Account</Button>
+              <Button 
+              variant="contained" 
+              color="secondary"
+              style={{ marginleft: '20px', float: 'right' }}
+              onClick = { handleCloseCheck }
+              >Cancel</Button></div><br></br>
+        </Paper>
+      </Modal>
     </>
   );
 }

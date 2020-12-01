@@ -51,18 +51,18 @@ class Driver {
     });
   }
   /*Deletes user in 'user' table - cascades to all instances of this user*/
-  deleteUser(request) {
+  deleteUser(request,response) {
     var query = 'DELETE FROM user WHERE u_id = ?'
     var params = [request.params.u_id];
     this.connection.query(query, params, (err) => {
       if (err) { console.log(err) }
       else { 
-        this.deleteUserFromMeeting({u_id:request.params.u_id});
         response.send({ status: true });
+        this.deleteUserFromMeeting({u_id:request.params.u_id});
       }
     });
   }
-  deleteUserFromMeeting(request,response) {
+  deleteUserFromMeeting(request) {
     var query = 'DELETE FROM meetingUser WHERE u_id = ?'
     var params = [request.u_id];
     this.connection.query(query, params, (err, result) => {
@@ -202,15 +202,26 @@ class Driver {
       }
     });
   }
-  /*Adds each user in meeting to meetingCombo table - called by insertMeeting when meeting initialized.*/
-  addMeetingUser(request,response) {
+  addUserToMeeting(request,response) {
     var query = 'INSERT INTO meetingUser VALUES (?,?)'
     const params = [request.u_id, request.meeting_id];
     var temp = this.connection.query(query, params, function (err, result) {
       if (err) {
         console.log(err);
       }else{
-        console.log({status:true, sql: temp.sql});
+        console.log({status:true, sql:temp.sql});
+      }
+    })
+  }
+  /*Adds each user in meeting to meetingCombo table - called by insertMeeting when meeting initialized.*/
+  addMeetingUser(request,response) {
+    var query = 'INSERT INTO meetingUser VALUES (?,?)'
+    const params = [request.body.u_id, request.body.meeting_id];
+    var temp = this.connection.query(query, params, function (err, result) {
+      if (err) {
+        response.send({error:err});
+      }else{
+        response.send({status:true, sql: temp.sql});
       }
     })
   }
@@ -234,7 +245,7 @@ class Driver {
         var users = request.body.users;
         for (var i = 0; i < users.length; i++) {
           var user_id = parseInt(users[i].u_id);
-          this.addMeetingUser(user_id, meeting_id)
+          this.addUserToMeeting(user_id, meeting_id)
         }
         response.send({ status: true, meeting_id: result.insertId });
       }
@@ -304,7 +315,7 @@ class Driver {
   deleteMeetingFeedback(request) {
     if (request.meeting_id > 0) {
       var query = 'DELETE FROM feedbackCombo WHERE meeting_id = ?'
-      var params = [request.meeting_id]
+      var params = [request.meeting_id]``
       this.connection.query(query, params, (err, result) => {
         if (err) { console.log(err) }
         else { console.log({ status: true }) }

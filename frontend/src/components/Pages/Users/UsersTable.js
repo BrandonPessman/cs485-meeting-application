@@ -15,6 +15,12 @@ import Typography from '@material-ui/core/Typography'
 import Paper from '@material-ui/core/Paper'
 import Checkbox from '@material-ui/core/Checkbox'
 import Button from '@material-ui/core/Button'
+import Modal from "@material-ui/core/Modal";
+import TextField from "@material-ui/core/TextField";
+import Autocomplete from '@material-ui/lab/Autocomplete'
+import { useHistory } from "react-router-dom";
+
+
 const axios = require('axios');
 // import IconButton from '@material-ui/core/IconButton'
 // import Tooltip from '@material-ui/core/Tooltip'
@@ -227,6 +233,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 export default function EnhancedTable() {
+  let history = useHistory();
   const classes = useStyles()
   const [order, setOrder] = React.useState('asc')
   const [orderBy, setOrderBy] = React.useState('email')
@@ -235,6 +242,17 @@ export default function EnhancedTable() {
   const [dense] = React.useState(true)
   const [rowsPerPage, setRowsPerPage] = React.useState(5)
   const [data, setData] = useState([])
+  const [openEditUser, setOpenEditUser] = React.useState(false);
+  const [openNewUser, setOpenNewUser] = React.useState(false);
+  const [userEmail, setUserEmail] = useState("");
+  const [userPhoneNumber, setUserPhoneNumber] = useState("");
+  const [userPassword, setUserPassword] = useState("");
+  const [userID, setUserID] = useState("");
+  const [userName, setUserName] = useState("");
+  const [userType, setUserType] = useState("");
+  const [userTypeDescr, setUserTypeDescr] = useState("");
+  const [userTypes, setUserTypes] = useState([]);
+
 
   useEffect(() => {
 
@@ -243,6 +261,10 @@ export default function EnhancedTable() {
         // handle success
         console.log(response);
         setData(response.data.user)
+        axios.get('http://104.131.115.65:3443/userTypes')
+        .then(function (response) {
+          setUserTypes(response.data.type);
+        })
       })
       .catch(function (error) {
         // handle error
@@ -253,12 +275,96 @@ export default function EnhancedTable() {
       });
   }, [])
 
+  const handleCreateUser = (event) => {
+    for (var i = 0; i<userTypes.length; i++) {
+      var type_id = userTypes[i].type_id;
+      console.log(userType);
+      if (userTypes[i].type_descr === userType) {
+        var newUser = {
+          name: userName,
+          email: userEmail,
+          phone_number: userPhoneNumber,
+          u_password: userPassword,
+          type: type_id
+        }
+        axios
+        .post('http://104.131.115.65:3443/insertUser', newUser)
+        .then(function (response) {
+          console.log(response);
+          axios
+          .get('http://104.131.115.65:3443/users')
+          .then(function (response) {
+            setData(response.data.user);
+          })
+        });
+      }
+    }
+  }
+  const handleUserUpdate = (event) => {
+    for (var i = 0; i<userTypes.length; i++) {
+      var type_id = userTypes[i].type_id;
+      console.log(userType);
+      if (userTypes[i].type_descr === userType) {
+        var newUser = {
+          name: userName,
+          email: userEmail,
+          phone_number: userPhoneNumber,
+          u_password: userPassword,
+          type: type_id,
+          u_id: userID
+        }
+        axios.patch("http://104.131.115.65:3443/user", newUser)
+          .then(function (response) {
+            console.log(response);
+            setOpenEditUser(false);
+            axios.get("http://104.131.115.65:3443/users")
+            .then(function (response) {
+              setData(response.data.user);
+            })
+        });
+    }
+  }
+}
+
+  const handleOpenNewUser = (event) => {
+    setUserName(null);
+    setUserPassword(null);
+    setUserPhoneNumber(null);
+    setUserType(null);
+    setUserEmail(null);
+    setUserName(null);
+    setSelected("");
+    setOpenNewUser(true);
+  }
+  const handleCloseNewUser = (event) => {
+    setOpenNewUser(false);
+  }
+  const handleOpenEdituser = (event) => {
+    setOpenEditUser(true);
+  }
+  const handleCloseEditUser = (event) => {
+    setOpenEditUser(false);
+  }
+  const handleNameChange = (event, name) => {
+    setUserName(name);
+  }
+  const handleEmailChange = (event, email) => {
+    setUserEmail(email);
+  }
+  const handlePhoneNumberChange = (event, phone_number) => {
+    setUserPhoneNumber(phone_number);
+  }
+  const handlePasswordChange = (event, password) => {
+    setUserPassword(password);
+  }
+  const handleSelectType = (event, type) => {
+    setUserType(type);
+  }
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc'
     setOrder(isAsc ? 'desc' : 'asc')
     setOrderBy(property)
   }
-
   const handleSelectAllClick = event => {
     // if (event.target.checked) {
     //   const newSelecteds = rows.map(n => n.department)
@@ -268,27 +374,42 @@ export default function EnhancedTable() {
     setSelected([])
   }
 
-  const handleClick = (event, name) => {
-    const selectedIndex = selected.indexOf(name)
+  const handleDeleteUser = (event) => {
+    axios
+    .delete(`http://104.131.115.65:3443/user/${userID}`)
+    .then(function (result) {
+      console.log(result);
+    })
+    
+  }
 
-    if (selected === name) {
+  const handleClick = (event, chosenName, id) => {
+    const selectedIndex = selected.indexOf(chosenName)
+
+    if (selected === chosenName) {
       setSelected([])
     } else {
-      setSelected(name)
-    }
+      setSelected(chosenName);
+      const selUser = data.filter(user => {
+        return user.u_id === id;
+      });
+      const { u_id, name, email, phone_number, type, password } = selUser[0];
+      for (var i = 0; i<userTypes.length; i++) {
+        var type_descr = userTypes[i].type_descr;
+        console.log("type_descr: " + userTypes[i].type_descr);
+        if (userTypes[i].type_id == type) {
+          console.log("TYPE: " + type);
+          setUserTypeDescr(type_descr);
+        }
 
-    // if (selectedIndex === -1) {
-    //   newSelected = newSelected.concat(selected, name)
-    // } else if (selectedIndex === 0) {
-    //   newSelected = newSelected.concat(selected.slice(1))
-    // } else if (selectedIndex === selected.length - 1) {
-    //   newSelected = newSelected.concat(selected.slice(0, -1))
-    // } else if (selectedIndex > 0) {
-    //   newSelected = newSelected.concat(
-    //     selected.slice(0, selectedIndex),
-    //     selected.slice(selectedIndex + 1)
-    //   )
-    // }
+      }
+      setUserID(u_id);
+      setUserName(name);
+      setUserEmail(email);
+      setUserPhoneNumber(phone_number);
+      setUserType(type);
+      setUserPassword(password);
+    }
   }
 
   const handleChangePage = (event, newPage) => {
@@ -331,13 +452,13 @@ export default function EnhancedTable() {
             />
             <TableBody>
               {data.map((row, index) => {
-                const isItemSelected = isSelected(row.email)
+                const isItemSelected = isSelected(row.name)
                 const labelId = `enhanced-table-checkbox-${index}`
 
                 return (
                   <TableRow
                     hover
-                    onClick={event => handleClick(event, row.email)}
+                    onClick={(event) => handleClick(event, row.name, row.u_id)}
                     role='checkbox'
                     aria-checked={isItemSelected}
                     tabIndex={-1}
@@ -390,22 +511,231 @@ export default function EnhancedTable() {
         control={<Switch checked={dense} onChange={handleChangeDense} />}
         label='Dense padding'
       /> */}
-      <Button variant='contained' color='secondary'>
+      <Button 
+        variant='contained' 
+        color='secondary'
+        onClick = { handleOpenNewUser }
+        >
         Create a User
       </Button>
+      <Modal
+        open={openNewUser}
+        onClose={() => {
+          setOpenNewUser(false);
+        }}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+      >
+        <Paper
+          container
+          xs={12}
+          style={{ margin: "50px auto", width: "300px", height:"400px", padding: "40px" }}
+        >
+          <h1>Create User</h1>
+          <TextField
+            label="Name"
+            id="create-candidate-name"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange={(event) => handleNameChange(event, document.getElementById('create-candidate-name').value)}
+          />
+          <TextField
+            label="email"
+            id="create-candidate-email"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange={(event) => handleEmailChange(event, document.getElementById('create-candidate-email').value)}
+          />
+          <TextField
+            label="Phone Number"
+            id="create-candidate-number"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange={(event) => handlePhoneNumberChange(event, document.getElementById('create-candidate-number').value)}
+          />
+          <TextField
+            label="Password"
+            id="create-candidate-password"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange={(event) => handlePasswordChange(event, document.getElementById('create-candidate-password').value)}
+          />
+          <Autocomplete
+            id="create-candidate-type"
+            options={userTypes}
+            getOptionLabel={(option) => option.type_descr}
+            style={{ width: "100%", margin: "10px 0" }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label = "Select Type"
+                variant="outlined"
+                style={{ width: "100%" }}
+              />
+            )}
+          />
+          <Button
+            variant='contained'
+            color='default'
+            style={{ marginLeft: '20px', float: 'right' }}
+            onClick={ (event) => handleSelectType(event, document.getElementById('create-candidate-type').value) }
+          > Select Type</Button>
+          <Button
+            variant='contained'
+            color='default'
+            style={{ marginLeft: '20px', float: 'center' }}
+            onClick={ handleCreateUser }
+          > Create User</Button>
+          <Button 
+            variant="contained" 
+            color="secondary"
+            style={{ marginleft: '20px', float: 'right' }}
+            onClick = { handleCloseNewUser }
+            >
+              Cancel
+          </Button>
+        </Paper>
+      </Modal>
       <Button
         variant='contained'
         color='default'
         disabled={selected.length > 0 ? false : true}
         style={{ marginLeft: '20px' }}
+        onClick = { handleOpenEdituser }
       >
         Edit User
       </Button>
+      <Modal
+        open={openEditUser}
+        onClose={() => {
+          setOpenEditUser(false);
+        }}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+      >
+        <Paper
+          container
+          xs={12}
+          style={{ margin: "50px auto", width: "300px", height:"500px", padding: "40px" }}
+        >
+          <h1>{selected}</h1>
+          <TextField
+            label="Name"
+            id="edit-candidate-name"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            defaultValue = { selected }
+            onChange={(event) => handleNameChange(event, document.getElementById('edit-candidate-name').value)}
+          />
+          <TextField
+            label="email"
+            id="edit-candidate-email"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            defaultValue={ userEmail }
+            onChange={(event) => handleEmailChange(event, document.getElementById('edit-candidate-email').value)}
+          />
+          <TextField
+            label="Phone Number"
+            id="edit-candidate-number"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange={(event) => handlePhoneNumberChange(event, document.getElementById('edit-candidate-number').value)}
+            defaultValue = { userPhoneNumber }
+          />
+          <TextField
+            label="Password"
+            id="edit-candidate-password"
+            variant="outlined"
+            size="small"
+            style={{
+              width: "100%",
+              marginBottom: "10px",
+            }}
+            onChange={(event) => handlePasswordChange(event, document.getElementById('edit-candidate-password').value)}
+            defaultValue = { userPassword }
+          />
+          <TextField
+          label="Current Type "
+            style={{
+              width: "100%",
+              maringBottom: "10px",
+              color: "black",
+            }}
+            disabled = { true }
+            value = { userTypeDescr }
+            />
+          <Autocomplete
+            id="edit-candidate-type"
+            options={userTypes}
+            getOptionLabel={(option) => option.type_descr}
+            style={{ width: "100%", margin: "10px 0" }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label = "Change Type"
+                variant="outlined"
+                style={{ width: "100%" }}
+              />
+            )}
+          />
+          <Button
+            variant='contained'
+            color='default'
+            style={{ marginLeft: '20px', float: 'right' }}
+            onClick={ (event) => handleSelectType(event, document.getElementById('edit-candidate-type').value) }
+          > Select Type</Button>
+          <br></br>
+          <div><Button
+            variant='contained'
+            color='default'
+            style={{ marginLeft: '20px', float: 'center' }}
+            onClick={ handleUserUpdate }
+          > Save Changes</Button>
+          <Button 
+            variant="contained" 
+            color="secondary"
+            style={{ marginleft: '20px', float: 'right' }}
+            onClick = { handleCloseEditUser }
+            >
+              Cancel
+          </Button></div>
+        </Paper>
+      </Modal>
       <Button
         variant='contained'
         color='default'
         disabled={selected.length > 0 ? false : true}
         style={{ marginLeft: '20px', float: 'right' }}
+        onClick = { handleDeleteUser }
       >
         Delete User
       </Button>
