@@ -59,7 +59,8 @@ export default function GenerateUser() {
 
     return (
         <div>
-            <h1>Let's create generate a user...</h1>
+            <h1>Create a User</h1>
+            <p>An email will be sent to the email address given for the user providing their password that is created below.</p>
             <h2>Name</h2>
             <TextField
               label="Name"

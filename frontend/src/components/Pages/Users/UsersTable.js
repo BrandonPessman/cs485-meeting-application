@@ -376,11 +376,15 @@ export default function EnhancedTable() {
 
   const handleDeleteUser = (event) => {
     axios
-    .delete(`http://104.131.115.65:3443/user/${userID}`)
+    .delete(`http://104.131.115.65:3443/deleteUser/${userID}`)
     .then(function (result) {
       console.log(result);
-    })
-    
+      axios
+      .get("http://104.131.115.65:3443/users")
+      .then(function (result) {
+        setData(result.data.user);
+      });
+    });
   }
 
   const handleClick = (event, chosenName, id) => {
@@ -432,6 +436,7 @@ export default function EnhancedTable() {
 
   return (
     <div className={classes.root}>
+      <p>To create a new user, please use the "Generate User" tab found on the top panel.</p>
       <Paper className={classes.paper}>
         <EnhancedTableToolbar numSelected={selected.length > 0 ? 1 : 0} />
         <TableContainer>
@@ -511,107 +516,6 @@ export default function EnhancedTable() {
         control={<Switch checked={dense} onChange={handleChangeDense} />}
         label='Dense padding'
       /> */}
-      <Button 
-        variant='contained' 
-        color='secondary'
-        onClick = { handleOpenNewUser }
-        >
-        Create a User
-      </Button>
-      <Modal
-        open={openNewUser}
-        onClose={() => {
-          setOpenNewUser(false);
-        }}
-        aria-labelledby="simple-modal-title"
-        aria-describedby="simple-modal-description"
-      >
-        <Paper
-          container
-          xs={12}
-          style={{ margin: "50px auto", width: "300px", height:"400px", padding: "40px" }}
-        >
-          <h1>Create User</h1>
-          <TextField
-            label="Name"
-            id="create-candidate-name"
-            variant="outlined"
-            size="small"
-            style={{
-              width: "100%",
-              marginBottom: "10px",
-            }}
-            onChange={(event) => handleNameChange(event, document.getElementById('create-candidate-name').value)}
-          />
-          <TextField
-            label="email"
-            id="create-candidate-email"
-            variant="outlined"
-            size="small"
-            style={{
-              width: "100%",
-              marginBottom: "10px",
-            }}
-            onChange={(event) => handleEmailChange(event, document.getElementById('create-candidate-email').value)}
-          />
-          <TextField
-            label="Phone Number"
-            id="create-candidate-number"
-            variant="outlined"
-            size="small"
-            style={{
-              width: "100%",
-              marginBottom: "10px",
-            }}
-            onChange={(event) => handlePhoneNumberChange(event, document.getElementById('create-candidate-number').value)}
-          />
-          <TextField
-            label="Password"
-            id="create-candidate-password"
-            variant="outlined"
-            size="small"
-            style={{
-              width: "100%",
-              marginBottom: "10px",
-            }}
-            onChange={(event) => handlePasswordChange(event, document.getElementById('create-candidate-password').value)}
-          />
-          <Autocomplete
-            id="create-candidate-type"
-            options={userTypes}
-            getOptionLabel={(option) => option.type_descr}
-            style={{ width: "100%", margin: "10px 0" }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label = "Select Type"
-                variant="outlined"
-                style={{ width: "100%" }}
-              />
-            )}
-          />
-          <Button
-            variant='contained'
-            color='default'
-            style={{ marginLeft: '20px', float: 'right' }}
-            onClick={ (event) => handleSelectType(event, document.getElementById('create-candidate-type').value) }
-          > Select Type</Button>
-          <Button
-            variant='contained'
-            color='default'
-            style={{ marginLeft: '20px', float: 'center' }}
-            onClick={ handleCreateUser }
-          > Create User</Button>
-          <Button 
-            variant="contained" 
-            color="secondary"
-            style={{ marginleft: '20px', float: 'right' }}
-            onClick = { handleCloseNewUser }
-            >
-              Cancel
-          </Button>
-        </Paper>
-      </Modal>
       <Button
         variant='contained'
         color='default'

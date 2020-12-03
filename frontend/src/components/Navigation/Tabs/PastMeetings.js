@@ -42,7 +42,6 @@ export default function UpcomingMeetings({user, cookies}) {
             for (let i = 0; i < t.length; i++) {
                 let z = t[i];
                 let added = false
-          
                 let meeting = {
                     meeting_id: z.meeting_id,
                     title: z.meeting_title,
@@ -51,7 +50,12 @@ export default function UpcomingMeetings({user, cookies}) {
                     location: z.location_id,
                     candidate: "Bob Bobkins",
                     users: [{ name: "Steve", role: '1' }],
-                    date: ''
+                    date: '',
+                    compHours: (((new Date()).getUTCHours())+18),
+                    compMonth: (((new Date()).getUTCMonth())),
+                    compDate: (((new Date()).getUTCDate())-1),
+                    compMinutes: (((new Date()).getUTCMinutes())),
+                    
                 }
 
                 if (cookies.user.type != 1) {
@@ -134,6 +138,7 @@ export default function UpcomingMeetings({user, cookies}) {
                       <h4 style={{ fontWeight: '300', margin: '0px', borderBottom: 'dotted 1px rgba(0,0,0,.3)' }}>{meetings.title}</h4>
                       <p>Starting Time: <span style={{ float: 'right' }}>{meetings.starttime.getUTCHours()}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()}</span></p>
                       <p>End Time: <span style={{ float: 'right' }}>{meetings.endtime.getUTCHours()}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()}</span></p>
+                      <p>Status: <span style={{ float: 'right' }}>{((meetings.compDate == meetings.starttime.getDate()) && (meetings.compMonth == meetings.starttime.getMonth()) && (meetings.compHours<=meetings.endtime.getUTCHours()) && (meetings.compHours>=meetings.starttime.getUTCHours()) && (meetings.compMinutes>meetings.starttime.getUTCMinutes()) && (meetings.compMinutes<meetings.endtime.getUTCMinutes())) ? "In Progress - " + (meetings.endtime.getUTCMinutes() - meetings.compMinutes) + " minutes left" :  "Completed"}</span></p>
                       <Button size="small" variant='contained' color='primary' onClick={() => handleView(meetings)} style={{width: '50%'}}>Manage</Button>
                       {cookies.user.type == 1 ? <Button size="small" variant='contained' onClick={() => history.push("/feedback/" + meetings.meeting_id)} style={{width: '50%'}}>Feedback</Button> : <></>}
                     </Grid>
