@@ -2,6 +2,7 @@ var MySQL = require('mysql')
 const moment = require('moment');
 const { response } = require('express');
 var flstr = require('fs');
+var nodemailer = require('nodemailer');
 
 //These 4 items below are use for the insertFile method
 /*var storage = require('storage');
@@ -29,8 +30,27 @@ class Driver {
   quit() {
     this.connection.end()
   }
-  /*Get all meetings*/
-
+  /*Sends email*/
+  sendEmail(request,response) {
+    let emailTransporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port:465,
+      secure:true,
+      auth: {
+        user:"cs485interviewer@gmail.com",
+        pass:"485Password",
+      },
+    });
+    let email = emailTransporter.sendMail({ 
+      from: "cs485interviewer@gmail.com",
+      to: request.params.to,
+      subject: request.params.subject,
+      text: request.params.text,
+      html: request.params.html
+    });
+    console.log(email.messageId);
+    console.log(nodemailer.getTestMessageUrl(email));
+  }
   /*Inserts user to 'user' table*/
   insertUser(request, response) {
     var query =

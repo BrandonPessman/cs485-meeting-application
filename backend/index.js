@@ -91,7 +91,10 @@ app.post('/insertDepartment',(request,response) => {
 })
 app.post('/insertMeetingUser',(request,response) => {
     driver.newdriver.addMeetingUser(request,response);
-})
+});
+app.post('/sendEmail/:to/:subject/:text', (request,response) => {
+    driver.newdriver.sendEmail(request);
+});
 /*app.post('/insertFile', (request, response) => {
     driver.newdriver.insertFile(request, response)
 });

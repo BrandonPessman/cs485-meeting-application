@@ -1,15 +1,22 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import Departments from '../../Pages/Scheduler/Department'
 import Positions from '../../Pages/Scheduler/Positions'
 import Candidates from '../../Pages/Scheduler/Candidates'
 import Meetings from '../../Pages/Scheduler/Meetings'
 import Paper from '../../Utilities/Paper'
+import axios from 'axios'
 
 export default function MeetingScheduler() {
   const [showPositions, setShowPositions] = useState(false)
   const [showCandidates, setShowCandidates] = useState(false)
   const [showMeetings, setShowMeetings] = useState(false)
+  const [departments, setDepartments] = useState([]);
+  useEffect(() => {
+    axios.get("http://104.131.115.65:3443/department").then(function (response) {
+      setDepartments(response.data.department);
+    });
+  })
 
   if ((showCandidates && !showPositions) || (showMeetings && !showCandidates)) {
     setShowCandidates(false)
@@ -20,6 +27,7 @@ export default function MeetingScheduler() {
     <div>
       <Paper
         Comp={Departments}
+        data = {departments}
         Title='Departments'
         noPaper={true}
         setShowNextStep={setShowPositions}

@@ -147,6 +147,7 @@ export default function Login({cookies}) {
               id="existing-candidate-type"
               variant="outlined"
               size="small"
+              label="User Type"
               value={ accountTypeDescr }
               style={{
                 width: "100%",
@@ -155,7 +156,7 @@ export default function Login({cookies}) {
               disabled = {true}
               onChange={(event) => handlePasswordChange(event, document.getElementById('create-candidate-password').value)}
             />
-            <Autocomplete
+            {(accountType != 2) ? <div><Autocomplete
               id="create-candidate-type"
               options={userTypes}
               getOptionLabel={(option) => option.type_descr}
@@ -175,7 +176,7 @@ export default function Login({cookies}) {
               color='default'
               style={{ marginLeft: '20px', float: 'right' }}
               onClick={ (event) => handleSelectType(event, document.getElementById('create-candidate-type').value) }
-            > Select Type</Button>
+            > Select Type</Button></div> : <p>You do not have the permissions to change your User Type. </p>}
             <Button
               variant='contained'
               color='default'

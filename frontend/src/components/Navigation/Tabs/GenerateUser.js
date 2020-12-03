@@ -3,28 +3,50 @@ import Grid from '@material-ui/core/Grid'
 import axios from 'axios'
 import TextField from '@material-ui/core/TextField'
 import Button from '@material-ui/core/Button'
+import Autocomplete from "@material-ui/lab/Autocomplete";
 
 export default function GenerateUser() {
-    useEffect(() => {
 
+    const [userTypes, setUserTypes] = useState([]);  
+    useEffect(() => {
+      axios.get("http://104.131.115.65:3443/userTypes").then(function (response) {
+      setUserTypes(response.data.type);
+    });
     }, [])
+
+    const nodemailer = require("nodemailer");
 
     const handleGenerateUser = () => {
         let name = document.getElementById('create-candidate-name').value
         let email = document.getElementById('create-candidate-email').value
         let password = document.getElementById('create-candidate-password').value
         let phone_number = document.getElementById('create-candidate-phone').value
+        var chosenType = userTypes.filter(type => {
+          return type.type_descr === document.getElementById('create-candidate-type').value;
+        });
+        const { type_id } = chosenType[0];
 
         let data = {
             name,
             email,
             u_password: password,
             phone_number,
-            type: 2
+            type: type_id,
         }
         axios.post("http://104.131.115.65:3443/insertUser", data)
-        handleReset();
-        console.log(name + " " + email + " " + password)
+        .then(function (results) {
+          console.log(results);
+        });
+        console.log(name + " " + email + " " + password + " " + phone_number + " " + type_id);
+        var to = email;
+        var subject = "Welcome to Interviewer";
+        var text = "Please accept your Interviewer account by using the following password, with your email: " + password;
+        axios
+        .post(`http://localhost:3443/sendEmail/${email}/${subject}/${text}`)
+        .then(function (results) {
+          console.log("results: " + results);
+        });
+        //handleReset();
     }
 
     const handleReset = () => {
@@ -32,6 +54,7 @@ export default function GenerateUser() {
         document.getElementById('create-candidate-email').value = ""
         document.getElementById('create-candidate-password').value = ""
         document.getElementById('create-candidate-phone').value = ""
+        document.getElementById('create-candidate-type').value = ""
     }
 
     return (
@@ -81,7 +104,22 @@ export default function GenerateUser() {
                 marginBottom: "30px",
               }}
             />
-
+            <h2>User Type</h2>
+            <p>Determines the capabilities/permissions of the user.</p>
+            <Autocomplete
+            id="create-candidate-type"
+            options={userTypes.map(u => ({ value: u.type_id, label: u.type_descr }))}
+            getOptionLabel={(option) => String(option.label)}
+            style={{ width: "100%", margin: "10px 0" }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Select a Type"
+                variant="outlined"
+                style={{ width: "100%" }}
+              />
+            )}
+          />
             <Button 
                 variant='contained'
                 color='primary'
