@@ -59,7 +59,7 @@ export default function UpcomingMeetings({user, cookies}) {
                     if (cookies.user.type != 1) {
                         for (let q = 0; q < meetingIds.length; q++) {
                             if (meetingIds[q] == meeting.meeting_id) {
-                                if (new Date() < meeting.starttime) {
+                                if (new Date() < meeting.endtime) {
                                     meeting.date = months[meeting.starttime.getMonth()] + ' ' + meeting.starttime.getDate() + ', ' + meeting.starttime.getFullYear()
             
                                     for (let j = 0; j < list.length; j++) {
@@ -120,7 +120,6 @@ export default function UpcomingMeetings({user, cookies}) {
                     Print Itinarary
             </Button></span>
             </h2>
-
 
             {data.map(inst => {
                 return (
