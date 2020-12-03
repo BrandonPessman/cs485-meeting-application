@@ -9,7 +9,8 @@ import Account from '../Pages/Account/Account'
 import {
   BrowserRouter as Router,
   Switch,
-  Route
+  Route,
+  Link
 } from "react-router-dom";
 import { useCookies } from 'react-cookie';
 
@@ -39,7 +40,7 @@ export default function ClippedDrawer() {
           <a href="/">Help</a>
         </li> */}
         <li style={{ float: "right" }}>
-          <a href="/Account">Account</a>
+          <Link to="/Account">Account</Link>
         </li>
         <li className="active" style={{ float: "right" }}>
           <a href="/">Home</a>
