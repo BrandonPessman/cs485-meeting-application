@@ -43,6 +43,7 @@ class Driver {
     });
     let email = emailTransporter.sendMail({ 
       from: "cs485interviewer@gmail.com",
+      name: "Interviewer",
       to: request.params.to,
       subject: request.params.subject,
       text: request.params.text,
@@ -64,7 +65,7 @@ class Driver {
   /*Updates user in 'user' table - need to change to make frontend-friendly*/
   updateUser(request, response) {
     var query = 'UPDATE user SET u_password=?, phone_number=?, name=?, type=? WHERE u_id = ?';
-    var params = [request.body.u_password, request.body.phone_number, request.body.name, request.body.type_id, request.body.u_id];
+    var params = [request.body.u_password, request.body.phone_number, request.body.name, request.body.type, request.body.u_id];
     var temp = this.connection.query(query, params, (err) => {
       if (err) { console.log(err) }
       else { response.send({ status: true, sql: temp.sql }); }

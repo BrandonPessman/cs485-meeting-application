@@ -40,13 +40,13 @@ export default function GenerateUser() {
         console.log(name + " " + email + " " + password + " " + phone_number + " " + type_id);
         var to = email;
         var subject = "Welcome to Interviewer";
-        var text = "Please accept your Interviewer account by using the following password, with your email: " + password;
+        var text = "Please accept your Interviewer account by using the following credientials: Email: " + email + " Password: " + password +"\n Thank you,\n Interviewer Team";
         axios
-        .post(`http://localhost:3443/sendEmail/${email}/${subject}/${text}`)
+        .post(`http://104.131.115.65:3443/sendEmail/${email}/${subject}/${text}`)
         .then(function (results) {
           console.log("results: " + results);
         });
-        //handleReset();
+        handleReset();
     }
 
     const handleReset = () => {

@@ -70,7 +70,7 @@ export default function SecondaryNavigation({user, cookies}) {
 
         </h2>
  
-        {user.type == 1 ? <>
+        {user.type == 4 ? <>
           <li
           className={
             tab === 0 ? "secondary-li secondary-li-active" : "secondary-li"
@@ -104,7 +104,7 @@ export default function SecondaryNavigation({user, cookies}) {
           </a>
         </li>
 
-        {user.type == 1 ? <>
+        {user.type == 4 ? <>
           <li
           className={
             tab === 3 ? "secondary-li secondary-li-active" : "secondary-li"
@@ -136,7 +136,7 @@ export default function SecondaryNavigation({user, cookies}) {
             Last Location
           </a>
         </li>
-        {user.type == 1 ? <>
+        {user.type > 2 ? <>
           <li
           className={
             tab === 6 ? "secondary-li secondary-li-active" : "secondary-li"

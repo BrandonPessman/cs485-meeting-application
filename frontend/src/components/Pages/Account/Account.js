@@ -47,18 +47,25 @@ export default function Login({cookies}) {
             setAccountPhoneNumber(number);
         };
         const handleSelectType = (event, type) => {
-            var chosenType = userTypes.filter(type => {
-                return type.type_descr === type;
-            });
-            const { type_id } = chosenType[0];
-            setAccountType(type_id);
+          setAccountTypeDescr(type);
+          console.log("handleSelectType: " + type);
+          for (var i = 0; i<userTypes.length; i++) {
+            console.log("UTT: " + userTypes[i].type_id);
+            var type_id = userTypes[i].type_id;
+            if (userTypes[i].type_descr == type) {
+              console.log("In if: " + type_id);
+              setAccountType(userTypes[i].type_id);
+            }
+          }
+          console.log("AT: " + accountType);
         }
         const handleSave = (event) => {
             var updateAccount = {
+                u_id: accountID,
                 name: accountName,
                 email: accountEmail,
                 phone_number: accountPhoneNumber,
-                password: accountPassword,
+                u_password: accountPassword,
                 type: accountType,
             };
             axios
@@ -156,12 +163,11 @@ export default function Login({cookies}) {
               disabled = {true}
               onChange={(event) => handlePasswordChange(event, document.getElementById('create-candidate-password').value)}
             />
-            {(accountType != 2) ? <div><Autocomplete
+            {(accountType > 2) ? <div><Autocomplete
               id="create-candidate-type"
               options={userTypes}
               getOptionLabel={(option) => option.type_descr}
               style={{ width: "100%", margin: "10px 0" }}
-              defaultValue={accountTypeDescr}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -177,6 +183,7 @@ export default function Login({cookies}) {
               style={{ marginLeft: '20px', float: 'right' }}
               onClick={ (event) => handleSelectType(event, document.getElementById('create-candidate-type').value) }
             > Select Type</Button></div> : <p>You do not have the permissions to change your User Type. </p>}
+            <p>Please click "Select Type" before clicking "Save Changes" if you're attempting to change your user type.</p>
             <Button
               variant='contained'
               color='default'
