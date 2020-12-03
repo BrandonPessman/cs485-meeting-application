@@ -345,8 +345,8 @@ export default function EnhancedTable({ setShowNextStep }) {
     axios.patch("http://104.131.115.65:3443/updatePosition", updatePosition)
     .then(function (response) {
       console.log(response);
+      openEditPosition(false);
     });
-    openEditPosition(false);
   }
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc'
