@@ -686,8 +686,9 @@ class Driver {
     })
   }
   
+   /*
   //Upload single files-convert from a file to binary using blob-This method is not working yet and I was still trying to figure out how these code work.
-  /*insertFile(request, response){
+  insertFile(request, response){
     //create container
     var blobService = storage.createBlobService(CONNECTION_STRING);
     blobService.createContainerIfNotExists(BlobContainer, function (error) {
@@ -706,6 +707,17 @@ class Driver {
        }, 50);
     }
  });
+ //These are from a website and I was trying to play around with the code to see what it does for the uploading file part.
+ const [file, setFile] = useState(''); // storing the uploaded file 
+ const [data, getFile] = useState({ name: "", path: "" });//// storing the recived file from backend
+ const [progress, setProgess] = useState(0); // progess bar
+ const el = useRef(); // accesing input element
+ const handleChange = (e) => {
+     setProgess(0)
+     const file = e.target.files[0]; // accesing file
+     console.log(file);
+     setFile(file); // storing file
+ }
     const path = req.file.path;
     const query= "INSERT INTO uploadFile (u_id) VALUES (?,?,?)";
     const params=[request.body.u_id];
