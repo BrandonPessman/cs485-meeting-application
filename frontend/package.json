@@ -14,6 +14,7 @@
     "axios": "^0.20.0",
     "google-map-react": "^2.1.9",
     "material-table": "^1.69.0",
+    "nodemailer": "^6.4.16",
     "react": "^16.13.1",
     "react-cookie": "^4.0.3",
     "react-datepicker": "^3.3.0",
