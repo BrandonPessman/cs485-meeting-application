@@ -58,7 +58,7 @@ export default function UpcomingMeetings({user, cookies}) {
                     
                 }
 
-                if (cookies.user.type != 1) {
+                if (cookies.user.type < 3) {
                   for (let q = 0; q < meetingIds.length; q++) {
                       if (meetingIds[q] == meeting.meeting_id) {
                           if (new Date() >= meeting.starttime) {
