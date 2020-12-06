@@ -503,9 +503,9 @@ class Driver {
     })
   }
   /*Check if dept_id changed, and if not, update*/
-  checkAndUpdate(request,response) {
+  checkAndUpdate(data) {
     var query = 'SELECT * FROM departmentPosition where dept_id = ? and position_id = ?'
-    var params = [request.body.dept_id, reqeust.body.position_id]
+    var params = [data.dept_id, data.position_id]
     var temp = this.connection.query(query, params, (err, result) => {
       if (err) {
         console.log(err);
