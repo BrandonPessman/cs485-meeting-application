@@ -51,13 +51,8 @@ export default function UpcomingMeetings({user, cookies}) {
                     candidate: "Bob Bobkins",
                     users: [{ name: "Steve", role: '1' }],
                     date: '',
-                    compHours: (((new Date()).getUTCHours())+18),
-                    compMonth: (((new Date()).getUTCMonth())),
-                    compDate: (((new Date()).getUTCDate())-1),
-                    compMinutes: (((new Date()).getUTCMinutes())),
-                    
+                    currentDateTime: (new Date()).getTime()+21600000,
                 }
-
                 if (cookies.user.type < 3) {
                   for (let q = 0; q < meetingIds.length; q++) {
                       if (meetingIds[q] == meeting.meeting_id) {
@@ -138,7 +133,7 @@ export default function UpcomingMeetings({user, cookies}) {
                       <h4 style={{ fontWeight: '300', margin: '0px', borderBottom: 'dotted 1px rgba(0,0,0,.3)' }}>{meetings.title}</h4>
                       <p>Starting Time: <span style={{ float: 'right' }}>{meetings.starttime.getUTCHours()}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()}</span></p>
                       <p>End Time: <span style={{ float: 'right' }}>{meetings.endtime.getUTCHours()}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()}</span></p>
-                      <p>Status: <span style={{ float: 'right' }}>{((meetings.compDate == meetings.starttime.getDate()) && (meetings.compMonth == meetings.starttime.getMonth()) && (meetings.compHours<=meetings.endtime.getUTCHours()) && (meetings.compHours>=meetings.starttime.getUTCHours()) && (meetings.compMinutes>meetings.starttime.getUTCMinutes()) && (meetings.compMinutes<meetings.endtime.getUTCMinutes())) ? "In Progress - " + (meetings.endtime.getUTCMinutes() - meetings.compMinutes) + " minutes left" :  "Completed"}</span></p>
+                      <p>Status: <span style={{ float: 'right' }}>{((meetings.currentDateTime > meetings.starttime.getTime()) && (meetings.currentDateTime < (meetings.endtime).getTime())) ? "In Progress - " :  "Completed"}</span></p>
                       <Button size="small" variant='contained' color='primary' onClick={() => handleView(meetings)} style={{width: '50%'}}>Manage</Button>
                       {cookies.user.type == 1 ? <Button size="small" variant='contained' onClick={() => history.push("/feedback/" + meetings.meeting_id)} style={{width: '50%'}}>Feedback</Button> : <></>}
                     </Grid>

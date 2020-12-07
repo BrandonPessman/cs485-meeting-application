@@ -53,8 +53,13 @@ export default function UpcomingMeetings({user, cookies}) {
                         location: z.location_id,
                         candidate: "Bob Bobkins",
                         users: [{ name: "Steve", role: '1' }],
-                        date: ''
+                        date: '',
+                        compHours: (((new Date()).getUTCHours())+18),
+                        compMonth: (((new Date()).getUTCMonth())),
+                        compDate: (((new Date()).getUTCDate())-1),
+                        compMinutes: (((new Date()).getUTCMinutes())),
                     }
+                    console.log(meeting.compHours + " " + meeting.compMonth + " " + meeting.compDate + " " + meeting.compMinutes);
 
                     if (cookies.user.type < 3) {
                         for (let q = 0; q < meetingIds.length; q++) {
@@ -135,6 +140,7 @@ export default function UpcomingMeetings({user, cookies}) {
                             <p>{new Date() < meetings.startDate ? "Status: In Progress": "Status: Not Started"}</p>
                             <p>Starting Time: <span style={{ float: 'right' }}>{meetings.starttime.getUTCHours()}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()}</span></p>
                             <p>End Time: <span style={{ float: 'right' }}>{meetings.endtime.getUTCHours()}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()}</span></p>
+                            <p>Status: <span style={{ float: 'right' }}>{((meetings.compDate == meetings.starttime.getDate()) && (meetings.compMonth == meetings.starttime.getMonth()) && (meetings.compHours<=meetings.endtime.getUTCHours()) && (meetings.compHours>=meetings.starttime.getUTCHours()) && (meetings.compMinutes>meetings.starttime.getUTCMinutes()) && (meetings.compMinutes<meetings.endtime.getUTCMinutes())) ? "In Progress - " + (meetings.endtime.getUTCMinutes() - meetings.compMinutes) + " minutes left" :  "Completed"}</span></p>
                             <Button size="small" variant='contained' color='primary' onClick={() => handleView(meetings)} style={{width: '50%'}}>Manage</Button>
                             {cookies.user.type == 1 ? <Button size="small" variant='contained' onClick={() => history.push("/feedback/" + meetings.meeting_id)} style={{width: '50%'}}>Feedback</Button> : <></>}
                           </Grid>

@@ -64,8 +64,8 @@ class Driver {
   }
   /*Updates user in 'user' table - need to change to make frontend-friendly*/
   updateUser(request, response) {
-    var query = 'UPDATE user SET u_password=?, phone_number=?, name=?, type=? WHERE u_id = ?';
-    var params = [request.body.u_password, request.body.phone_number, request.body.name, request.body.type, request.body.u_id];
+    var query = 'UPDATE user SET u_password=?, phone_number=?, name=?, email = ?, type=? WHERE u_id = ?';
+    var params = [request.body.u_password, request.body.phone_number, request.body.name, request.body.email, request.body.type, request.body.u_id];
     var temp = this.connection.query(query, params, (err) => {
       if (err) { console.log(err) }
       else { response.send({ status: true, sql: temp.sql }); }
@@ -275,7 +275,7 @@ class Driver {
   //returns meeting status based on current time compared to given start/end_date_time
   getMeetingStatus(request, response) {
     var query = 'SELECT start_date_time, end_date_time FROM Meeting where meeting_id = ?'
-    var params = [request.body.meeting_id]
+    var params = [request.params.meeting_id]
     this.connection.query(query, params, (error, rows) => {
       if (error) {
         console.log(error);
@@ -295,7 +295,6 @@ class Driver {
         if (curr_date_time > meeting.end_date_time) {
           status = 'Completed Meeting';
         }
-        this.updateMeeting({ meeting_id: request.body.meeting_id, meeting_status: status });
         response.send({ meeting_status: status });
       }
     })
@@ -323,7 +322,7 @@ class Driver {
       }
     })
   }
-  /*Updates meeting in 'Meeting' table -- need to update*/
+  /*Updates meeting in 'Meeting' table */
   updateMeeting(request, response) {
     var query = 'UPDATE Meeting SET meeting_title = ?, meeting_descr = ?, location_id = ?, start_date_time = ?, end_date_time = ? WHERE meeting_id = ?'
     var params = [request.body.meeting_title, request.body.meeting_descr, request.body.location_id, request.body.start_date_time, request.body.end_date_time, request.body.meeting_id]
@@ -506,11 +505,16 @@ class Driver {
   checkAndUpdate(data) {
     var query = 'SELECT * FROM departmentPosition where dept_id = ? and position_id = ?'
     var params = [data.dept_id, data.position_id]
-    var temp = this.connection.query(query, params, (err, result) => {
+    var temp = this.connection.query(query, params, (err, rows) => {
       if (err) {
         console.log(err);
       } else{
         console.log(temp.sql);
+        console.log(rows);
+        if(rows<1) {
+          console.log("Adding deptPosition");
+          this.insertDepartmentPosition(data);
+        }
       }
     })
   }
@@ -519,13 +523,12 @@ class Driver {
   insertPosition(request, response) {
     var query = 'INSERT INTO EmployeePosition (title, dept_id) VALUES (?, ?)'
     var params = [request.body.title, request.body.dept_id]
-    var dept_id = request.body.dept_id;
     this.connection.query(query, params, (err, result) => {
       if (err) {
         console.log(err)
       } else {
         var myDP = {
-          dept_id: dept_id,
+          dept_id: request.body.dept_id,
           position_id: result.insertId,
         }
         console.log(myDP);
@@ -535,8 +538,10 @@ class Driver {
     })
   }
   insertDepartmentPosition(request) {
-    console.log(request.body);
-    var query = 'INSERT INTO departmentPosition VALUES (? ,? )'
+    console.log(request);
+    console.log(request.dept_id);
+    console.log(request.position_id);
+    var query = 'INSERT INTO departmentPosition VALUES (?,?)'
     var params = [request.dept_id, request.position_id]
     this.connection.query(query, params, (err, result) => {
       if (err) {
@@ -626,10 +631,34 @@ class Driver {
       }
     })
   }
+  //Inserts location
+  insertLocation(request,response) {
+    var query = 'INSERT into Location (name) values (?)';
+    var params = [request.params.name];
+    this.connection.query(query, params, (err, result) => {
+      if (err) {
+        console.log(err);
+      }else{
+        response.send({status:true});
+      }
+    })
+  }
+  //Updates location
+  updateLocation(request,response) {
+    var query = 'UPDATE Location SET name = ? WHERE location_id = ?'
+    var params = [request.params.name, request.params.location_id];
+    var temp = this.connection.query(query, params,(err, result) => {
+      if (err) {
+        console.log(err);
+      }else{
+        response.send({status:true, sql: temp.sql})
+      }
+    })
+  }
   //Delete location
   deleteLocation(request, response) {
     var query = 'DELETE FROM Location WHERE location_id = ?'
-    var params = [request.body.location_id]
+    var params = [request.params.location_id]
     this.connection.query(query, params, (err) => {
       if (err) { console.log(err) }
       else { response.send({ status: true }) }

@@ -386,7 +386,7 @@ export default function MeetingPage({ user }) {
             key={i} onClick={updateState ? (event) => handleDeleteUser(event, u.u_id) : noClick}>{u.name}</button>;
           })}
         </p>
-        {updateState ? <div><Autocomplete
+        {updateState ? <div>Remove a participant by clicking on their name displayed above.<br /><Autocomplete
           id="adding-user-textfield"
           options={users}
           getOptionLabel={(option) => option.name}

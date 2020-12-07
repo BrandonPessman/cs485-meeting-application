@@ -252,10 +252,13 @@ export default function EnhancedTable() {
   const [userType, setUserType] = useState("");
   const [userTypeDescr, setUserTypeDescr] = useState("");
   const [userTypes, setUserTypes] = useState([]);
+  const [userAvailability, setUserAvailability] = useState("");
+  const [currentMeeting, setCurrentMeeting] = useState("");
 
 
   useEffect(() => {
-
+    setUserAvailability("Available");
+    console.log(userAvailability);
     axios.get('http://104.131.115.65:3443/users')
       .then(function (response) {
         // handle success
@@ -274,46 +277,22 @@ export default function EnhancedTable() {
         // always executed
       });
   }, [])
-
-  const handleCreateUser = (event) => {
-    for (var i = 0; i<userTypes.length; i++) {
-      var type_id = userTypes[i].type_id;
-      console.log(userType);
-      if (userTypes[i].type_descr === userType) {
-        var newUser = {
-          name: userName,
-          email: userEmail,
-          phone_number: userPhoneNumber,
-          u_password: userPassword,
-          type: type_id
-        }
-        axios
-        .post('http://104.131.115.65:3443/insertUser', newUser)
-        .then(function (response) {
-          console.log(response);
-          axios
-          .get('http://104.131.115.65:3443/users')
-          .then(function (response) {
-            setData(response.data.user);
-          })
-        });
-      }
-    }
-  }
   const handleUserUpdate = (event) => {
     for (var i = 0; i<userTypes.length; i++) {
       var type_id = userTypes[i].type_id;
       console.log(userType);
-      if (userTypes[i].type_descr === userType) {
+      console.log(userTypes[i].type_descr);
+      if (userTypes[i].type_id === userType) {
         var newUser = {
           name: userName,
           email: userEmail,
           phone_number: userPhoneNumber,
           u_password: userPassword,
           type: type_id,
-          u_id: userID
+          u_id: userID,
         }
-        axios.patch("http://104.131.115.65:3443/user", newUser)
+        console.log(newUser);
+        axios.patch("http://localhost:3443/updateUser", newUser)
           .then(function (response) {
             console.log(response);
             setOpenEditUser(false);
@@ -388,6 +367,7 @@ export default function EnhancedTable() {
   }
 
   const handleClick = (event, chosenName, id) => {
+    setUserAvailability("Available");
     const selectedIndex = selected.indexOf(chosenName)
 
     if (selected === chosenName) {
@@ -407,13 +387,29 @@ export default function EnhancedTable() {
         }
 
       }
-      setUserID(u_id);
+      setUserID(id);
       setUserName(name);
       setUserEmail(email);
       setUserPhoneNumber(phone_number);
       setUserType(type);
       setUserPassword(password);
     }
+    axios
+    .get(`http://localhost:3443/userMeetings/${id}`)
+    .then(function (response) {
+      for (var m = 0; m<response.data.meeting.length; m++) {
+        var meeting_title = (response.data.meeting)[m].meeting_title;
+        axios
+        .get(`http://localhost:3443/meetingStatus/${(response.data.meeting)[m].meeting_id}`)
+        .then(function (response) {
+          var status = response.data.meeting_status;
+          if (status === "In Progress") {
+            setUserAvailability("Not Available");
+            setCurrentMeeting(meeting_title);
+          }
+        })
+      }
+    });
   }
 
   const handleChangePage = (event, newPage) => {
@@ -538,6 +534,7 @@ export default function EnhancedTable() {
           xs={12}
           style={{ margin: "50px auto", width: "300px", height:"500px", padding: "40px" }}
         >
+          <h4>{userAvailability}</h4>
           <h1>{selected}</h1>
           <TextField
             label="Name"

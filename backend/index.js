@@ -60,7 +60,7 @@ app.get('/locations', (request,response) => {
 app.get('/department', (request, response) => {
     driver.newdriver.getDepartments(request, response);
 });
-app.get('/meetingStatus', (request,response) => {
+app.get('/meetingStatus/:meeting_id', (request,response) => {
     driver.newdriver.getMeetingStatus(request,response);
 });
 
@@ -99,18 +99,17 @@ app.post('/sendEmail/:to/:subject/:text', (request,response) => {
     driver.newdriver.insertFile(request, response)
 });
 */
+app.post('/location/:name', (request,response) => {
+    driver.newdriver.insertLocation(request,response);
+})
 app.post('/meeting', (request,response) => {
     driver.newdriver.insertMeeting(request,response);
 });
-
-app.patch('/user', (request, response) => {
-    driver.newdriver.updateUser(request, response);
+app.patch('/updateUser', (request,response) => {
+    driver.newdriver.updateUser(request,response);
 });
 app.patch('/updateMeeting', (request,response) => {
     driver.newdriver.updateMeeting(request,response);
-});
-app.patch('/updateUser', (request,response) => {
-    driver.newdriver.updateUser(request,response);
 });
 app.patch(`/updateDepartment/:dept_title/:dept_short/:dept_id`, (request,response) => {
     driver.newdriver.updateDepartment(request,response);
@@ -118,7 +117,9 @@ app.patch(`/updateDepartment/:dept_title/:dept_short/:dept_id`, (request,respons
 app.patch('/updatePosition', (request,response) => {
     driver.newdriver.updatePosition(request,response);
 });
-
+app.patch(`/updateLocation/:name/:location_id`, (request,response) => {
+    driver.newdriver.updateLocation(request,response);
+});
 
 app.delete('/deleteUserMeeting/:u_id/:meeting_id', (request,response) => {
     driver.newdriver.deleteUserMeeting(request,response);
@@ -135,3 +136,6 @@ app.delete('/meeting/:meeting_id', (request,response) => {
 app.delete('/deleteDepartment/:dept_id', (request,response) => {
     driver.newdriver.deleteDepartment(request,response);
 });
+app.delete('/deleteLocation/:location_id'), (request,response) => {
+    driver.newdriver.deleteLocation(request,response);
+};

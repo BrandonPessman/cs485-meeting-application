@@ -257,10 +257,11 @@ export default function EnhancedTable({ setShowNextStep }) {
   const [rowsPerPage, setRowsPerPage] = React.useState(5)
   const [positions, setPositions] = useState([])
   const [newPosition, openNewPosition] = React.useState(false)
-  const [departments, setDepartments] = useState([])
-  const [chosenTitle, setChosenTitle] = useState([])
-  const [chosenDept, setChosenDept] = useState([])
-  const [chosenId, setChosenId] = useState()
+  const [departments, setDepartments] = useState([]);
+  const [chosenTitle, setChosenTitle] = useState("")
+  const [chosenDept, setChosenDept] = useState("")
+  const [chosenDeptId, setChosenDeptId] = useState("");
+  const [chosenId, setChosenId] = useState("")
   const [editPosition, openEditPosition] = React.useState(false)
 
   useEffect(() => {
@@ -289,64 +290,66 @@ export default function EnhancedTable({ setShowNextStep }) {
     console.log(chosenTitle);
   }
   const handleDeptChange = (event, deptVal) => {
+    setChosenDept(deptVal);
     if (deptVal != "") {
       var dept = departments.filter(department => {
         return department.dept_title === deptVal;
       })
       const { dept_id } = dept[0];
-      setChosenDept(dept_id);
+      setChosenDeptId(dept_id);
       console.log(chosenDept);
     } 
   }
   const handleCreatePosition = () => {
     const newPosition = {
       title: chosenTitle,
-      dept_id: chosenDept,
+      dept_id: chosenDeptId,
     };
     console.log(newPosition);
-    if (chosenTitle.length>0 && chosenDept>0) {
+    if (chosenTitle.length>0 && chosenDeptId>0) {
       axios.post("http://104.131.115.65:3443/insertPosition", newPosition)
-        .then(result => {
+        .then(function (result) {
           console.log(result);
           axios.get("http://104.131.115.65:3443/positions").then(function (response) {
             console.log(response.data.position);
             setPositions(response.data.position);
+            openNewPosition(false);
+            axios.get("http://104.131.115.65:3443/department").then(function (response) {
+              console.log(response.data.department);
+              setDepartments(response.data.position);
+            });
           });
-        })
-      openNewPosition(false);
-      axios.get("http://104.131.115.65:3443/department").then(function (response) {
-        console.log(response.data.department);
-        setDepartments(response.data.position);
-      });
-  }
+        });
+      }
   };
   const handleDeletePosition = () => {
-    if (selected != "") {
-      var pos = positions.filter(position => {
-        return position.title === selected;
-      });
-      const { position_id } = pos[0];
-      axios.delete(`http://104.131.115.65:3443/deletePosition/${position_id}`)
+      axios.delete(`http://104.131.115.65:3443/deletePosition/${chosenId}`)
       .then(result=> {
         console.log("Delete result: " + result);
+        axios.get("http://104.131.115.65:3443/positions").then(function (response) {
+          console.log(response.data.position);
+          setPositions(response.data.position);
+        });
       });
-    }
-    axios.get("http://104.131.115.65:3443/positions").then(function (response) {
-      console.log(response.data.position);
-      setPositions(response.data.position);
-    });
   }
-  const handleUpdatePosition = () => {
-    var updatePosition = {
+  const handleUpdatePosition = (event) => {
+    console.log("handleUpdatePosition");
+    const updatePosition = 
+    {
       title: chosenTitle,
-      dept_id: chosenDept,
+      dept_id: chosenDeptId,
       position_id: chosenId,
     }
-    axios.patch("http://104.131.115.65:3443/updatePosition", updatePosition)
-    .then(function (response) {
-      console.log(response);
-      openEditPosition(false);
-    });
+    axios.patch("http://localhost:3443/updatePosition", updatePosition)
+        .then(function (response) {
+          console.log(response);
+          axios
+          .get("http://104.131.115.65:3443/positions")
+          .then(function (response) {
+            setPositions(response.data.position);
+            openEditPosition(false);
+          });
+        });
   }
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc'

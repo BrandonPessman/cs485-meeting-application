@@ -241,29 +241,24 @@ export default function EnhancedTable() {
   }, [])
 
   const handleCreateLocation = (event) => {
-    var newLocation = {
-        name: locationName,
-    }
         axios
-        .post('http://104.131.115.65:3443/insertLocation', newLocation)
+        .post(`http://localhost:3443/location/${locationName}`)
         .then(function (response) {
           console.log(response);
           axios
-          .get('http://104.131.115.65:3443/locations')
+          .get('http://localhost:3443/locations')
           .then(function (response) {
             setData(response.data.location);
+            setOpenNewLocation(false);
           })
         });
     }
   const handleUpdateLocation = (event) => {
-        var newLocation = {
-          name: locationName,
-        }
-        axios.patch("http://104.131.115.65:3443/location", newLocation)
+        axios.patch(`http://localhost:3443/updateLocation/${locationName}/${locationID}`)
           .then(function (response) {
             console.log(response);
             setOpenEditLocation(false);
-            axios.get("http://104.131.115.65:3443/locations")
+            axios.get("http://localhost:3443/locations")
             .then(function (response) {
               setData(response.data.location);
             })
@@ -303,11 +298,11 @@ export default function EnhancedTable() {
 
   const handleDeleteLocation = (event) => {
     axios
-    .delete(`http://104.131.115.65:3443/deleteLocation/${locationID}`)
+    .delete(`http://localhost:3443/deleteLocation/${locationID}`)
     .then(function (result) {
       console.log(result);
       axios
-      .get("http://104.131.115.65:3443/loations")
+      .get("http://localhost:3443/loations")
       .then(function (result) {
         setData(result.data.location);
       });

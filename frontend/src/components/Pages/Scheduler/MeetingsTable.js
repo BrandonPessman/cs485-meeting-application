@@ -439,11 +439,11 @@ export default function EnhancedTable({ setShowNextStep }) {
       .then(result => {
         console.log(result);
         setNewMeetingOpen(false);
+        axios.get("http://104.131.115.65:3443/meetings")
+        .then(function (response) {
+        setMeetings(response.data.meeting);
         });
-    axios.get("http://104.131.115.65:3443/meetings")
-      .then(function (response) {
-      setMeetings(response.data.meeting);
-    });
+      });
   };
   const handleDeleteMeeting = () => {
     if (selected != "") {
