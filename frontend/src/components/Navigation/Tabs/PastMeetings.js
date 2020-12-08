@@ -47,7 +47,7 @@ export default function UpcomingMeetings({user, cookies}) {
                     title: z.meeting_title,
                     starttime: new Date(z.start_date_time),
                     endtime: new Date(z.end_date_time),
-                    enddatetime: new Date(z.end_date_time).toLocaleTimeString([], {timeStyle: 'short'}),
+                    timeleft: ((new Date(z.end_date_time)).getTime()-((new Date()).getTime())-21600000)/60000,
                     location: z.location_id,
                     candidate: "Bob Bobkins",
                     users: [{ name: "Steve", role: '1' }],
@@ -55,6 +55,7 @@ export default function UpcomingMeetings({user, cookies}) {
                     currentDateTime: ((new Date()).getTime())-21600000,
                 }
                 console.log(meeting.title);
+                console.log(meeting.timeleft);
                 console.log("Meeting: " + z.end_date_time + " " + z.start_date_time);
                 console.log("Start: " + ((meeting.starttime).getTime()));
                 console.log("End: " + ((meeting.endtime).getTime()));
@@ -141,7 +142,7 @@ export default function UpcomingMeetings({user, cookies}) {
                 return (
                     <Grid item xs={3} style={{backgroundColor: 'white', borderRadius: '4px', boxShadow: '4px 4px 10px rgba(0,0,0,.3)', padding: '20px', marginRight: '15px'}}>
                       <h4 style={{ fontWeight: '300', margin: '0px', borderBottom: 'dotted 1px rgba(0,0,0,.3)' }}>{meetings.title}</h4>
-                      <p>Status: <span style={{ float: 'right' }}>{(((meetings.currentDateTime - (meetings.starttime).getTime())>0) && (((meetings.endtime).getTime()-meetings.currentDateTime)>0)) ? "In Progress - Finishes at " + meetings.enddatetime :  "Completed"}</span></p>
+                      <p>Status: <span style={{ float: 'right' }}>{(((meetings.currentDateTime - (meetings.starttime).getTime())>0) && (((meetings.endtime).getTime()-meetings.currentDateTime)>0)) ? "In Progress" :  "Completed"}</span></p>
                       <p>Starting Time: <span style={{ float: 'right' }}>{(meetings.starttime.getUTCHours())%12}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()}{(meetings.starttime.getUTCHours()-12)>0 ? ' PM' : ' AM'}</span></p>
                       <p>End Time: <span style={{ float: 'right' }}>{meetings.endtime.getUTCHours()%12}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()}{(meetings.endtime.getUTCHours()-12)>0 ? ' PM' : ' AM'}</span></p>
                       <Button size="small" variant='contained' color='primary' onClick={() => handleView(meetings)} style={{width: '50%'}}>Manage</Button>
