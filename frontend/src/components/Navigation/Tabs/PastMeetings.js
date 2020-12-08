@@ -142,8 +142,8 @@ export default function UpcomingMeetings({user, cookies}) {
                     <Grid item xs={3} style={{backgroundColor: 'white', borderRadius: '4px', boxShadow: '4px 4px 10px rgba(0,0,0,.3)', padding: '20px', marginRight: '15px'}}>
                       <h4 style={{ fontWeight: '300', margin: '0px', borderBottom: 'dotted 1px rgba(0,0,0,.3)' }}>{meetings.title}</h4>
                       <p>Status: <span style={{ float: 'right' }}>{(((meetings.currentDateTime - (meetings.starttime).getTime())>0) && (((meetings.endtime).getTime()-meetings.currentDateTime)>0)) ? "In Progress - Finishes at " + meetings.enddatetime :  "Completed"}</span></p>
-                      <p>Starting Time: <span style={{ float: 'right' }}>{meetings.starttime.toLocaleTimeString([], {timeStyle: 'short'})}</span></p>
-                      <p>End Time: <span style={{ float: 'right' }}>{meetings.endtime.toLocaleTimeString([], {timeStyle: 'short'})}</span></p>
+                      <p>Starting Time: <span style={{ float: 'right' }}>{(meetings.starttime.getUTCHours())%12}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()}{(meetings.starttime.getUTCHours()-12)>0 ? ' PM' : ' AM'}</span></p>
+                      <p>End Time: <span style={{ float: 'right' }}>{meetings.endtime.getUTCHours()%12}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()}{(meetings.endtime.getUTCHours()-12)>0 ? ' PM' : ' AM'}</span></p>
                       <Button size="small" variant='contained' color='primary' onClick={() => handleView(meetings)} style={{width: '50%'}}>Manage</Button>
                       {cookies.user.type == 1 ? <Button size="small" variant='contained' onClick={() => history.push("/feedback/" + meetings.meeting_id)} style={{width: '50%'}}>Feedback</Button> : <></>}
                     </Grid>
