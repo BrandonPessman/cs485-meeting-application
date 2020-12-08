@@ -18,7 +18,7 @@ import Locations from './Tabs/Locations';
 
 export default function SecondaryNavigation({user, cookies}) {
   let history = useHistory();
-  const [tab, setTab] = useState(cookies.user.type == 1 ? 0 : 1);
+  const [tab, setTab] = useState(cookies.user.type > 2 ? 0 : 1);
   const [users, setUsers] = useState([]);
   const [userTypes, setUserTypes] = useState([]);
   const [departments, setDepartments] = useState([]);

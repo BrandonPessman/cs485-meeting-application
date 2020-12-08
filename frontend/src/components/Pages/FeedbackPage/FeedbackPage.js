@@ -16,7 +16,7 @@ export default function FeedbackPage({user}) {
     axios.get("http://104.131.115.65:3443/users")
     .then(response => {
       let users = response.data.user
-
+      console.log(users)
       axios.post("http://104.131.115.65:3443/meetingFeedback/", {meeting_id: id})
       .then(response => {
         for (let i = 0; i < response.data.feedback.length; i++) {
@@ -26,22 +26,22 @@ export default function FeedbackPage({user}) {
             }
           }
         }
-
+        console.log(response.data.feedback);
         setFeedback(response.data.feedback)
       })
     })
   }, [])
 
   const handleSubmit = () => {
+    console.log("Ok")
     const str = document.getElementById('feedback-current').value;
     const data = {
       content: str,
       author: user.u_id,
       meeting_id: id
     }
-
+    console.log(data)
     axios.post("http://104.131.115.65:3443/insertFeedback/", {data})
-    history.go(0)
   } 
 
   const handleDelete = (feedbackId) => {
