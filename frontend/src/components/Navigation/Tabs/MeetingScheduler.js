@@ -37,9 +37,11 @@ export default function MeetingScheduler() {
         variant='contained' 
         color='secondary'
         onClick = { showAllOptions }
+        style={{float: "right", marginTop: '20px', marginRight: '5px'}}
         >
         Show All
       </Button>
+      <br />
       <Paper
         Comp={Departments}
         data = {departments}
