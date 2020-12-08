@@ -47,12 +47,22 @@ export default function UpcomingMeetings({user, cookies}) {
                     title: z.meeting_title,
                     starttime: new Date(z.start_date_time),
                     endtime: new Date(z.end_date_time),
+                    enddatetime: new Date(z.end_date_time).toLocaleTimeString([], {timeStyle: 'short'}),
                     location: z.location_id,
                     candidate: "Bob Bobkins",
                     users: [{ name: "Steve", role: '1' }],
                     date: '',
-                    currentDateTime: (new Date()).getTime()+21600000,
+                    currentDateTime: ((new Date()).getTime())-21600000,
                 }
+                console.log(meeting.title);
+                console.log("Meeting: " + z.end_date_time + " " + z.start_date_time);
+                console.log("Start: " + ((meeting.starttime).getTime()));
+                console.log("End: " + ((meeting.endtime).getTime()));
+                console.log("Current: " + meeting.currentDateTime);
+                console.log(meeting.currentDateTime - ((meeting.starttime).getTime()));
+                console.log((meeting.endtime).getTime()-meeting.currentDateTime)
+                console.log(((meeting.endtime).getTime()-meeting.currentDateTime)>0);
+                console.log((meeting.currentDateTime - ((meeting.starttime).getTime()))>0);
                 if (cookies.user.type < 3) {
                   for (let q = 0; q < meetingIds.length; q++) {
                       if (meetingIds[q] == meeting.meeting_id) {
@@ -131,13 +141,13 @@ export default function UpcomingMeetings({user, cookies}) {
                 return (
                     <Grid item xs={3} style={{backgroundColor: 'white', borderRadius: '4px', boxShadow: '4px 4px 10px rgba(0,0,0,.3)', padding: '20px', marginRight: '15px'}}>
                       <h4 style={{ fontWeight: '300', margin: '0px', borderBottom: 'dotted 1px rgba(0,0,0,.3)' }}>{meetings.title}</h4>
-                      <p>Starting Time: <span style={{ float: 'right' }}>{meetings.starttime.getUTCHours()}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()}</span></p>
-                      <p>End Time: <span style={{ float: 'right' }}>{meetings.endtime.getUTCHours()}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()}</span></p>
-                      <p>Status: <span style={{ float: 'right' }}>{((meetings.currentDateTime > meetings.starttime.getTime()) && (meetings.currentDateTime < (meetings.endtime).getTime())) ? "In Progress - " :  "Completed"}</span></p>
+                      <p>Status: <span style={{ float: 'right' }}>{(((meetings.currentDateTime - (meetings.starttime).getTime())>0) && (((meetings.endtime).getTime()-meetings.currentDateTime)>0)) ? "In Progress - Finishes at " + meetings.enddatetime :  "Completed"}</span></p>
+                      <p>Starting Time: <span style={{ float: 'right' }}>{meetings.starttime.toLocaleTimeString([], {timeStyle: 'short'})}</span></p>
+                      <p>End Time: <span style={{ float: 'right' }}>{meetings.endtime.toLocaleTimeString([], {timeStyle: 'short'})}</span></p>
                       <Button size="small" variant='contained' color='primary' onClick={() => handleView(meetings)} style={{width: '50%'}}>Manage</Button>
                       {cookies.user.type == 1 ? <Button size="small" variant='contained' onClick={() => history.push("/feedback/" + meetings.meeting_id)} style={{width: '50%'}}>Feedback</Button> : <></>}
                     </Grid>
-                )
+                ) 
               })
               }
                </Grid>
