@@ -238,7 +238,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EnhancedTable({ setShowNextStep }) {
+export default function EnhancedTable({ setShowNextStep }, { showAll }) {
   const classes = useStyles();
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("department");
@@ -364,7 +364,9 @@ export default function EnhancedTable({ setShowNextStep }) {
     // SEND ID TO PARENT
     if (selected === name) {
       setSelected([]);
-      setShowNextStep(false);
+      if (showAll === 'false') {
+        setShowNextStep(false);
+      }
     } else {
       const dept = departments.filter(department => {
         return department.dept_id == id;

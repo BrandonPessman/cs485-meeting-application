@@ -71,6 +71,14 @@ class Driver {
       else { response.send({ status: true, sql: temp.sql }); }
     });
   }
+  updateUserNotification(request,response) {
+    var query = 'UPDATE user SET notification=? where u_id = ?'
+    var params = [request.params.notification, request.params.u_id]
+    var temp = this.connection.query(query, params, (err, result) => {
+      if (err) { response.send(err) }
+      else { response.send({ status: true, sql: temp.sql }); }
+    });
+  }
   /*Deletes user in 'user' table - cascades to all instances of this user*/
   deleteUser(request,response) {
     var query = 'DELETE FROM user WHERE u_id = ?'
@@ -118,7 +126,7 @@ class Driver {
     const params = [request.params.email, request.params.u_password];
     this.connection.query(query, params, (err, rows) => {
       if (err) { console.log(err) }
-      else { response.send({ user: rows.map(mapUser) }); }
+      else { console.log({user: rows.map(mapUser)}); response.send({ user: rows.map(mapUser) }); }
     })
   }
   /*gets users by type =2, all candidates*/
@@ -877,7 +885,8 @@ function mapUser(row) {
     type: row.type,
     u_position: row.u_position,
     type_descr: row.type_descr,
-    meeting_count: row.meeting_count
+    meeting_count: row.meeting_count,
+    notification: row.notification
   }
 }
 /*Maps user position columns for response.send() functionality*/

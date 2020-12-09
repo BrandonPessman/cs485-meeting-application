@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, Component} from "react";
 import Paper from '@material-ui/core/Paper'
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
@@ -7,6 +7,7 @@ import Autocomplete from '@material-ui/lab/Autocomplete'
 import { useHistory } from "react-router-dom";
 import { useCookies } from 'react-cookie';
 import Modal from "@material-ui/core/Modal";
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 
 export default function Login({cookies}) {
     let history = useHistory();
@@ -20,7 +21,11 @@ export default function Login({cookies}) {
     const [accountTypeDescr, setAccountTypeDescr] = useState('');
     const [userTypes, setUserTypes] = useState([]);
     const [openCheck, setOpenCheck] = React.useState(false);
+    const [notification, setNotifications] = useState(cookies.user.notification);
+    const [editAccount, setEditAccount] = React.useState(false);
+
     useEffect(() => {
+      console.log("notification: " + cookies.user.notification);
       console.log("useEffect");
         axios
         .get("http://104.131.115.65:3443/userTypes")
@@ -34,6 +39,18 @@ export default function Login({cookies}) {
             setAccountTypeDescr(type_descr)
           });
   }, []);
+        const toggleNotifications = (event) => {
+          if (notification == 1) {
+            console.log("notifications true!");
+            setNotifications(0);
+          }else{
+            console.log("notifications false!");
+            setNotifications(1);
+          }
+        }
+        const handleEditAccount = (event) => {
+          setEditAccount(true);
+        }
         const handleNameChange= (event, name) => {
             setAccountName(name);
         };
@@ -69,10 +86,16 @@ export default function Login({cookies}) {
                 type: accountType,
             };
             axios
-            .patch("http://104.131.115.65:3443/user", updateAccount)
+            .patch("http://localhost:3443/updateUser", updateAccount)
             .then(function (response) {
                 console.log(response);
+                axios
+                .patch(`http://localhost:3443/updateUserNotification/${accountID}/${notification}`)
+                .then(function (response) {
+                  console.log(response);
+                });
             });
+            setEditAccount(false);
         }
 
         const checkForDelete = (event) => {
@@ -85,7 +108,7 @@ export default function Login({cookies}) {
             console.log(response);
             setOpenCheck(false);
             removeCookie('user')
-            history.push("/login");
+            history.push("/");
           })
         }
         const handleCloseCheck = (event) => {
@@ -100,11 +123,39 @@ export default function Login({cookies}) {
               xs={12}
               style={{ margin: "50px auto", width: "75%", height:"75%", padding: "40px" }}
               >
+              <Button 
+                variant="contained"
+                color="primary"
+                disabled = {editAccount ? true : false}
+                style = {{ width: "25%" }}
+                onClick = { handleEditAccount }
+              > Edit Account </Button>
               <h1>Manage your Account</h1>
-            
+
+              <TextField
+              label="Meeting Notification"
+              id="create-candidate-notification"
+              disabled = {editAccount ? false: true }
+              variant="outlined"
+              size="small"
+              value = { notification == 1 ? 'On' : 'Off' }
+              style={{
+                width: "100%",
+                marginBottom: "10px",
+              }}
+              onChange={(event) => handleNameChange(event, document.getElementById('create-candidate-name').value)}
+            />
+              <Button
+                variant="contained" 
+                color="default"
+                style={{float:'left', height:"30px", marginBottom: "30px" }}
+                disabled={editAccount ? false : true}
+                onClick = { toggleNotifications }
+                >Toggle Notifications</Button>        
             <TextField
               label="Name"
               id="create-candidate-name"
+              disabled = {editAccount ? false: true }
               variant="outlined"
               size="small"
               value = { accountName }
@@ -117,6 +168,7 @@ export default function Login({cookies}) {
             <TextField
               label="email"
               id="create-candidate-email"
+              disabled = {editAccount ? false: true }
               variant="outlined"
               size="small"
               value={ accountEmail }
@@ -129,6 +181,7 @@ export default function Login({cookies}) {
             <TextField
               label="Phone Number"
               id="create-candidate-number"
+              disabled = {editAccount ? false: true }
               variant="outlined"
               size="small"
               value={ accountPhoneNumber }
@@ -141,7 +194,9 @@ export default function Login({cookies}) {
             <TextField
               label="Password"
               id="create-candidate-password"
+              disabled = {editAccount ? false: true }
               variant="outlined"
+              type={editAccount? "" : "password"}
               size="small"
               value={ accountPassword }
               style={{
@@ -163,7 +218,7 @@ export default function Login({cookies}) {
               disabled = {true}
               onChange={(event) => handlePasswordChange(event, document.getElementById('create-candidate-password').value)}
             />
-            {(accountType > 2) ? <div><Autocomplete
+            {((accountType > 2) && editAccount) ? <div><Autocomplete
               id="create-candidate-type"
               options={userTypes}
               getOptionLabel={(option) => option.type_descr}
@@ -182,14 +237,21 @@ export default function Login({cookies}) {
               color='default'
               style={{ marginLeft: '20px', float: 'right' }}
               onClick={ (event) => handleSelectType(event, document.getElementById('create-candidate-type').value) }
-            > Select Type</Button></div> : <p>You do not have the permissions to change your User Type. </p>}
-            <p>Please click "Select Type" before clicking "Save Changes" if you're attempting to change your user type.</p>
+            > Select Type</Button><p>Please click "Select Type" before clicking "Save Changes" if you're attempting to change your user type.</p></div> : <p>You do not have the permissions to change your User Type. </p>}
             <Button
               variant='contained'
-              color='default'
+              color='primary'
+              disabled = {editAccount ? false: true }
               style={{ marginLeft: '20px', float: 'center' }}
               onClick={ handleSave }
             > Save Changes</Button>
+            <Button
+              variant='contained'
+              color='default'
+              disabled = {editAccount ? false: true }
+              style={{ marginLeft: '20px', float: 'center' }}
+              onClick = { (event) => setEditAccount(false) }
+            >Cancel</Button>
             <br></br><br></br>
             <Button
             variant="contained" 
