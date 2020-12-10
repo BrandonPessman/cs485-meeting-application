@@ -25,10 +25,17 @@ export default function MeetingScheduler() {
     setShowMeetings(false)
   }
   const showAllOptions = () => {
-    setShowPositions(true);
-    setShowCandidates(true);
-    setShowMeetings(true);
-    setShowAll(true);
+    if (showAll == false) {
+      setShowPositions(true);
+      setShowCandidates(true);
+      setShowMeetings(true);
+      setShowAll(true);
+    }else{
+      setShowPositions(false);
+      setShowCandidates(false);
+      setShowMeetings(false);
+      setShowAll(false);
+    }
   }
 
   return (
@@ -39,7 +46,7 @@ export default function MeetingScheduler() {
         onClick = { showAllOptions }
         style={{float: "right", marginTop: '20px', marginRight: '5px'}}
         >
-        Show All
+        {showAll ? "Show Less" : "Show All"}
       </Button>
       <br />
       <Paper

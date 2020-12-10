@@ -248,7 +248,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function EnhancedTable({ setShowNextStep }) {
+export default function EnhancedTable({ setShowNextStep },{ showAll }) {
   const classes = useStyles()
   const [order, setOrder] = React.useState('asc')
   const [orderBy, setOrderBy] = React.useState('name')
@@ -376,7 +376,9 @@ export default function EnhancedTable({ setShowNextStep }) {
 
     if (selected === chosenName) {
       setSelected([])
-      setShowNextStep(false)
+      if (showAll === 'false') {
+        setShowNextStep(false)
+      }
     } else {
       setShowNextStep(true)
       const selectedCand = candidates.filter(candidate => {
@@ -502,17 +504,18 @@ export default function EnhancedTable({ setShowNextStep }) {
           onChangeRowsPerPage={handleChangeRowsPerPage}
         />
       </Paper>
+      <p>To create a new canddidate, please access the "Generate User" tab found on the top panel.</p>
       {/* <FormControlLabel
         control={<Switch checked={dense} onChange={handleChangeDense} />}
         label='Dense padding'
       /> */}
-      <Button 
+      {/*<Button 
         variant='contained' 
         color='secondary'
         onClick = { handleOpenNewCandidate }
         >
         Create Candidate
-      </Button>
+      </Button>*/}
       <Modal
         open={openNewCandidate}
         onClose={() => {

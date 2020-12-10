@@ -71,6 +71,14 @@ class Driver {
       else { response.send({ status: true, sql: temp.sql }); }
     });
   }
+  updateUserNotification(request,response) {
+    var query = 'UPDATE user SET notification=? where u_id = ?'
+    var params = [request.params.notification, request.params.u_id]
+    var temp = this.connection.query(query, params, (err, result) => {
+      if (err) { response.send(err) }
+      else { response.send({ status: true, sql: temp.sql }); }
+    });
+  }
   /*Deletes user in 'user' table - cascades to all instances of this user*/
   deleteUser(request,response) {
     var query = 'DELETE FROM user WHERE u_id = ?'
@@ -118,7 +126,7 @@ class Driver {
     const params = [request.params.email, request.params.u_password];
     this.connection.query(query, params, (err, rows) => {
       if (err) { console.log(err) }
-      else { response.send({ user: rows.map(mapUser) }); }
+      else { console.log({user: rows.map(mapUser)}); response.send({ user: rows.map(mapUser) }); }
     })
   }
   /*gets users by type =2, all candidates*/
@@ -381,24 +389,13 @@ class Driver {
   insertFeedback(request, response) {
     let now = moment().format("YYYY-MM-DD HH:mm:ss");
     var query =
-      "INSERT INTO Feedback (content, author, date_time_created, meeting_id) VALUES (?, ?, ?, ?)"
-    var params = [request.body.data.content, request.body.data.author, now, request.body.data.meeting_id];
-    this.connection.query(query, params, (err, result) => {
+      "INSERT INTO Feedback (content, author, date_time_created, meeting_id, stars) VALUES (?, ?, ?, ?, ?)"
+    var params = [request.body.data.content, request.body.data.author, now, request.body.data.meeting_id, request.body.data.stars];
+    var temp = this.connection.query(query, params, (err, result) => {
       if (err) {
         console.log(err);
       } else {
-    
-        /* NOT SURE WHAT THIS IS FOR SO COMMENTING IT OUT FOR NOW */
-
-        // var feedback_id = result.insertId;
-        // response.send({ status: true, feedback_Id: feedback_id, });
-        // query="INSERT INTO feedbackCombo (feedback_id, meeting_id, author) VALUES(?,?,?)";
-        // params=[feedback_id,request.body.data.meeting_id,request.body.data.author];
-        // this.connection.query(query,params, function (err, result) {
-        //   if (err) {
-        //     console.log(err);
-        //   }
-        // })
+        response.send({status: true, sql:temp.sql});
       }
     })
   }
@@ -428,15 +425,14 @@ class Driver {
   }
   deleteFeedback(request, response) {
     var query = 'DELETE FROM Feedback WHERE feedback_Id = ?'
-    var params = [request.body.feedback_id]
-    this.connection.query(query, params, (err) => {
+    var params = [request.params.feedback_Id]
+    var temp = this.connection.query(query, params, (err) => {
       if (err) {
         console.log(err)
       } else {
-        response.send({ status: true })
+        response.send({ status: true, sql: temp.sql })
       }
     })
-    this.deleteMeetingFeedback(request)
   }
   /**Updates feedback instance in 'Feedback' table - The only thing the user can change is content */
   updateFeedback(request, response) {
@@ -820,7 +816,8 @@ function mapFeedback(row) {
     content: row.content,
     author: row.author,
     date_time_created: row.date_time_created,
-    meeting_id: row.meeting_id
+    meeting_id: row.meeting_id,
+    stars: row.stars
   };
 }
 /*Maps Location columns for response.send() functionality*/
@@ -877,7 +874,8 @@ function mapUser(row) {
     type: row.type,
     u_position: row.u_position,
     type_descr: row.type_descr,
-    meeting_count: row.meeting_count
+    meeting_count: row.meeting_count,
+    notification: row.notification
   }
 }
 /*Maps user position columns for response.send() functionality*/

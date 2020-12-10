@@ -247,7 +247,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function EnhancedTable({ setShowNextStep }) {
+export default function EnhancedTable({ setShowNextStep }, { showAll }) {
   const classes = useStyles()
   const [order, setOrder] = React.useState('asc')
   const [orderBy, setOrderBy] = React.useState('positionId')
@@ -363,13 +363,17 @@ export default function EnhancedTable({ setShowNextStep }) {
     //   return
     // }
     setSelected([])
-    setShowNextStep(false)
+    if (showAll === false) {
+      setShowNextStep(false)
+    }
   }
 
   const handleClick = (event, name, id) => {
     if (selected === name) {
       setSelected([])
-      setShowNextStep(false)
+      if (showAll === 'false') {
+        setShowNextStep(false)
+      }
     } else {
       console.log("select id: " + id);
       var pos = positions.filter(position => {

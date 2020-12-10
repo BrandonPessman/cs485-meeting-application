@@ -4,6 +4,7 @@ import { useParams } from "react-router";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
+import ReactStars from "react-rating-stars-component";
 import { useHistory } from "react-router-dom";
 
 export default function FeedbackPage({user}) {
@@ -11,6 +12,8 @@ export default function FeedbackPage({user}) {
   let history = useHistory();
 
   const [feedback, setFeedback] = useState([]);
+  const [currentStar, setCurrentStar] = useState(3);
+  const [averageStars, setAverageStars] = useState(0);
 
   useEffect(() => {
     axios.get("http://104.131.115.65:3443/users")
@@ -19,15 +22,23 @@ export default function FeedbackPage({user}) {
       console.log(users)
       axios.post("http://104.131.115.65:3443/meetingFeedback/", {meeting_id: id})
       .then(response => {
+        var math = 0;
         for (let i = 0; i < response.data.feedback.length; i++) {
+          if(response.data.feedback[i].stars != null) {
+            var math = math + response.data.feedback[i].stars;
+          }
           for (let j = 0; j < users.length; j++) {
             if (response.data.feedback[i].author == users[j].u_id) {
               response.data.feedback[i].author = users[j].name;
             }
           }
         }
-        console.log(response.data.feedback);
         setFeedback(response.data.feedback)
+        if (response.data.feedback.length>1) {
+        setAverageStars(math/(response.data.feedback.length-1));
+        }else{
+          setAverageStars(math);
+        }
       })
     })
   }, [])
@@ -38,16 +49,29 @@ export default function FeedbackPage({user}) {
     const data = {
       content: str,
       author: user.u_id,
-      meeting_id: id
+      meeting_id: id,
+      stars:currentStar
     }
     console.log(data)
     axios.post("http://104.131.115.65:3443/insertFeedback/", {data})
+    .then(function (response) {
+      console.log(response.data);
+    });
+    history.go(0);
   } 
 
   const handleDelete = (feedbackId) => {
-
+    console.log(feedbackId);  
+    axios.delete(`http://104.131.115.65:3443/deleteFeedback/${feedbackId}`)
+    .then(function (response) {
+      console.log(response);
+    });
+    history.go(0);
   }
-
+  const handleStarClick = (value) => {
+    console.log(value);
+    setCurrentStar(value);
+  }
   return (
     <div style={{ margin: '40px 100px' }}>
               <Paper
@@ -66,6 +90,15 @@ export default function FeedbackPage({user}) {
             size="small"
             style={{ margin: "10px 0", width: "100%" }}
           />
+        <ReactStars
+          id = 'RatingId'
+          activeColor="red"
+          onChange={handleStarClick}
+          count={5}
+          name='Rating'
+          size={24}
+          />
+
                     <Button
             id="create-location-button"
             onClick={handleSubmit}
@@ -76,6 +109,7 @@ export default function FeedbackPage({user}) {
             Submit Feedback
           </Button>
           <h1>Current Feedback</h1>
+          <h4>Average Rating among participants- {averageStars} stars</h4>
           {feedback.map((item,i) => {
             return (
               <>
@@ -97,7 +131,7 @@ export default function FeedbackPage({user}) {
                   user.name == item.author ? 
                   <Button
                   id="create-location-button"
-                  onClick={() => {history.goBack()}}
+                  onClick={(event) => handleDelete(item.feedback_Id)}
                   variant="contained"
                   color="secondary"
                 >

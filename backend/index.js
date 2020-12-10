@@ -108,6 +108,9 @@ app.post('/meeting', (request,response) => {
 app.patch('/updateUser', (request,response) => {
     driver.newdriver.updateUser(request,response);
 });
+app.patch('/updateUserNotification/:u_id/:notification', (request,response) => {
+    driver.newdriver.updateUserNotification(request,response);
+});
 app.patch('/updateMeeting', (request,response) => {
     driver.newdriver.updateMeeting(request,response);
 });
@@ -136,6 +139,9 @@ app.delete('/meeting/:meeting_id', (request,response) => {
 app.delete('/deleteDepartment/:dept_id', (request,response) => {
     driver.newdriver.deleteDepartment(request,response);
 });
-app.delete('/deleteLocation/:location_id'), (request,response) => {
+app.delete('/deleteLocation/:location_id', (request,response) => {
     driver.newdriver.deleteLocation(request,response);
-};
+});
+app.delete('/deleteFeedback/:feedback_Id', (request,response) => {
+    driver.newdriver.deleteFeedback(request,response);
+});

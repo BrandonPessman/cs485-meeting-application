@@ -291,10 +291,10 @@ export default function EnhancedTable({ setShowNextStep }) {
   const [endDate, setEndDate] = useState('')
   const [positions, setPositions] = useState([]);
   const [warning, openWarning] = React.useState(false);
-  const [warningContent, setWarningContent] = useState([]);
-  const [chosenLocation, setChosenLocation] = useState([]);
-  const [chosenPosition, setChosenPosition] = useState([]);
-  const [chosenUsers, setChosenUsers] = useState([]);
+  const [warningContent, setWarningContent] = useState("");
+  const [chosenLocation, setChosenLocation] = useState("");
+  const [chosenPosition, setChosenPosition] = useState("");
+  const [chosenUsers, setChosenUsers] = useState("");
   const [chosenTitle, setChosenTitle] = useState('');
   const [chosenDescr, setChosenDescr] = useState('');
   const [chosenID, setChosenID] = useState('');
@@ -587,7 +587,7 @@ export default function EnhancedTable({ setShowNextStep }) {
                       <TableCell align="right">{meeting.location_id}</TableCell>
                       <TableCell align="right">{meeting.start_date_time.split("T")[0]}</TableCell>
                       <TableCell align="right">{meeting.start_date_time.split("T")[1].substr(0, 5)}</TableCell>
-                      <TableCell align="right">{meeting.end_date_time.split("T")[1].substr(0, 5)}</TableCell>
+                      {/*<TableCell align="right">{meeting.end_date_time.split("T")[1].substr(0, 5)}</TableCell>*/}
                     </TableRow>
                   );
                 })}

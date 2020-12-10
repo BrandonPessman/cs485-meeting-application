@@ -23,9 +23,11 @@ const months = {
 export default function UpcomingMeetings({user, cookies}) {
   const [data, setData] = useState([])
   let history = useHistory();
+  const [type, setType] = useState(cookies.user.type);
 
   useEffect(() => {
     let list = [];
+    console.log("cookies type: " + cookies.user.type);
     axios.get("http://104.131.115.65:3443/userMeetings/" + cookies.user.u_id).then(res => {
         let d = res.data.meeting;
         let meetingIds = [d.length];
@@ -36,7 +38,6 @@ export default function UpcomingMeetings({user, cookies}) {
         axios.get('http://104.131.115.65:3443/meetings')
         .then(function (response) {
             let t = response.data.meeting;
-            console.log(t)
             t.sort((a, b) => new Date(b.start_date_time) - new Date(a.start_date_time));
 
             for (let i = 0; i < t.length; i++) {
@@ -145,8 +146,8 @@ export default function UpcomingMeetings({user, cookies}) {
                       <p>Status: <span style={{ float: 'right' }}>{(((meetings.currentDateTime - (meetings.starttime).getTime())>0) && (((meetings.endtime).getTime()-meetings.currentDateTime)>0)) ? "In Progress" :  (((meetings.currentDateTime - (meetings.starttime).getTime())>0) ? "Completed" : "Not Started")}</span></p>
                       <p>Starting Time: <span style={{ float: 'right' }}>{(meetings.starttime.getUTCHours())%12}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()}{(meetings.starttime.getUTCHours()-12)>0 ? ' PM' : ' AM'}</span></p>
                       <p>End Time: <span style={{ float: 'right' }}>{meetings.endtime.getUTCHours()%12}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()}{(meetings.endtime.getUTCHours()-12)>0 ? ' PM' : ' AM'}</span></p>
-                      <Button size="small" variant='contained' color='primary' onClick={() => handleView(meetings)} style={{width: '50%'}}>Manage</Button>
-                      {cookies.user.type != 2 ? <Button size="small" variant='contained' onClick={() => history.push("/feedback/" + meetings.meeting_id)} style={{width: '50%'}}>Feedback</Button> : <></>}
+                      {type > 2 ? <div><Button size="small" variant='contained' color='primary' onClick={() => handleView(meetings)} style={{width: '50%'}}>Manage</Button>
+                      <Button size="small" variant='contained' onClick={() => history.push("/feedback/" + meetings.meeting_id)} style={{width: '50%'}}>Feedback</Button></div> : <></>}
                     </Grid>
                 ) 
               })

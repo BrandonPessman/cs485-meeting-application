@@ -420,9 +420,7 @@ export default function EnhancedTable() {
     <Button
         variant="contained"
         color="secondary"
-        onClick={() => {
-        setOpenNewLocation(true);
-    }}
+        onClick={handleOpenNewLocation}
       >
         Create a Location
       </Button>
