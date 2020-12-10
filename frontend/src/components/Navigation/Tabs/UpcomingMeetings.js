@@ -118,7 +118,7 @@ export default function UpcomingMeetings({user, cookies}) {
         <div style={{ margin: '40px 0px' }}>
             <h2 style={{ marginBottom: '0', marginTop: '0', fontWeight: '500' }}>
                 Upcoming Meetings - <span style={{fontWeight: '100', fontStyle: 'italic'}}>{cookies.user.type != 1 ? "Your Meetings" : "All Meetings"}</span>
-                <span style={{ float: 'right' }}><Button variant='contained' color='primary' onClick={() => { document.body.style.zoom = .75; window.print(); document.body.style.zoom = 1; }}>
+                <span style={{ float: 'right' }}><Button variant='contained' color='primary' onClick={() => { document.body.style.zoom = .6; window.print(); document.body.style.zoom = 1; }}>
                     Print Itinarary
             </Button></span>
             </h2>
