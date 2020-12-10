@@ -43,9 +43,11 @@ export default function Login({cookies}) {
           if (notification == 1) {
             console.log("notifications true!");
             setNotifications(0);
+            cookies.user.notification = 0;
           }else{
             console.log("notifications false!");
             setNotifications(1);
+            cookies.user.notification = 1;
           }
         }
         const handleEditAccount = (event) => {
@@ -53,15 +55,19 @@ export default function Login({cookies}) {
         }
         const handleNameChange= (event, name) => {
             setAccountName(name);
+            cookies.user.name = name;
         };
         const handleEmailChange = (event, email) => {
             setAccountEmail(email);
+            cookies.user.email = email;
         };
         const handlePasswordChange = (event, password) => {
             setAccountPassword(password);
+            cookies.user.u_password = password
         };
         const handlePhoneNumberChange = (event, number) => {
             setAccountPhoneNumber(number);
+            cookies.user.phone_number = number;
         };
         const handleSelectType = (event, type) => {
           setAccountTypeDescr(type);
@@ -72,6 +78,7 @@ export default function Login({cookies}) {
             if (userTypes[i].type_descr == type) {
               console.log("In if: " + type_id);
               setAccountType(userTypes[i].type_id);
+              cookies.user.type = userTypes[i].type_id;
             }
           }
           console.log("AT: " + accountType);
@@ -86,11 +93,11 @@ export default function Login({cookies}) {
                 type: accountType,
             };
             axios
-            .patch("http://localhost:3443/updateUser", updateAccount)
+            .patch("http://104.131.115.65:3443/updateUser", updateAccount)
             .then(function (response) {
                 console.log(response);
                 axios
-                .patch(`http://localhost:3443/updateUserNotification/${accountID}/${notification}`)
+                .patch(`http://104.131.115.65:3443/updateUserNotification/${accountID}/${notification}`)
                 .then(function (response) {
                   console.log(response);
                 });
@@ -151,7 +158,8 @@ export default function Login({cookies}) {
                 style={{float:'left', height:"30px", marginBottom: "30px" }}
                 disabled={editAccount ? false : true}
                 onClick = { toggleNotifications }
-                >Toggle Notifications</Button>        
+                >Toggle Notifications</Button><br></br>
+                <i>*For this change to activate notifications, you must logout and log back in. </i>
             <TextField
               label="Name"
               id="create-candidate-name"

@@ -31,7 +31,6 @@ export default function MeetingPage({ user }) {
 
   useEffect(() => {
 
-    console.log(user)
     var meeting_id = id;
     axios
     .get(`http://104.131.115.65:3443/meetingUser/${meeting_id}`)
@@ -43,7 +42,6 @@ export default function MeetingPage({ user }) {
         axios
         .post(`http://104.131.115.65:3443/getSpecificMeeting/`, {meeting_id: id})
         .then(function (meetingResponse) {
-            console.log(meetingResponse.data.Meeting[0])
             setMeeting(meetingResponse.data.Meeting[0])
             const initData = meetingResponse.data.Meeting[0];
 
@@ -56,14 +54,11 @@ export default function MeetingPage({ user }) {
             setEndDate(end);
             setChosenTitle(initData.meeting_title);
             setChosenDescription(initData.meeting_descr);
-            console.log("looking")
             axios
             .get("http://104.131.115.65:3443/locations")
             .then(function (locationData) {
-            console.log(locationData.data.location)
               setLocations(locationData.data.location)
               for (let i = 0; i < locationData.data.location.length; i++) {
-                  console.log("location_id: " + initData.location_id);
                   if (initData.location_id == locationData.data.location[i].location_id) {
                       setChosenLocation(locationData.data.location[i].name)
                   }
@@ -71,19 +66,15 @@ export default function MeetingPage({ user }) {
               axios
               .get("http://104.131.115.65:3443/positions")
               .then(function (positionData) {
-              console.log(positionData.data)
                 setPositions(positionData.data.position)
-                console.log("id: " + initData.position_id);
                 for (let i = 0; i < positionData.data.position.length; i++) {
                     if (initData.position_id == positionData.data.position[i].position_id) {
-                        console.log("title: " + positionData.data.position[i].title);
                         setChosenPosition(positionData.data.position[i].title);
                     }
                 }
                 axios
                 .get(`http://104.131.115.65:3443/availableLocations/${initData.start_date_time}/${initData.end_date_time}`)
                 .then(function (results) {
-                  console.log("result: " + results.data.sql)
                   setAvailableLocations(results.data.location)
                 });
             });
@@ -104,7 +95,6 @@ export default function MeetingPage({ user }) {
     var meeting_id = id;
     axios.delete(`http://104.131.115.65:3443/deleteUserMeeting/${u_id}/${meeting_id}`)
     .then(function (response) {
-      console.log(response);
       axios
       .get(`http://104.131.115.65:3443/meetingUser/${ id }`)
       .then(function (userData) {
@@ -117,9 +107,7 @@ export default function MeetingPage({ user }) {
     setUpdateState(true);
   }
   const handleStartDate = (event, newDate) => {
-    console.log(users);
     setStartDate(document.getElementById("create-event-starttime").value);
-    console.log("Start Date" + document.getElementById("create-event-starttime").value);
     if (startDate > endDate) {
       setWarningContent("Invalid time combination.");
       openWarning(true);
@@ -134,30 +122,24 @@ export default function MeetingPage({ user }) {
 
   }
   const handleEndDate = (event, newDate) => {
-    console.log("handleEndDate");
     setEndDate(document.getElementById("create-event-endtime").value);
-    console.log("End date" + document.getElementById("create-event-endtime").value);
     /*if (endDate>startDate) {
       setWarningContent("Invalid time combination.");
       openWarning(true);
       setTimeout(() => { openWarning(false);}, 15000);
     }*/
     if (startDate != null) {
-      console.log("GetAvailableLocations");
       const availableLocationData = { start_date_time: startDate, end_date_time: endDate };
-      console.log(availableLocationData);
       if (startDate && endDate) {
         axios
           .get(`http://104.131.115.65:3443/availableLocations/${startDate}/${endDate}`)
           .then(function (results) {
-            console.log(results)
             setLocations(results.data.location)
           });
       }
     }
   };
   const handleAddUser = (event, clickedName) => {
-      console.log("name: " + clickedName);
       for (var i = 0; i<users.length; i++) {
         const selID = users[i].u_id;
         if (users[i].name === clickedName) {
@@ -165,7 +147,6 @@ export default function MeetingPage({ user }) {
           axios
           .post("http://104.131.115.65:3443/insertMeetingUser", meetingUser)
           .then(function (results) {
-            console.log(results);
             axios
             .get(`http://104.131.115.65:3443/meetingUser/${ id }`)
             .then(function (userData) {
@@ -180,13 +161,11 @@ export default function MeetingPage({ user }) {
   const handleChosenLocation = () => {
     var locationVal = document.getElementById("create-event-location").value;
     if (locationVal != "") {
-      console.log("handleChosenLocation");
       var chosenLoc = locations.filter(location => {
         return location.name === locationVal;
       })
       const { location_id } = chosenLoc[0];
       setChosenLocation(location_id);
-      console.log(location_id);
     } else {
       setWarningContent("No position chosen");
       openWarning(true);
@@ -201,7 +180,6 @@ export default function MeetingPage({ user }) {
       })
       const { position_id } = chosenPos[0];
       setChosenPosition(position_id);
-      console.log(position_id);
     }
     else {
       setWarningContent("No position chosen");
@@ -234,9 +212,9 @@ export default function MeetingPage({ user }) {
     }
     axios.patch("http://104.131.115.65:3443/updateMeeting", newMeeting)
     .then(function (response) {
-      console.log(response);
       setUpdateState(false);
     });
+    history.go(0);
   };
 
   return (

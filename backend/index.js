@@ -139,6 +139,9 @@ app.delete('/meeting/:meeting_id', (request,response) => {
 app.delete('/deleteDepartment/:dept_id', (request,response) => {
     driver.newdriver.deleteDepartment(request,response);
 });
-app.delete('/deleteLocation/:location_id'), (request,response) => {
+app.delete('/deleteLocation/:location_id', (request,response) => {
     driver.newdriver.deleteLocation(request,response);
-};
+});
+app.delete('/deleteFeedback/:feedback_Id', (request,response) => {
+    driver.newdriver.deleteFeedback(request,response);
+});
