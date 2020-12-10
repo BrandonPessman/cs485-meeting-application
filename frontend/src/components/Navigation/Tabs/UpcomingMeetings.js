@@ -137,8 +137,8 @@ export default function UpcomingMeetings({user, cookies}) {
                             <p>Status: <span style={{ float: 'right' }}>{(((meetings.currentDateTime - (meetings.starttime).getTime())>0) && (((meetings.endtime).getTime()-meetings.currentDateTime)>0)) ? "In Progress" :  (((meetings.currentDateTime - (meetings.starttime).getTime())>0) ? "Completed" : "Not Started")}</span></p>
                             <p>Starting Time: <span style={{ float: 'right' }}>{meetings.starttime.getUTCHours()%12}:{meetings.starttime.getMinutes() == 0 ? '00' : meetings.starttime.getMinutes()}{(meetings.starttime.getUTCHours()-12)>0 ? ' PM' : ' AM'}</span></p>
                             <p>End Time: <span style={{ float: 'right' }}>{meetings.endtime.getUTCHours()%12}:{meetings.endtime.getMinutes() == 0 ? '00' : meetings.endtime.getMinutes()}{(meetings.endtime.getUTCHours()-12)>0 ? ' PM' : ' AM'}</span></p>
-                            {cookies.user.type > 2 ? <div><Button size="small" variant='contained' color='primary' onClick={() => handleView(meetings)} style={{width: '50%'}}>Manage</Button>
-                            <Button size="small" variant='contained' onClick={() => history.push("/feedback/" + meetings.meeting_id)} style={{width: '50%'}}>Feedback</Button></div> : <></>}
+                            {cookies.user.type > 2 ? <div><Button size="small" variant='contained' color='primary' onClick={() => handleView(meetings)} style={{width: '50%'}}>Manage</Button></div>: <></>}
+                            {cookies.user.type != 2 ? <Button size="small" variant='contained' onClick={() => history.push("/feedback/" + meetings.meeting_id)} style={{width: '50%'}}>Feedback</Button> : <></>}
                           </Grid>
                       )
                     })
