@@ -340,7 +340,7 @@ export default function EnhancedTable({ setShowNextStep }, { showAll }) {
       dept_id: chosenDeptId,
       position_id: chosenId,
     }
-    axios.patch("http://localhost:3443/updatePosition", updatePosition)
+    axios.patch("http://104.131.115.65:3443/updatePosition", updatePosition)
         .then(function (response) {
           console.log(response);
           axios

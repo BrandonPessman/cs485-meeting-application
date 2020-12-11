@@ -37,7 +37,6 @@ export default function MeetingScheduler() {
       setShowAll(false);
     }
   }
-
   return (
     <div>
       <Button 

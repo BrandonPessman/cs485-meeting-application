@@ -22,6 +22,7 @@ export default function FeedbackPage({user}) {
       console.log(users)
       axios.post("http://104.131.115.65:3443/meetingFeedback/", {meeting_id: id})
       .then(response => {
+        console.log(response.data);
         var math = 0;
         for (let i = 0; i < response.data.feedback.length; i++) {
           if(response.data.feedback[i].stars != null) {
@@ -35,7 +36,7 @@ export default function FeedbackPage({user}) {
         }
         setFeedback(response.data.feedback)
         if (response.data.feedback.length>1) {
-        setAverageStars(math/(response.data.feedback.length-1));
+        setAverageStars(Math.round(math/response.data.feedback.length));
         }else{
           setAverageStars(math);
         }
@@ -56,8 +57,8 @@ export default function FeedbackPage({user}) {
     axios.post("http://104.131.115.65:3443/insertFeedback/", {data})
     .then(function (response) {
       console.log(response.data);
+      history.go(0);
     });
-    history.go(0);
   } 
 
   const handleDelete = (feedbackId) => {
@@ -65,8 +66,8 @@ export default function FeedbackPage({user}) {
     axios.delete(`http://104.131.115.65:3443/deleteFeedback/${feedbackId}`)
     .then(function (response) {
       console.log(response);
+      history.go(0);
     });
-    history.go(0);
   }
   const handleStarClick = (value) => {
     console.log(value);

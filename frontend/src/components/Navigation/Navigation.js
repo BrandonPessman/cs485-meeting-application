@@ -44,7 +44,6 @@ export default function ClippedDrawer() {
       scheduledJob();
     }
   }, 60000)
-
   const scheduledJob = (event) => {
     if (completedRun != true) {
       setCompletedRun(true);
@@ -53,13 +52,14 @@ export default function ClippedDrawer() {
       for (var i = 0; i < meetingUsers.length; i++) {
         var starttime = (new Date(meetingUsers[i].start_date_time)).getTime();
         const meeting_id = meetingUsers[i].meeting_id;
+        const meeting_title = meetingUsers[i].meeting_title;
         console.log("title: " + meetingUsers[i].meeting_title);
         console.log("start: " + starttime);
         var currentDateTime = (new Date()).getTime() - 20700000;
         console.log("cdt: " + currentDateTime);
         console.log("diff: " + (Math.abs((starttime - currentDateTime))));
         if (Math.abs((starttime - currentDateTime)) < 60000) {
-          window.open("http://104.131.115.65:3000/Notification/" + cookies.user.u_id, "Interviewer Reminder", "height=500,width=500")
+          window.open("http://104.131.115.65:3000/Notification/" + meeting_title, "Interviewer Reminder", "height=500,width=500")
           console.log(meetingUsers[i].meeting_title + " starts in 15 minutes");
         }
       }
@@ -102,7 +102,7 @@ export default function ClippedDrawer() {
           <Route path="/Account">
             <Account cookies={cookies} />
           </Route>
-          <Route path="/Notification">
+          <Route path="/Notification/:title">
             <Notification meeting={meeting} />
           </Route>
         </Switch>
