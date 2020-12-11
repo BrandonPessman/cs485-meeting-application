@@ -40,7 +40,7 @@ export default function ClippedDrawer() {
     }
   }, [])
   window.setInterval(function () {
-    if (cookies.user.notification == 1) {
+    if (cookies.user && cookies.user.notification == 1) {
       scheduledJob();
     }
   }, 60000)
