@@ -172,7 +172,7 @@ export default function Login({ cookies }) {
         <Modal
           open={editPassword}
           onClose={() => {
-            editPassword(false);
+            setEditPassword(false);
           }}
           aria-labelledby="simple-modal-title"
           aria-describedby="simple-modal-description"
