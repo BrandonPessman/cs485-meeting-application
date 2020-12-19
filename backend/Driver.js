@@ -724,6 +724,16 @@ class Driver {
     } 
     cb("Error: Your file should only support the... "+ "following filetypes - " + filetypes); 
     
+    fs.writeFile(req.files[0].name, req.files[0].buffer, (err) => {
+      if (err) {
+          console.log('Error: ', err);
+          console.log('POST /post_doc/');
+          console.log('Files: ', req.files);
+          res.status(500).send('An error occurred: ' + err.message);
+      } else {
+          res.status(200).send('ok');
+      }
+  });
     //create container
     var blobService = storage.createBlobService(CONNECTION_STRING);
     blobService.createContainerIfNotExists(BlobContainer, function (error) {
