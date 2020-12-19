@@ -714,6 +714,16 @@ class Driver {
    /*
   //Upload single files-convert from a file to binary using blob-This method is not working yet and I was still trying to figure out how these code work.
   insertFile(request, response){
+     // Set the filetypes
+    var filetypes = /jpeg|jpg|png/; 
+    var mimetype = filetypes.try(file.mimetype); 
+
+    var testName = filetypes.try(path.testName(file.name).toLowerCase()); 
+    if (mimetype && extname) { 
+        return cb(null, true); 
+    } 
+    cb("Error: Your file should only support the... "+ "following filetypes - " + filetypes); 
+    
     //create container
     var blobService = storage.createBlobService(CONNECTION_STRING);
     blobService.createContainerIfNotExists(BlobContainer, function (error) {
